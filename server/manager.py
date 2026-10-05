@@ -409,6 +409,7 @@ MANAGER_HTTP_PORT = 8090
 # Port ranges for spawned runs
 TCP_PORT_BASE  = 54321
 HTTP_PORT_BASE = 8081   # 8090 reserved for manager
+TCP_PORT_POOL_ENV = "SLINK_TCP_PORT_POOL"
 
 # Schema-compatible empty /api/status returned when no run is active.
 _EMPTY_STATUS: dict = empty_status_payload()
@@ -560,19 +561,43 @@ def _port_free(port: int) -> bool:
         return False
 
 
+def _tcp_port_pool() -> tuple[int, ...]:
+    raw = os.environ.get(TCP_PORT_POOL_ENV, "").strip()
+    if not raw:
+        return ()
+    try:
+        ports = tuple(int(value.strip()) for value in raw.split(",") if value.strip())
+    except ValueError as exc:
+        raise RuntimeError(f"{TCP_PORT_POOL_ENV} must contain comma-separated ports") from exc
+    if not ports or len(set(ports)) != len(ports) or any(not 1 <= port <= 65535 for port in ports):
+        raise RuntimeError(f"{TCP_PORT_POOL_ENV} must contain unique ports from 1 to 65535")
+    return ports
+
+
 def _next_ports(runs: list[dict]) -> tuple[int, int]:
     """Return the next available (tcp_port, http_port) pair: unused by this registry AND
     bindable on this machine."""
     # .get: a hand-edited or old entry without ports must not take every page down with a KeyError
-    used_tcp  = {r.get("tcp_port")  for r in runs}
-    used_http = {r.get("http_port") for r in runs}
-    tcp = TCP_PORT_BASE
-    while tcp in used_tcp or not _port_free(tcp):
-        tcp += 1
+    pool = _tcp_port_pool()
+    active = [run for run in runs if run.get("status") == "running"]
+    used_tcp = {r.get("tcp_port") for r in (active if pool else runs)}
+    used_http = {r.get("http_port") for r in (active if pool else runs)}
+    if pool:
+        tcp = next((port for port in pool if port not in used_tcp and _port_free(port)), None)
+        if tcp is None:
+            raise RuntimeError(f"All {len(pool)} configured game ports are in use")
+    else:
+        tcp = TCP_PORT_BASE
+        while tcp in used_tcp or not _port_free(tcp):
+            tcp += 1
     http = HTTP_PORT_BASE
     while http in used_http or http == MANAGER_HTTP_PORT or not _port_free(http):
         http += 1
     return tcp, http
+
+
+def _released_ports() -> dict:
+    return {"tcp_port": None, "http_port": None} if _tcp_port_pool() else {}
 
 
 # ── Launcher script generation (dynamic — served via HTTP) ──────────────────
@@ -998,7 +1023,10 @@ def _adopt_orphans(runs: list[dict]) -> bool:
         except (json.JSONDecodeError, OSError):
             pass
 
-        tcp_port, http_port = _next_ports(runs)
+        if _tcp_port_pool():
+            tcp_port, http_port = None, None
+        else:
+            tcp_port, http_port = _next_ports(runs)
         run = {
             "run_id":       run_id,
             "name":         name,
@@ -1031,6 +1059,7 @@ def _reconcile(runs: list[dict]) -> bool:
             run["status"] = "stopped"
             run["pid"] = None
             run["pid_created"] = None
+            run.update(_released_ports())
             changed = True
     if _adopt_orphans(runs):
         changed = True
@@ -1172,7 +1201,7 @@ class RunManager:
             # categories / labels / jar the standalone page does, with no current pair.
             # Off the event loop: the form scans (and may hash) every ROM file.
             "randomizer_json": _json_for_script(await asyncio.to_thread(self._randomizer_form, None)),
-            "next_ports":   _next_ports(runs),
+            "next_ports":   self._next_ports_preview(runs),
             "manager_port": self.manager_port,
             # Links to a run's own port (calc, debug) use the host the browser used for us.
             "host":         (request.host or "127.0.0.1").split(":")[0] or "127.0.0.1",
@@ -1185,6 +1214,13 @@ class RunManager:
 
     def _connect_host(self) -> tuple[str, str]:
         return advertised_host(self.public_host, self.bind_host)
+
+    @staticmethod
+    def _next_ports_preview(runs: list[dict]) -> tuple[int | None, int | None]:
+        try:
+            return _next_ports(runs)
+        except RuntimeError:
+            return None, None
 
     def _board_context(self, run: dict, status: dict) -> dict:
         """board_context for a Manager run: it polls its own board route, its launchers and
@@ -1354,7 +1390,12 @@ class RunManager:
             suffix += 1
             run_id = f"{base_id}_{suffix}"
 
-        tcp_port, http_port = _next_ports(runs)
+        try:
+            tcp_port, http_port = _next_ports(runs)
+            start_error = ""
+        except RuntimeError as exc:
+            tcp_port, http_port = None, None
+            start_error = str(exc)
         run = {
             "run_id":     run_id,
             "name":       name,
@@ -1378,8 +1419,10 @@ class RunManager:
 
         # Auto-start. The run exists either way; a start that fails is reported with its
         # reason so the creator can show it, rather than landing on a "running" run.
-        start_error = ""
         async with self._run_lock(run_id):
+            if tcp_port is None:
+                return web.json_response(
+                    {"ok": True, "run": _public_run(run), "start_error": start_error})
             try:
                 pid = await _spawn_run(run, self.bind_host, manager_port=self.manager_port)
                 run = _update_run(run_id, status="running", pid=pid, pid_created=_create_time(pid)) or run
@@ -1401,10 +1444,13 @@ class RunManager:
             if run["status"] == "running" and _is_alive(run.get("pid"), run.get("pid_created")):
                 return web.json_response({"ok": True, "message": "Already running"})
             try:
+                if _tcp_port_pool():
+                    run["tcp_port"], run["http_port"] = _next_ports(runs)
                 pid = await _spawn_run(run, self.bind_host, manager_port=self.manager_port)
             except Exception as e:
-                return web.json_response({"ok": False, "error": str(e)}, status=500)
-            _update_run(run_id, status="running", pid=pid, pid_created=_create_time(pid))
+                return web.json_response({"ok": False, "error": str(e)}, status=409)
+            _update_run(run_id, status="running", pid=pid, pid_created=_create_time(pid),
+                        tcp_port=run["tcp_port"], http_port=run["http_port"])
             return web.json_response({"ok": True, "pid": pid})
 
     async def handle_stop(self, request: web.Request) -> web.Response:
@@ -1419,7 +1465,8 @@ class RunManager:
                 # Keep the pid: the server is still up, and a later stop must be able to retry.
                 return web.json_response({"ok": False, "error": f"Could not stop the run's server (PID {pid})"},
                                          status=500)
-            _update_run(run_id, status="stopped", pid=None, pid_created=None)
+            _update_run(run_id, status="stopped", pid=None, pid_created=None,
+                        **_released_ports())
             return web.json_response({"ok": True})
 
     async def handle_archive(self, request: web.Request) -> web.Response:
@@ -1433,7 +1480,8 @@ class RunManager:
             if pid and not await asyncio.to_thread(_kill_run, pid, run.get("pid_created")):
                 return web.json_response({"ok": False, "error": f"Could not stop the run's server (PID {pid})"},
                                          status=500)
-            _update_run(run_id, status="archived", pid=None, pid_created=None)
+            _update_run(run_id, status="archived", pid=None, pid_created=None,
+                        **_released_ports())
             return web.json_response({"ok": True})
 
     async def handle_delete(self, request: web.Request) -> web.Response:
