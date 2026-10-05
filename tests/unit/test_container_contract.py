@@ -3,6 +3,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 DOCKERFILE = (ROOT / "Dockerfile").read_text(encoding="utf-8")
 DOCKERIGNORE = (ROOT / ".dockerignore").read_text(encoding="utf-8")
+WORKFLOW = (ROOT / ".github/workflows/container.yml").read_text(encoding="utf-8")
 CALC_BUILD = (ROOT / "calc" / "build").read_text(encoding="utf-8")
 
 
@@ -45,3 +46,19 @@ def test_calculator_asset_copy_is_portable_and_skips_generated_scripts():
 def test_build_context_excludes_private_game_files_and_runtime_state():
     for pattern in ("*.sav", "*.SaveRAM", "*.gba", "*.nds", "roms", "data/runs"):
         assert pattern in DOCKERIGNORE.splitlines()
+
+
+def test_workflow_publishes_versioned_ghcr_image_with_attestations():
+    assert "ghcr.io/matracey/auto-soullink" in WORKFLOW
+    assert "packages: write" in WORKFLOW
+    assert "type=sha,format=long" in WORKFLOW
+    assert "type=semver" in WORKFLOW
+    assert "docker/build-push-action@v6" in WORKFLOW
+    assert "provenance: mode=max" in WORKFLOW
+    assert "sbom: true" in WORKFLOW
+
+
+def test_workflow_publishes_main_and_preserves_default_branch_latest_tag():
+    assert "branches: [main]" in WORKFLOW
+    assert "branches: [master]" not in WORKFLOW
+    assert "type=raw,value=latest,enable={{is_default_branch}}" in WORKFLOW
