@@ -1272,7 +1272,7 @@ def test_pc_swap_wrong_order_box_to_party_first_fails(tmp_path, monkeypatch):
 
 def test_no_catch_creates_dead_zone(tmp_path, monkeypatch):
     monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
-    state = SoulLinkState()
+    state = SoulLinkState(retry_same_species=False)
     state.handle_event("a", {"event": "area_enter", "area_id": "route_1"})  # A enters → PENDING_B
     state.handle_event("b", {"event": "area_enter", "area_id": "route_1"})  # B enters → PENDING_BOTH
     state.handle_event("b", {"event": "no_catch", "area_id": "route_1"})
@@ -1282,7 +1282,7 @@ def test_no_catch_creates_dead_zone(tmp_path, monkeypatch):
 def test_no_catch_dead_zone_queues_hud_banner_for_both(tmp_path, monkeypatch):
     """Dead-zone creation must queue both SE_FAILURE and a HUD banner naming the area for both players."""
     monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
-    state = SoulLinkState()
+    state = SoulLinkState(retry_same_species=False)
     cmds_b = state.handle_event("b", {"event": "no_catch", "area_id": "route_1"})
     cmds_a = state.handle_event("a", {"event": "tick"})
 
@@ -1304,7 +1304,7 @@ def test_no_catch_dead_zone_queues_hud_banner_for_both(tmp_path, monkeypatch):
 
 def test_no_catch_retires_partner_pending_capture(tmp_path, monkeypatch):
     monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
-    state = SoulLinkState()
+    state = SoulLinkState(retry_same_species=False)
 
     # A captures first → records pending capture + sets pokeballs_obtained["a"]
     state.handle_event("a", {"event": "capture", "key": "A:1", "area_id": "route_1", "level": 5})
@@ -1341,7 +1341,7 @@ def test_no_catch_on_dead_zone_is_noop(tmp_path, monkeypatch):
 def test_no_catch_creates_dead_zone_link_entry_no_captures(tmp_path, monkeypatch):
     """no_catch with no pending captures on either side should still create a DEAD LinkEntry."""
     monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
-    state = SoulLinkState()
+    state = SoulLinkState(retry_same_species=False)
     state.handle_event("a", {"event": "no_catch", "area_id": "route_1"})
     assert state.area_states["route_1"] == AreaStatus.DEAD_ZONE
     assert len(state.links) == 1
@@ -1355,7 +1355,7 @@ def test_no_catch_creates_dead_zone_link_entry_no_captures(tmp_path, monkeypatch
 def test_no_catch_records_encounter_species(tmp_path, monkeypatch):
     """no_catch with species_id/level should populate encounter_a/b on the LinkEntry."""
     monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
-    state = SoulLinkState()
+    state = SoulLinkState(retry_same_species=False)
     state.handle_event("a", {"event": "no_catch", "area_id": "route_1",
                               "species_id": 19, "level": 4})
     entry = state.links[0]
@@ -1371,7 +1371,7 @@ def test_dead_zone_capture_not_recorded_in_link_entry(tmp_path, monkeypatch):
     """A capture in an already-dead zone should be force-fainted/memorialized but NOT written
     into the dead zone entry, so the original 'no catch' display is preserved."""
     monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
-    state = SoulLinkState()
+    state = SoulLinkState(retry_same_species=False)
     state.pokeballs_obtained = {"a": True, "b": True}
     # A has no catch → dead zone, LinkEntry(a=None, b=None)
     state.handle_event("a", {"event": "no_catch", "area_id": "route_1"})
@@ -1903,7 +1903,7 @@ def test_box_to_party_partner_already_in_party_no_sync(tmp_path, monkeypatch):
 def make_fresh_state(tmp_path, monkeypatch) -> SoulLinkState:
     """Return a SoulLinkState with no prior state (fresh run)."""
     monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
-    state = SoulLinkState()
+    state = SoulLinkState(retry_same_species=False)
     state.party_size = {"a": 2, "b": 2}
     return state
 
@@ -2192,7 +2192,7 @@ def test_faint_cancels_stale_party_mon(tmp_path, monkeypatch):
 def test_no_catch_queues_memorialize_partner(tmp_path, monkeypatch):
     """Partner's pending capture gets force_faint + memorialize on no_catch dead zone."""
     monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
-    state = SoulLinkState()
+    state = SoulLinkState(retry_same_species=False)
     state.pokeballs_obtained = {"a": True, "b": True}
     state.party_keys["b"].add("B:2")
     state.handle_event("b", {"event": "capture", "key": "B:2", "level": 8,
@@ -3087,7 +3087,7 @@ def test_killfeed_faint_no_killer_when_species_zero(tmp_path, monkeypatch):
 def test_killfeed_no_catch_records_dead_zone(tmp_path, monkeypatch):
     """After a no_catch event that creates a dead zone, cause should be 'dead_zone'."""
     monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
-    state = SoulLinkState()
+    state = SoulLinkState(retry_same_species=False)
     state.pokeballs_obtained = {"a": True, "b": True}
     # B captured first on route_2
     state.handle_event("b", {"event": "capture", "key": "B:20", "area_id": "route_2",
@@ -3179,7 +3179,7 @@ def test_species_clause_reroll_evolution_family(tmp_path, monkeypatch):
 def test_species_clause_no_reroll_for_different_family(tmp_path, monkeypatch):
     """no_catch for a species the player doesn't own should still dead-zone."""
     monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
-    state = SoulLinkState(species_lock=True)
+    state = SoulLinkState(species_lock=True, retry_same_species=False)
     state.pokeballs_obtained = {"a": True, "b": True}
     # Player A has Pidgey (16)
     state.handle_event("a", {"event": "capture", "key": "AA:11", "area_id": "route_1",
@@ -3194,7 +3194,7 @@ def test_species_clause_no_reroll_for_different_family(tmp_path, monkeypatch):
 def test_species_clause_no_reroll_when_lock_disabled(tmp_path, monkeypatch):
     """Species clause reroll only applies when species_lock is enabled."""
     monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
-    state = SoulLinkState(species_lock=False)
+    state = SoulLinkState(species_lock=False, retry_same_species=False)
     state.pokeballs_obtained = {"a": True, "b": True}
     state.handle_event("a", {"event": "capture", "key": "AA:11", "area_id": "route_1",
                               "level": 5, "species_id": 16})
@@ -3208,7 +3208,7 @@ def test_species_clause_no_reroll_when_lock_disabled(tmp_path, monkeypatch):
 def test_species_clause_dead_pair_no_reroll(tmp_path, monkeypatch):
     """Dead pairs should NOT trigger species clause — player no longer 'has' that family."""
     monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
-    state = SoulLinkState(species_lock=True)
+    state = SoulLinkState(species_lock=True, retry_same_species=False)
     state.pokeballs_obtained = {"a": True, "b": True}
     # Link and kill a Pidgey pair
     state.handle_event("a", {"event": "capture", "key": "AA:11", "area_id": "route_1",
@@ -3240,7 +3240,7 @@ def test_species_clause_reroll_b_side(tmp_path, monkeypatch):
 def test_species_clause_no_species_in_no_catch(tmp_path, monkeypatch):
     """no_catch without species_id should dead-zone normally even with species lock."""
     monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
-    state = SoulLinkState(species_lock=True)
+    state = SoulLinkState(species_lock=True, retry_same_species=False)
     state.pokeballs_obtained = {"a": True, "b": True}
     state.handle_event("a", {"event": "capture", "key": "AA:11", "area_id": "route_1",
                               "level": 5, "species_id": 16})
@@ -3285,7 +3285,7 @@ def test_dupes_clause_partner_pending_evo_family(tmp_path, monkeypatch):
 def test_dupes_clause_different_species_still_dead_zones(tmp_path, monkeypatch):
     """no_catch for a DIFFERENT species than partner's capture should still dead-zone."""
     monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
-    state = SoulLinkState(species_lock=True)
+    state = SoulLinkState(species_lock=True, retry_same_species=False)
     state.pokeballs_obtained = {"a": True, "b": True}
     # B captures Poochyena (286) on route_1
     state.handle_event("b", {"event": "capture", "key": "BB:22", "area_id": "route_1",
@@ -3659,6 +3659,7 @@ def test_game_over_triggers_after_no_catch_clears_last_pending(tmp_path, monkeyp
     """Game over triggers when no_catch clears the last pending capture."""
     monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
     state = make_state_with_link()
+    state.retry_same_species = False
     # A captures on route_2
     state.handle_event("a", {"event": "capture", "key": "C:3", "area_id": "route_2",
                               "level": 10})
@@ -5749,6 +5750,7 @@ def test_a_malformed_party_snapshot_is_coerced_not_raised(raw):
 
 def test_leaving_retry_area_allows_later_no_catch_to_dead_zone():
     state = make_state_with_link()
+    state.retry_same_species = False
     state.retry_areas["a"].add("route_2")
     state.handle_event("a", {"event": "area_enter", "area_id": "route_3"})
     state.handle_event("a", {"event": "no_catch", "area_id": "route_2"})
@@ -5757,6 +5759,7 @@ def test_leaving_retry_area_allows_later_no_catch_to_dead_zone():
 
 def test_stale_retry_with_pending_capture_does_not_wedge_game_over():
     state = make_state_with_link(status=LinkStatus.DEAD)
+    state.retry_same_species = False
     state.retry_areas["a"].add("route_2")
     state.pending_captures["route_2"] = {"b": MonInfo(key="B:pending", level=5)}
     state._check_game_over()

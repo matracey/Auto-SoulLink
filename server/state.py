@@ -3218,8 +3218,35 @@ class SoulLinkState:
                     self._dupes_reroll(player_id, area_id, f"Dupes clause: {enc_name} -- reroll!")
                     return
 
+        if self.retry_same_species:
+            area_locks = self.encounter_locks.setdefault(area_id, {})
+            lock = area_locks.get(player_id)
+            if lock is None and enc_species:
+                lock = EncounterLock(species=enc_species, level=enc_level)
+                area_locks[player_id] = lock
+                log.info("[%s] encounter lock: %s species=%s level=%s",
+                         player_id, area_id, enc_species, enc_level)
+            elif not area_locks:
+                self.encounter_locks.pop(area_id, None)
+
+            self.queued_commands[player_id].append({"cmd": "unresolve_area", "area_id": area_id})
+            if lock:
+                required = self.adapter.species_name(lock.species) or f"species {lock.species}"
+                encountered = self.adapter.species_name(enc_species) if enc_species else ""
+                text = (f"First encounter: {required} -- retry it!"
+                        if not encountered or enc_species == lock.species
+                        else f"Find {required}, not {encountered}!")
+                self.queued_commands[player_id].append({
+                    "cmd": "gui_prompt",
+                    "text": text,
+                    "r": 255, "g": 220, "b": 60, "frames": 360,
+                })
+            self._save()
+            return
+
         self._set_area_state(area_id, AreaStatus.DEAD_ZONE,
                             player=player_id, reason="no_catch")
+        self.encounter_locks.pop(area_id, None)
         partner_cap = self.pending_captures.get(area_id, {}).get(partner)
         log.info(f"[DEAD ZONE] {area_id}  reason=no_catch  triggered_by={player_id}  partner_had_capture={partner_cap is not None}")
         # Notify both players with a failure sound + HUD banner naming the dead area.
