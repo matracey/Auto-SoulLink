@@ -156,7 +156,8 @@ The adapter is chosen from the client's `hello.rom_type` through `_ROM_TYPE_TO_G
 |---|---|
 | Nuzlocke gate | The rules below stay inactive for a player until the client reports Poké Balls in the bag. |
 | Encounter linking | Each player's first capture in an area is paired with the other player's first capture there. |
-| Dead zone | If either player fails to catch in an area (runs, knocks the Pokémon out, or otherwise ends the encounter without a catch), the area is closed for both. The missed species and level are recorded. |
+| Encounter retry | With `retry_same_species` enabled (the default), the first eligible species seen by each player is persisted for that area. A failed attempt sends `unresolve_area`; later encounters remain open, but catching another species force-faints and memorializes that illegal catch. Gifts, eggs, shiny bonuses and clause rerolls keep their existing exemptions. |
+| Dead zone | With `retry_same_species` disabled (`--dead-zone-on-miss`), a failed catch closes the area for both. The missed species and level are recorded. |
 | Unlinked capture | A capture waiting for its partner's catch is sent to the PC until the pair forms. |
 | Illegal capture | A capture in an area that is already linked or dead, or a second capture in the same area, is fainted and sent to the memorial box. |
 | Faint propagation | When a linked Pokémon faints, its partner is sent `force_faint` (or `force_explode` under Explode Mode) on the same round trip. |
@@ -344,7 +345,7 @@ One persistent TCP connection per player, carrying newline-delimited JSON. Every
 | `safe` | The client is back in a safe overworld state. |
 | `area_enter` | Entered an area (`area_id`). |
 | `capture` | Caught a Pokémon: `key`, `area_id`, `level`, `gift` for gifts and eggs. |
-| `no_catch` | Left an encounter without catching: a dead-zone candidate. |
+| `no_catch` | Left an encounter without catching. The server either persists/reuses the player's first-species lock and reopens the area, or applies the classic dead-zone rule when that run option is disabled. |
 | `faint`, `whiteout` | A party Pokémon fainted; the whole party fainted. |
 | `release` | A Pokémon was released from the PC. |
 | `party_to_box`, `box_to_party` | A known Pokémon moved between party and PC. |

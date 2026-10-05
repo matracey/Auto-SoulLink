@@ -46,7 +46,7 @@ The patch version sits on the Continue screen, so you can tell at a glance wheth
 | Rule | What happens |
 |---|---|
 | One encounter per area | Each player's first catch in an area is linked to the other player's first catch there. |
-| Missed encounter | If either player fails to catch in an area, it's closed for both. |
+| Missed encounter | By default, the first eligible species seen by each player is locked for that area and may be retried until caught. Catching another species retires that illegal catch. Runs can instead enable the classic dead-zone rule, which closes the area after a miss. |
 | Shared faints | When one Pokémon faints, SLink faints its partner in the other game. |
 | Linked teams | Both halves of a pair go in the party together, or in the PC together. |
 | Memorial | Fallen pairs are moved to a memorial box once both games are somewhere safe. |
@@ -58,6 +58,7 @@ Pick these when you create a run. The form greys out anything the chosen game ca
 
 | Option | What it does | Games |
 |---|---|---|
+| Retry First Species | Keep a failed encounter open, but require that player to catch the same species on a later encounter. Enabled by default; turn it off for classic dead zones. | All |
 | Species, Gender, Type Clause | Refuse a link when both Pokémon share an evolution family, a gender, or a type. | All (no Gender Clause on Gen 1) |
 | Explode Mode | When your partner's Pokémon dies, yours is forced to use Explosion. | All except Emerald Expansion |
 | Rival Swap | Rival battles use your partner's real team instead of the usual one. | Gen 1, pureRGB, Gen 2, Radical Red |
