@@ -82,6 +82,19 @@ def _origin(value: str, *, referer: bool = False) -> tuple[str, str, int] | None
         return None
 
 
+def _request_origin(request: web.Request) -> tuple[str, str, int] | None:
+    """Build the public request origin while keeping Host as the authority.
+
+    TLS-terminating proxies forward the original scheme separately. Trusting
+    only that scheme cannot bypass the independently validated Host check.
+    """
+    forwarded_scheme = request.headers.get("X-Forwarded-Proto", "")
+    scheme = forwarded_scheme.split(",", 1)[0].strip().lower() or request.scheme
+    if scheme not in {"http", "https"}:
+        return None
+    return _origin(f"{scheme}://{request.host}")
+
+
 def _same_origin_request(request: web.Request) -> bool:
     site = request.headers.get("Sec-Fetch-Site")
     if site is not None and site not in {"same-origin", "same-site", "none"}:
@@ -93,7 +106,7 @@ def _same_origin_request(request: web.Request) -> bool:
         # Origin takes precedence; an opaque/malformed Origin must not be
         # rescued by an apparently safe Referer. Ignore forwarded host headers.
         source = _origin(origin) if origin is not None else _origin(referer, referer=True)
-        target = _origin(f"{request.scheme}://{request.host}")
+        target = _request_origin(request)
         return source is not None and target is not None and source == target
 
     if site == "same-origin":

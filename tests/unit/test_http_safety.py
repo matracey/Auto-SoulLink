@@ -82,6 +82,37 @@ async def test_same_origin_and_native_mutations_work(host, headers):
 
 
 @pytest.mark.asyncio
+async def test_tls_terminating_proxy_scheme_is_used_for_origin_check():
+    status, effects = await _status(
+        "slink.local",
+        "POST",
+        {
+            "Origin": "https://slink.local",
+            "X-Forwarded-Proto": "https",
+            "Sec-Fetch-Site": "same-origin",
+        },
+    )
+    assert (status, effects) == (200, ["POST"])
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("headers", [
+    {
+        "Origin": "https://attacker.example",
+        "X-Forwarded-Proto": "https",
+        "Sec-Fetch-Site": "same-origin",
+    },
+    {
+        "Origin": "https://slink.local",
+        "X-Forwarded-Proto": "javascript",
+        "Sec-Fetch-Site": "same-origin",
+    },
+])
+async def test_forwarded_scheme_cannot_override_origin_host_or_protocol(headers):
+    assert await _status("slink.local", "POST", headers) == (403, [])
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("method", ["GET", "HEAD", "OPTIONS"])
 async def test_read_only_requests_remain_compatible(method):
     async def read(request):
