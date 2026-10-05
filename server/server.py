@@ -71,6 +71,7 @@ try:
 except ImportError:
     from server import calc_files
 import aiohttp_jinja2
+from server.admin_auth import setup_admin_auth
 
 from server.templating import resolve_layout, resolve_theme, setup_templating
 
@@ -5713,6 +5714,7 @@ def build_app(srv):
     """
     app = aiohttp_web.Application(middlewares=[csrf_protection, theme_cache])
     setup_templating(app)
+    setup_admin_auth(app)
     app.router.add_get("/",            srv.handle_status_html)
     app.router.add_get("/timeline",    srv.handle_timeline_html)
     app.router.add_get("/api/status",  srv.handle_status_json)

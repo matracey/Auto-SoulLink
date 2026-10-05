@@ -2,5 +2,6 @@
 # OBS scene switcher are lazily imported and only needed if you turn those on:
 #   pip install "twitchio>=3.0" "simpleobsws>=1.4" psutil
 aiohttp
+aiohttp-session[secure]>=2.12
 Jinja2>=3.1
 aiohttp-jinja2>=1.5

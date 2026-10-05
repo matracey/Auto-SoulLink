@@ -51,6 +51,7 @@ except ImportError:
 import aiohttp_jinja2
 
 from server import calc_files
+from server.admin_auth import setup_admin_auth
 from server.http_safety import allow_hosts, csrf_protection, theme_cache
 from server.json_files import atomic_write_json
 from server.lua_literals import lua_comment, lua_string
@@ -2327,6 +2328,7 @@ async def main(host: str, port: int, public_host: str = ""):
     manager = RunManager(bind_host=host, manager_port=port, public_host=public_host)
     app = web.Application(middlewares=[csrf_protection, theme_cache, registry_errors])
     setup_templating(app)
+    setup_admin_auth(app)
 
     # Run-management routes
     app.router.add_get("/",                           manager.handle_index)

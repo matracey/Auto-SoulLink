@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="mk-page" style="max-width:34rem;margin:4rem auto">
+  <section class="mk-card">
+    <h1>Administrator login</h1>
+    <p class="mk-note">Enter the shared administrator key to manage runs and server settings. Public boards and overlays do not require it.</p>
+    {% if error %}<p class="mk-connlost" role="alert">{{ error }}</p>{% endif %}
+    <form method="post" action="/admin/login">
+      <input type="hidden" name="next" value="{{ next_path }}">
+      <label class="mk-field"><span>Administrator key</span><input name="admin_key" type="password" required autofocus autocomplete="current-password"></label>
+      <button class="mk-btn active" type="submit">Sign in</button>
+    </form>
+  </section>
+</main>
+{% endblock %}
