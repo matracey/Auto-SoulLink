@@ -45,7 +45,8 @@
 local SERVER_HOST = SLINK_HOST   or "127.0.0.1"
 local SERVER_PORT = SLINK_PORT   or 54321
 local PLAYER_ID   = SLINK_PLAYER or "a"    -- "a" = Player 1, "b" = Player 2
-SLINK_HOST = nil; SLINK_PORT = nil; SLINK_PLAYER = nil
+local INSTRUMENTATION_KEY = SLINK_INSTRUMENTATION_KEY or os.getenv("SLINK_INSTRUMENTATION_KEY")
+SLINK_HOST = nil; SLINK_PORT = nil; SLINK_PLAYER = nil; SLINK_INSTRUMENTATION_KEY = nil
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- ── Module loading ─────────────────────────────────────────────────────────────
@@ -920,6 +921,7 @@ local function on_frame()
             local snap = build_party_snapshot(false)
             for k in pairs(prev_party) do all_known_keys[k] = true end
             send({event="hello", area_id=prev_area, loc_name=prev_loc, rom_type=_ROM_TYPE,
+                  instrumentation_key=INSTRUMENTATION_KEY,
                   writes_enabled=writes_enabled, has_pokeballs=nuzlocke_active,
                   ball_count=countPokeballs(), party=snap,
                   trainer_name=M.readTrainerName(),

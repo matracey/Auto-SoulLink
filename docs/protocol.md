@@ -75,6 +75,7 @@ Sent on every TCP (re)connect edge — `hello_sent` is cleared on disconnect and
 | `event` | `"hello"` | yes | yes | dispatch | `state.py:544-546` |
 | `player` | `"a"\|"b"` | yes | yes | `handle_client` | `server.py:1680` |
 | `seq` | int | SHOULD | yes | dup guard | `server.py:1814` |
+| `instrumentation_key` | str | required when the run server configures player keys | yes | resolves and binds this TCP connection to one run/player slot. It is sent only on `hello`, including reconnect hellos; it is a plaintext source identifier, not a confidential credential. | `server.py:handle_client` |
 | `rom_type` | str | yes (routing) | yes | adapter selection, set-once commit, `is_rr = rom_type.endswith("_rr")` | `server.py:2230-2240`, `server.py:2321-2324` |
 | `party` | list[PartyEntry] (§4.1) | yes (may be `[]`) | yes | identity, `party_size`, `party_keys`, blobs, hp==0 faints, display backfill, `party_details` seed | `state.py:2148-2155`, `state.py:2170-2302`, `server.py:2371-2392` |
 | `ot_id` | str | SHOULD | **no** | identity lock (preferred over key-derived OT) | `state.py:2052` |

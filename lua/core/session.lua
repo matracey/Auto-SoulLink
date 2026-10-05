@@ -350,6 +350,10 @@ function Session.new(p)
         local f = game.hello_fields()
         if not f then return end
         if f.writes_enabled == nil then f.writes_enabled = self.writes_enabled end
+        local instrumentation_key = SLINK_INSTRUMENTATION_KEY or os.getenv("SLINK_INSTRUMENTATION_KEY")
+        if f.instrumentation_key == nil and instrumentation_key and instrumentation_key ~= "" then
+            f.instrumentation_key = instrumentation_key
+        end
         self.hello_sent = transmit("hello", f)
         if not self.hello_sent then return end
         local held = self.pre_hello

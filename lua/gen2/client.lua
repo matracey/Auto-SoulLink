@@ -2239,6 +2239,7 @@ function Client.new(p)
         local badges = reads.read_badges()
         local payload = {
             rom_type = self.rom_type, foundation = self.foundation, artifact_kind = self.artifact_kind,
+            instrumentation_key = SLINK_INSTRUMENTATION_KEY or os.getenv("SLINK_INSTRUMENTATION_KEY"),
             party = party, ot_id = player.ot_id, trainer_name = player.player_name,
             has_pokeballs = self.has_pokeballs, ball_count = ball_count(),
             -- Gen 2: two badge bytes; Kanto rides the protocol's second-region field

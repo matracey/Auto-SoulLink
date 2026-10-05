@@ -35,6 +35,7 @@ EVENTS: dict[str, tuple[dict[str, str], dict[str, str]]] = {
                "area_id": "str", "loc_name": "str",
                "rom_sha1": "str", "caps": "dict", "rom_content": "dict",
                "artifact_kind": "str", "foundation": "str", "trade_prepare": "bool",
+               "instrumentation_key": "str",
                "party_hidden": "bool", "trade_outstanding": "list",
                # card C5-10b capability declaration
                "battle_identity": "bool",

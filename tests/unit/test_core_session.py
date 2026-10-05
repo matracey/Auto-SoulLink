@@ -83,8 +83,9 @@ def _py(v):
 
 
 class World:
-    def __init__(self, battle_path=True):
+    def __init__(self, battle_path=True, instrumentation_key=None):
         self.lua = L = lupa.LuaRuntime(unpack_returned_tuples=True)
+        L.globals().SLINK_INSTRUMENTATION_KEY = instrumentation_key
         self.timeline: list[tuple] = []
         self.sent: list[dict] = []
         self.replies: list[str] = []
@@ -250,6 +251,15 @@ def test_hello_is_not_sent_while_the_driver_is_not_hello_ready():
     w.step(5)
     (hello,) = w.events("hello")
     assert hello["rom_type"] == "firered" and hello["party"] == [] and hello["writes_enabled"] is True
+
+
+def test_hello_carries_the_launcher_instrumentation_key():
+    w = World(instrumentation_key="player-a-key")
+
+    w.step()
+
+    (hello,) = w.events("hello")
+    assert hello["instrumentation_key"] == "player-a-key"
 
 
 def test_a_disconnect_drops_events_and_the_reconnect_hellos_again_with_seq_continuing():

@@ -1866,6 +1866,7 @@ function Client.new(p)
         end
         local payload = {
             rom_type = self.rom_type, foundation = self.foundation, artifact_kind = self.artifact_kind,
+            instrumentation_key = SLINK_INSTRUMENTATION_KEY or os.getenv("SLINK_INSTRUMENTATION_KEY"),
             party = party or arr({}), ot_id = reads.read_player_id(),
             trainer_name = reads.read_player_name(), has_pokeballs = self.has_pokeballs,
             ball_count = ball_count(), badges = reads.read_badges(), area_id = area_id, loc_name = loc,
