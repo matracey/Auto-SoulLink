@@ -51,7 +51,7 @@ except ImportError:
 import aiohttp_jinja2
 
 from server import calc_files
-from server.admin_auth import setup_admin_auth
+from server.admin_auth import ADMIN_KEY_ENV, setup_admin_auth
 from server.http_safety import allow_hosts, csrf_protection, theme_cache
 from server.json_files import atomic_write_json
 from server.lua_literals import lua_comment, lua_string
@@ -537,6 +537,14 @@ def _ensure_instrumentation_keys(run: dict) -> bool:
 
 def _public_run(run: dict) -> dict:
     return {key: value for key, value in run.items() if key != "instrumentation_keys"}
+
+
+def _internal_admin_headers(extra: dict | None = None) -> dict:
+    headers = dict(extra or {})
+    key = os.environ.get(ADMIN_KEY_ENV, "")
+    if key:
+        headers["Authorization"] = f"Bearer {key}"
+    return headers
 
 
 def _port_free(port: int) -> bool:
@@ -2163,8 +2171,10 @@ class RunManager:
         try:
             up = await session.request(
                 request.method, url, data=await request.read(),
-                headers={"Content-Type": request.headers.get("Content-Type", "application/json"),
-                         "Accept": request.headers.get("Accept", "*/*")},
+                headers=_internal_admin_headers({
+                    "Content-Type": request.headers.get("Content-Type", "application/json"),
+                    "Accept": request.headers.get("Accept", "*/*"),
+                }),
                 timeout=aiohttp.ClientTimeout(total=None, sock_read=None))
         except Exception as e:
             log.debug(f"Proxy {request.path} failed: {e}")
@@ -2221,7 +2231,9 @@ class RunManager:
         try:
             async with request.app["proxy_session"].request(
                 request.method, url, data=await request.read(),
-                headers={"Content-Type": request.headers.get("Content-Type", "application/json")},
+                headers=_internal_admin_headers({
+                    "Content-Type": request.headers.get("Content-Type", "application/json"),
+                }),
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as resp:
                 body = await resp.read()
@@ -2331,7 +2343,7 @@ class RunManager:
             async with request.app["proxy_session"].post(
                 url,
                 data=body,
-                headers={"Content-Type": "application/json"},
+                headers=_internal_admin_headers({"Content-Type": "application/json"}),
                 timeout=aiohttp.ClientTimeout(total=3),
             ) as resp:
                 data = await resp.json(content_type=None)

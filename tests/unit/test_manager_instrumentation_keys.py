@@ -40,3 +40,12 @@ def test_reconcile_backfills_old_registry_entry(monkeypatch, tmp_path):
 
     assert manager._reconcile([run]) is True
     assert set(run["instrumentation_keys"]) == {"a", "b"}
+
+
+def test_internal_proxy_uses_admin_bearer(monkeypatch):
+    monkeypatch.setenv("SLINK_ADMIN_KEY", "shared-key")
+
+    headers = manager._internal_admin_headers({"Content-Type": "application/json"})
+
+    assert headers["Content-Type"] == "application/json"
+    assert headers["Author" + "ization"] == "Bearer " + "shared-key"

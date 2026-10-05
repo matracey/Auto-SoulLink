@@ -1491,13 +1491,15 @@ class SLinkServer:
             parts.append(html.escape(self._run_name))
         return " — ".join(parts)
 
-    def _rail_ctx(self, *, page: str = "run", panel: str = "", tab: str = "") -> dict:
+    def _rail_ctx(self, *, page: str = "run", panel: str = "", tab: str = "",
+                  is_admin: bool = True) -> dict:
         """What _rail.html needs from a standalone run server: this one run, its own pages."""
         return {
             "standalone": True, "base": "", "tcp_port": self._tcp_port,
             "runs": [self._run_entry()], "run": self._run_entry(),
             "page": page, "panel": panel, "tab": tab, "pinned_run_id": None,
             "show_calc": bool(self._calc_profile()),
+            "is_admin": is_admin,
         }
 
     def _rom_label(self) -> str:
@@ -1511,7 +1513,8 @@ class SLinkServer:
     def _build_sidebar_html(self, request, active: str, **rail) -> str:
         """The rail, rendered to a string for the pages that carry it as `sidebar_html`."""
         env = aiohttp_jinja2.get_env(request.app)
-        return env.get_template("_rail.html").render(self._rail_ctx(page=active, **rail))
+        return env.get_template("_rail.html").render(
+            self._rail_ctx(page=active, is_admin=request.get("is_admin", True), **rail))
 
     def _panel_ctx(self, request, *, panel: str, label: str, title: str | None = None,
                    meta: str | None = None, tabs=None) -> dict:
@@ -1521,12 +1524,14 @@ class SLinkServer:
             tabs = [("Board", "/", False)]
             if self._calc_profile():
                 tabs.append(("Calc", "/calc/normal.html", panel == "calc"))
-            tabs.append(("Debug", "/debug", panel == "debug"))
+            if request.get("is_admin", True):
+                tabs.append(("Debug", "/debug", panel == "debug"))
             tabs.append(("Timeline", "/timeline", panel == "timeline"))
         run_panel = panel in ("calc", "debug", "timeline")
         ctx = self._rail_ctx(page="run" if run_panel else "broadcast",
                              panel=panel if run_panel else "",
-                             tab=panel if panel in ("twitch", "obs") else "")
+                             tab=panel if panel in ("twitch", "obs") else "",
+                             is_admin=request.get("is_admin", True))
         ctx.update({
             "page_title": self._page_title(), "theme": resolve_theme(request),
             "is_stream": False, "hide_chrome": False,
@@ -5706,6 +5711,13 @@ class SLinkServer:
 # ── entrypoint ─────────────────────────────────────────────────────────────────
 
 
+def _run_public_get(request) -> bool:
+    path = request.path
+    if path in {"/", "/timeline", "/api/status", "/api/events", "/api/calc/mons"}:
+        return True
+    return path.startswith(("/stream", "/calc/"))
+
+
 def build_app(srv):
     """Build the aiohttp app with every route registered.
 
@@ -5714,7 +5726,7 @@ def build_app(srv):
     """
     app = aiohttp_web.Application(middlewares=[csrf_protection, theme_cache])
     setup_templating(app)
-    setup_admin_auth(app)
+    setup_admin_auth(app, _run_public_get)
     app.router.add_get("/",            srv.handle_status_html)
     app.router.add_get("/timeline",    srv.handle_timeline_html)
     app.router.add_get("/api/status",  srv.handle_status_json)

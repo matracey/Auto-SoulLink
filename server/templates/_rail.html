@@ -84,6 +84,7 @@
       <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M5 1h2v2H5zM9 1h2v2H9zM1 4h14v10H1zM6 6v6l5-3z"/></svg>
       <span class="mk-rail-label">Overlays</span>
     </a>
+    {% if is_admin is not defined or is_admin %}
     <a class="mk-rail-item sub{% if tab == 'twitch' %} active{% endif %}" href="/twitch"{% if tab == 'twitch' %} aria-current="page"{% endif %}>
       <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M2 2v8h3v3l3-3h6V2zm3 3h1v3H5zm4 0h1v3H9z"/></svg>
       <span class="mk-rail-label">Twitch</span>
@@ -96,6 +97,7 @@
       <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M11 1a4 4 0 00-3.8 5.2L1 12.4 3.6 15l6.2-6.2A4 4 0 1011 1zm0 2a2 2 0 110 4 2 2 0 010-4z"/></svg>
       <span class="mk-rail-label">Patcher</span>
     </a>
+    {% endif %}
     {% endif %}
 
     <div class="mgr-rail-theme"></div>
