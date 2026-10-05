@@ -4,10 +4,12 @@ param environmentName string
 param environmentStorageName string
 param identityName string
 param containerImage string
+param registryServer string
 @secure()
 param adminKey string
 param customDomainName string
 param bindCustomDomain bool
+param registerCustomDomain bool
 param managedCertificateId string
 param tcpPorts array
 param cpuCores int
@@ -46,6 +48,12 @@ resource app 'Microsoft.App/containerApps@2025-01-01' = {
           value: adminKey
         }
       ]
+      registries: [
+        {
+          server: registryServer
+          identity: identity.id
+        }
+      ]
       ingress: {
         external: true
         targetPort: 8090
@@ -76,6 +84,11 @@ resource app 'Microsoft.App/containerApps@2025-01-01' = {
           {
             bindingType: 'SniEnabled'
             certificateId: managedCertificateId
+            name: customDomainName
+          }
+        ] : registerCustomDomain ? [
+          {
+            bindingType: 'Disabled'
             name: customDomainName
           }
         ] : []

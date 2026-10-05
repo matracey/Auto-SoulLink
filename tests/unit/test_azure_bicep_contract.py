@@ -8,10 +8,16 @@ def text(path):
     return (INFRA / path).read_text(encoding="utf-8")
 
 
-def test_core_template_defaults_to_east_us_2_and_deterministic_names():
+def test_core_template_defaults_to_east_us_2_and_project_resource_names():
     main = text("main.bicep")
     assert "param location string = 'eastus2'" in main
     assert "uniqueString(subscription().id, resourceGroup().id, location, environmentName)" in main
+    assert "autoSoulLink-vnet-${environmentName}" in main
+    assert "autoSoulLink-logAnalytics-${environmentName}" in main
+    assert "autoSoulLink-managedIdentity-${environmentName}" in main
+    assert "auto-soullink-container-app-${toLower(environmentName)}" in main
+    assert "autosoullinkst${toLower(environmentName)}${take(resourceToken, 5)}" in main
+    assert "autosoullinkacr${toLower(environmentName)}${take(resourceToken, 5)}" in main
 
 
 def test_network_uses_dedicated_delegated_subnet():
@@ -60,6 +66,8 @@ def test_container_app_mounts_data_and_configures_runtime():
         assert value in app
     assert "mountPath: '/data'" in app
     assert "storageType: 'AzureFile'" in app
+    assert "registries:" in app
+    assert "identity: identity.id" in app
 
 
 def test_container_app_has_liveness_and_readiness_probes():
@@ -94,3 +102,12 @@ def test_main_template_binds_domain_only_when_enabled():
     assert "param bindCustomDomain bool = false" in main
     assert "param managedCertificateId string = ''" in main
     assert "customDomains: bindCustomDomain ?" in app
+
+
+def test_registry_is_private_and_grants_managed_identity_pull():
+    registry = text("modules/registry.bicep")
+    assert "sku:" in registry and "name: 'Basic'" in registry
+    assert "adminUserEnabled: false" in registry
+    assert "anonymousPullEnabled: false" in registry
+    assert "7f951dda-4ed3-4680-a7ca-43fe172d538d" in registry
+    assert "principalId: pullPrincipalId" in registry

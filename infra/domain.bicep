@@ -3,6 +3,12 @@ targetScope = 'resourceGroup'
 @description('Azure region containing the Container Apps environment.')
 param location string = 'eastus2'
 
+@description('Project name used in the managed certificate resource name.')
+param projectName string = 'autoSoulLink'
+
+@description('Deployment environment suffix.')
+param environmentName string = 'prod'
+
 @description('Name of the existing Container Apps managed environment.')
 param containerEnvironmentName string
 
@@ -30,7 +36,7 @@ param tags object = {
 }
 
 var relativeRecordName = replace(customDomainName, '.${dnsZoneName}', '')
-var certificateName = 'azcrt${uniqueString(subscription().id, resourceGroup().id, customDomainName)}'
+var certificateName = toLower('${projectName}-managed-cert-${environmentName}')
 
 module dns 'modules/dns.bicep' = {
   name: 'custom-domain-dns'

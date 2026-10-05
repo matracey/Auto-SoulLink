@@ -18,8 +18,11 @@ param tags object = {
 @minValue(1)
 param fileShareQuotaGiB int = 5
 
-@description('Public GHCR image tag or digest to deploy.')
-param containerImage string = 'ghcr.io/matracey/auto-soullink:latest'
+@description('Optional external image tag or digest. Empty uses the provisioned private ACR image.')
+param containerImage string = ''
+
+@description('Provision base resources without the app so ACR can build the first image.')
+param deployApp bool = true
 
 @secure()
 @description('Shared administrator key. Pass this at deployment time; never commit it.')
@@ -48,6 +51,9 @@ param containerSize string = 'small'
 @description('Bind the custom domain after its managed certificate has been issued.')
 param bindCustomDomain bool = false
 
+@description('Register the custom hostname without TLS before requesting its managed certificate.')
+param registerCustomDomain bool = false
+
 @description('Managed certificate resource ID returned by infra/domain.bicep.')
 param managedCertificateId string = ''
 
@@ -55,13 +61,14 @@ var resourceToken = uniqueString(subscription().id, resourceGroup().id, location
 var cpuCores = containerSize == 'large' ? 4 : containerSize == 'medium' ? 2 : 1
 var memorySize = containerSize == 'large' ? '8Gi' : containerSize == 'medium' ? '4Gi' : '2Gi'
 var names = {
-  virtualNetwork: 'azvnt${resourceToken}'
-  subnet: 'azsnt${resourceToken}'
-  logAnalytics: 'azlog${resourceToken}'
-  storageAccount: 'azst${resourceToken}'
-  managedIdentity: 'azid${resourceToken}'
-  containerEnvironment: 'azcae${resourceToken}'
-  containerApp: 'azapp${resourceToken}'
+  virtualNetwork: 'autoSoulLink-vnet-${environmentName}'
+  subnet: 'autoSoulLink-subnet-${environmentName}'
+  logAnalytics: 'autoSoulLink-logAnalytics-${environmentName}'
+  storageAccount: 'autosoullinkst${toLower(environmentName)}${take(resourceToken, 5)}'
+  containerRegistry: 'autosoullinkacr${toLower(environmentName)}${take(resourceToken, 5)}'
+  managedIdentity: 'autoSoulLink-managedIdentity-${environmentName}'
+  containerEnvironment: 'auto-soullink-container-environment-${toLower(environmentName)}'
+  containerApp: 'auto-soullink-container-app-${toLower(environmentName)}'
 }
 
 module network 'modules/network.bicep' = {
@@ -103,6 +110,16 @@ module identity 'modules/identity.bicep' = {
   }
 }
 
+module registry 'modules/registry.bicep' = {
+  name: 'container-registry'
+  params: {
+    location: location
+    registryName: names.containerRegistry
+    pullPrincipalId: identity.outputs.principalId
+    tags: tags
+  }
+}
+
 module environment 'modules/environment.bicep' = {
   name: 'container-environment'
   params: {
@@ -117,7 +134,11 @@ module environment 'modules/environment.bicep' = {
   }
 }
 
-module app 'modules/app.bicep' = {
+var effectiveContainerImage = empty(containerImage)
+  ? '${registry.outputs.loginServer}/auto-soullink:latest'
+  : containerImage
+
+module app 'modules/app.bicep' = if (deployApp) {
   name: 'container-app'
   params: {
     location: location
@@ -125,10 +146,12 @@ module app 'modules/app.bicep' = {
     environmentName: environment.outputs.environmentName
     environmentStorageName: environment.outputs.environmentStorageName
     identityName: names.managedIdentity
-    containerImage: containerImage
+    containerImage: effectiveContainerImage
+    registryServer: registry.outputs.loginServer
     adminKey: adminKey
     customDomainName: customDomainName
     bindCustomDomain: bindCustomDomain
+    registerCustomDomain: registerCustomDomain
     managedCertificateId: managedCertificateId
     tcpPorts: tcpPorts
     cpuCores: cpuCores
@@ -142,9 +165,11 @@ output containerEnvironmentId string = environment.outputs.environmentId
 output containerEnvironmentDefaultDomain string = environment.outputs.defaultDomain
 output containerEnvironmentStaticIp string = environment.outputs.staticIp
 output managedIdentityId string = identity.outputs.identityId
+output containerRegistryName string = registry.outputs.registryName
+output containerRegistryLoginServer string = registry.outputs.loginServer
 output storageAccountName string = storage.outputs.storageAccountName
 output fileShareName string = storage.outputs.shareName
-output containerAppName string = app.outputs.appName
-output containerAppFqdn string = app.outputs.fqdn
-output customDomainVerificationId string = app.outputs.customDomainVerificationId
+output containerAppName string = deployApp ? app!.outputs.appName : ''
+output containerAppFqdn string = deployApp ? app!.outputs.fqdn : ''
+output customDomainVerificationId string = deployApp ? app!.outputs.customDomainVerificationId : ''
 output gameTcpPorts array = tcpPorts
