@@ -75,3 +75,22 @@ def test_consumption_size_derives_valid_cpu_memory_pairs():
     assert "containerSize == 'medium' ? 2 : 1" in main
     assert "containerSize == 'large' ? '8Gi'" in main
     assert "containerSize == 'medium' ? '4Gi' : '2Gi'" in main
+
+
+def test_domain_template_uses_existing_azure_dns_zone_and_managed_certificate():
+    domain = text("domain.bicep")
+    dns = text("modules/dns.bicep")
+    assert "Microsoft.Network/dnsZones@2018-05-01" in dns
+    assert "Microsoft.Network/dnsZones/CNAME@2018-05-01" in dns
+    assert "Microsoft.Network/dnsZones/TXT@2018-05-01" in dns
+    assert "asuid.${relativeRecordName}" in dns
+    assert "domainControlValidation: 'CNAME'" in domain
+    assert "output managedCertificateId" in domain
+
+
+def test_main_template_binds_domain_only_when_enabled():
+    main = text("main.bicep")
+    app = text("modules/app.bicep")
+    assert "param bindCustomDomain bool = false" in main
+    assert "param managedCertificateId string = ''" in main
+    assert "customDomains: bindCustomDomain ?" in app
