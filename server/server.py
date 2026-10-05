@@ -3092,6 +3092,18 @@ class SLinkServer:
                 }
                 for area, players in s.pending_captures.items()
             },
+            "encounter_locks": {
+                area: {
+                    pid: {
+                        "species": lock.species,
+                        "level": lock.level,
+                        "species_name": self.adapter_for(pid).species_name(lock.species),
+                        "sprite_html": self._get_sprite_html(lock.species, 0, pid),
+                    }
+                    for pid, lock in players.items()
+                }
+                for area, players in s.encounter_locks.items()
+            },
             "rules": {
                 "species_lock": s.species_lock,
                 "gender_lock": s.gender_lock,
@@ -5549,6 +5561,12 @@ class SLinkServer:
         s.links.append(entry)
         s._index_entry(entry)
         s.area_states[area] = AreaStatus.LINKED
+        # A manual link resolves the area just like normal pair formation. Leaving
+        # its first-species lock behind renders a contradictory "Seeking ..." row
+        # on an already-linked area.
+        s.encounter_locks.pop(area, None)
+        s.retry_areas["a"].discard(area)
+        s.retry_areas["b"].discard(area)
 
         # Clean up pending_captures for both mons
         for pid, _key, pend_area in [("a", a_key, a_pend_area), ("b", b_key, b_pend_area)]:

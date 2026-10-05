@@ -64,6 +64,7 @@ def empty_status_payload() -> dict:
         "links": [],
         "area_states": {},
         "pending_captures": {},
+        "encounter_locks": {},
         "rules": {
             "species_lock": False,
             "gender_lock": False,

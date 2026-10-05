@@ -121,6 +121,12 @@ class MonInfo:
 
 
 @dataclass
+class EncounterLock:
+    species: int
+    level: int = 0
+
+
+@dataclass
 class LinkEntry:
     area_id: str
     a: MonInfo | None  # Player A's mon; None if A didn't capture
@@ -206,6 +212,8 @@ class SoulLinkState:
         self.area_states: dict[str, AreaStatus] = {}
         # area_id → {player_id → MonInfo} for captures not yet linked
         self.pending_captures: dict[str, dict[str, MonInfo]] = {}
+        # area_id -> player_id -> the first eligible species that player must catch.
+        self.encounter_locks: dict[str, dict[str, EncounterLock]] = {}
         # KEY-SCOPE: {player: {monKey: LinkEntry}}. A mon's identity is scoped per player: two
         # players may hold equal keys (an in-game NPC-trade or fixed-DV gift mon), one may not.
         # entry_for() is the lookup; _key_index is a read-only any-player view for display.
@@ -1855,6 +1863,20 @@ class SoulLinkState:
                     pid: MonInfo(**mon_data)
                     for pid, mon_data in players.items()
                 }
+            for area_id, players in data.get("encounter_locks", {}).items():
+                if not isinstance(area_id, str) or not isinstance(players, dict):
+                    continue
+                locks = {}
+                for pid, lock_data in players.items():
+                    if pid not in ("a", "b") or not isinstance(lock_data, dict):
+                        continue
+                    species = lock_data.get("species")
+                    level = lock_data.get("level", 0)
+                    if (isinstance(species, int) and not isinstance(species, bool) and species > 0
+                            and isinstance(level, int) and not isinstance(level, bool) and level >= 0):
+                        locks[pid] = EncounterLock(species=species, level=level)
+                if locks:
+                    state.encounter_locks[area_id] = locks
             state.mon_stats = state._load_mon_stats(data.get("mon_stats") or {})
             # Restore Pokéball gate; default True for both if any links exist
             # (backwards-compat: old saves without this field).
@@ -4789,6 +4811,13 @@ class SoulLinkState:
                     for player_id, mon in players.items()
                 }
                 for area_id, players in self.pending_captures.items()
+            },
+            "encounter_locks": {
+                area_id: {
+                    player_id: asdict(lock)
+                    for player_id, lock in players.items()
+                }
+                for area_id, players in self.encounter_locks.items()
             },
             # Cached party stats per monKey (echoed in party_mon commands after box_to_party).
             "mon_stats": self.mon_stats,
