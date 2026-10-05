@@ -91,6 +91,8 @@ For a player on another machine, set **Players connect to** under Launchers to a
 
 Already playing in standalone mGBA? Follow [Move a Radical Red save from mGBA to BizHawk](docs/mgba-to-bizhawk.md). Battery saves transfer; emulator savestates do not.
 
+Hosting the Manager on Azure? Follow [Deploy Auto-SoulLink to Azure Container Apps](docs/azure-deployment.md). The deployment keeps public boards and overlays on HTTPS, protects controls with one administrator key, persists run data on Azure Files, and supports five simultaneous game connections.
+
 Each run gets its own board, on port 8081 and up. Port 8080 is only used when you start a single run by hand with `python -m server.server`.
 
 ## Games

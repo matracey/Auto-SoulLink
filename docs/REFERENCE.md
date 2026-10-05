@@ -126,6 +126,14 @@ A client diffs RAM each frame and sends an event only when something changes, pl
 
 State persists to `links.json` on every mutation. A background task copies `links.json` and `events.json` into `backups/` every 5 minutes, keeping 6 slots. `memorial.json` is the log of retired pairs.
 
+### Hosted access
+
+When `SLINK_ADMIN_KEY` is unset, the Manager and run server retain their trusted-local behavior. When configured, public GET access is limited to boards, timelines, status/SSE, calculators, health checks and stream overlays. Run lifecycle actions, launchers and player packages, ROM tools, reset/debug/rollback, OBS and Twitch controls require either the encrypted administrator session cookie or `Authorization: Bearer <administrator key>`.
+
+Each managed run stores separate Player A and Player B instrumentation keys. Generated launchers send the relevant key only in `hello`; the run server binds that TCP socket to the key-derived player slot until disconnect. A new socket may reconnect with the same key. These keys cross the existing game TCP connection in plaintext and identify telemetry sources; they do not provide transport confidentiality.
+
+Container deployments may set `SLINK_DATA_DIR`, `SLINK_ROM_DIR`, `SLINK_PUBLIC_HOST` and `SLINK_TCP_PORT_POOL`. A configured TCP pool leases ports only to active runs. Desired run state survives Manager/container restarts and previously active children are respawned on startup.
+
 ### Adapters
 
 Game-specific behaviour lives behind two abstract classes in `server/adapters/base.py`:
@@ -398,6 +406,10 @@ The OBS event names above are a separate set derived on the server, even where a
 | Path | Method | Description |
 |---|---|---|
 | `/` | GET | The board. |
+| `/healthz` | GET | Process liveness for container probes. |
+| `/readyz` | GET | Readiness: mounted data directory is writable and state persistence has no standing error. |
+| `/admin/login` | GET, POST | Shared administrator-key login; sets an encrypted session cookie. |
+| `/admin/logout` | POST | Clear the administrator session. |
 | `/timeline` | GET | The run's timeline. |
 | `/debug` | GET | Debug console. |
 | `/twitch` | GET | Twitch bot settings and activity. |
@@ -460,6 +472,10 @@ curl -X POST http://localhost:8080/api/debug/queue_command -H "Content-Type: app
 | Path | Method | Description |
 |---|---|---|
 | `/` | GET | The first running run's board, or the New-run form when there are no runs. |
+| `/healthz` | GET | Manager process liveness for container probes. |
+| `/readyz` | GET | Readiness: registry is readable and the mounted Manager data directory is writable. |
+| `/admin/login` | GET, POST | Shared administrator-key login; sets an encrypted session cookie. |
+| `/admin/logout` | POST | Clear the administrator session. |
 | `/new` | GET | New-run form: family, options with reasons, the Cartridges step (pick, patch, randomize, presets, `.rnqs` import and export). |
 | `/runs/{run_id}` | GET | A run's page: start, stop, pin, launchers, cartridges and its board (live, or as persisted once stopped). |
 | `/runs/{run_id}/board` | GET | The board fragment the run page polls. |
