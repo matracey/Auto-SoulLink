@@ -13,7 +13,12 @@ from server.manager import _build_launcher
 
 lupa = pytest.importorskip("lupa")
 
-RUN = {"run_id": "rid-test", "name": "Trial Run", "tcp_port": 54321}
+RUN = {
+    "run_id": "rid-test",
+    "name": "Trial Run",
+    "tcp_port": 54321,
+    "instrumentation_keys": {"a": "player-a-key", "b": "player-b-key"},
+}
 
 
 def _parse(src: str) -> None:
@@ -46,6 +51,8 @@ def test_launcher_embeds_connect_params():
     assert 'SLINK_HOST   = "192.168.1.10"' in src
     assert "SLINK_PORT   = 54321" in src
     assert 'SLINK_PLAYER = "a"' in src
+    assert 'SLINK_INSTRUMENTATION_KEY = "player-a-key"' in src
+    assert "player-b-key" not in src
 
 
 def test_launcher_prefers_packaged_runtime_over_cached_path():

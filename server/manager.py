@@ -23,6 +23,7 @@ import logging
 import os
 import pathlib
 import re
+import secrets
 import shutil
 import signal
 import stat
@@ -518,6 +519,25 @@ def _find_run(runs: list[dict], run_id: str) -> dict | None:
     return None
 
 
+def _ensure_instrumentation_keys(run: dict) -> bool:
+    keys = run.get("instrumentation_keys")
+    if not isinstance(keys, dict):
+        keys = {}
+    changed = False
+    for player in ("a", "b"):
+        if not isinstance(keys.get(player), str) or not keys[player]:
+            keys[player] = secrets.token_urlsafe(32)
+            changed = True
+    if changed or run.get("instrumentation_keys") is not keys:
+        run["instrumentation_keys"] = keys
+        changed = True
+    return changed
+
+
+def _public_run(run: dict) -> dict:
+    return {key: value for key, value in run.items() if key != "instrumentation_keys"}
+
+
 def _port_free(port: int) -> bool:
     """Whether this machine will let a server bind the port right now. The registry only
     knows this Manager's runs; a hand-started server, another Manager's data dir, or any
@@ -559,6 +579,7 @@ local SLINK_ROOT = nil  -- e.g. "C:/SLink/"
 SLINK_HOST   = {host}
 SLINK_PORT   = {tcp_port}
 SLINK_PLAYER = "{player}"
+SLINK_INSTRUMENTATION_KEY = {instrumentation_key}
 
 -- Config file lives next to this launcher and caches the project root path.
 local _launcher_dir = ((debug.getinfo(1, "S") or {{}}).source or ""):match("@(.+[\\\\/])") or ""
@@ -630,6 +651,7 @@ def _build_launcher(run: dict, player: str, host: str) -> str:
         host=lua_string(host),
         tcp_port=run["tcp_port"],
         player=player,
+        instrumentation_key=lua_string(run.get("instrumentation_keys", {}).get(player, "")),
     )
 
 
@@ -970,6 +992,10 @@ def _adopt_orphans(runs: list[dict]) -> bool:
             "http_port":    http_port,
             "status":       "stopped",
             "pid":          None,
+            "instrumentation_keys": {
+                "a": secrets.token_urlsafe(32),
+                "b": secrets.token_urlsafe(32),
+            },
             **run_options(rules),
         }
         runs.append(run)
@@ -984,6 +1010,8 @@ def _reconcile(runs: list[dict]) -> bool:
     """Check live processes; update status for dead ones. Adopt orphan dirs. Returns True if any changed."""
     changed = False
     for run in runs:
+        if _ensure_instrumentation_keys(run):
+            changed = True
         if run["status"] == "running" and not _is_alive(run.get("pid"), run.get("pid_created")):
             run["status"] = "stopped"
             run["pid"] = None
@@ -1262,7 +1290,7 @@ class RunManager:
         return r
 
     async def handle_list(self, request: web.Request) -> web.Response:
-        return web.json_response({"runs": self._get()})
+        return web.json_response({"runs": [_public_run(run) for run in self._get()]})
 
     async def handle_new(self, request: web.Request) -> web.Response:
         try:
@@ -1302,6 +1330,10 @@ class RunManager:
             "http_port":  http_port,
             "status":     "stopped",
             "pid":        None,
+            "instrumentation_keys": {
+                "a": secrets.token_urlsafe(32),
+                "b": secrets.token_urlsafe(32),
+            },
             **run_options(body),
             "game": game,  # the game FAMILY
         }
@@ -1322,7 +1354,7 @@ class RunManager:
                 start_error = str(e)
                 log.error(f"Failed to auto-start run {run_id}: {e}")
 
-        return web.json_response({"ok": True, "run": run, "start_error": start_error})
+        return web.json_response({"ok": True, "run": _public_run(run), "start_error": start_error})
 
     async def handle_start(self, request: web.Request) -> web.Response:
         run_id = request.match_info["run_id"]
@@ -1409,7 +1441,7 @@ class RunManager:
         player = request.match_info["player"]
         if player not in ("a", "b"):
             return web.json_response({"ok": False, "error": "player must be 'a' or 'b'"}, status=400)
-        runs = _load_registry()
+        runs = self._get()
         run = _find_run(runs, run_id)
         if run is None:
             return web.json_response({"ok": False, "error": "Run not found"}, status=404)
@@ -1429,7 +1461,7 @@ class RunManager:
         player = request.match_info["player"]
         if player not in ("a", "b"):
             return web.json_response({"ok": False, "error": "player must be 'a' or 'b'"}, status=400)
-        run = _find_run(_load_registry(), request.match_info["run_id"])
+        run = _find_run(self._get(), request.match_info["run_id"])
         if run is None:
             return web.json_response({"ok": False, "error": "Run not found"}, status=404)
         host = self._connect_host()[0]
