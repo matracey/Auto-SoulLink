@@ -145,6 +145,7 @@
         <span class="mk-meta"><code>tcp {{ run.tcp_port }} · http {{ run.http_port }}</code></span>
         {% if run.game_label %}<span class="mk-meta">· {{ run.game_label }}</span>{% endif %}
         <span class="mk-hdr-spacer"></span>
+        {% if is_admin %}
         {% if run.status != 'running' and run.status != 'archived' %}<button class="mk-btn primary" :disabled="busy" @click="act('start')">Start</button>{% endif %}
         {% if run.status == 'running' %}<button class="mk-btn" :disabled="busy" @click="act('stop')">Stop</button>{% endif %}
         {% if run.status == 'running' %}<button class="mk-btn{% if run.run_id == pinned_run_id %} active{% endif %}" :disabled="busy" @click="pin()">{% if run.run_id == pinned_run_id %}Pinned{% else %}Pin{% endif %}</button>{% endif %}
@@ -176,6 +177,7 @@
         </span>
         {% if run.status != 'archived' %}<button class="mk-btn" :disabled="busy" @click="act('archive', 'Archive run ' + {{ run.name | tojson | forceescape }} + '? The server stops; the data is kept.')">Archive</button>{% endif %}
         <button class="mk-btn danger" :disabled="busy" @click="act('delete', 'Delete run ' + {{ run.name | tojson | forceescape }} + '? This permanently deletes all run data.')">Delete</button>
+        {% endif %}
       </header>
 
       <div class="mk-page">

@@ -13,6 +13,7 @@ from aiohttp_session.cookie_storage import EncryptedCookieStorage
 ADMIN_KEY_ENV = "SLINK_ADMIN_KEY"
 ADMIN_COOKIE_SECURE_ENV = "SLINK_ADMIN_COOKIE_SECURE"
 ADMIN_ENABLED = web.AppKey("admin_enabled", bool)
+ADMIN_PUBLIC_GET = web.AppKey("admin_public_get", object)
 _COOKIE_NAME = "slink-admin"
 _SESSION_MAX_AGE = 12 * 60 * 60
 
@@ -45,6 +46,28 @@ async def is_admin(request: web.Request) -> bool:
         return True
     session = await get_session(request)
     return session.get("admin") is True
+
+
+@web.middleware
+async def admin_guard(request: web.Request, handler):
+    if request.path.startswith("/static/") or request.path in {
+        "/admin/login", "/admin/logout",
+    }:
+        return await handler(request)
+
+    admin = await is_admin(request)
+    request["is_admin"] = admin
+    public_get = request.app.get(ADMIN_PUBLIC_GET)
+    if admin or (request.method in {"GET", "HEAD", "OPTIONS"}
+                 and public_get is not None and public_get(request)):
+        return await handler(request)
+    if request.path.startswith("/api/") or request.method not in {"GET", "HEAD"}:
+        return web.json_response(
+            {"ok": False, "error": "Administrator key required"},
+            status=401,
+            headers={"Cache-Control": "no-store"},
+        )
+    raise web.HTTPFound(login_url(request))
 
 
 async def handle_login_page(request: web.Request) -> web.Response:
@@ -100,9 +123,10 @@ def login_url(request: web.Request) -> str:
     return "/admin/login?" + urlencode({"next": request.rel_url.path_qs})
 
 
-def setup_admin_auth(app: web.Application) -> None:
+def setup_admin_auth(app: web.Application, public_get=None) -> None:
     key = _configured_key()
     app[ADMIN_ENABLED] = bool(key)
+    app[ADMIN_PUBLIC_GET] = public_get or (lambda _request: False)
     cookie_key = hashlib.sha256((key or "local-development").encode()).digest()
     setup(
         app,
@@ -115,6 +139,7 @@ def setup_admin_auth(app: web.Application) -> None:
             samesite="Lax",
         ),
     )
+    app.middlewares.append(admin_guard)
     app.router.add_get("/admin/login", handle_login_page)
     app.router.add_post("/admin/login", handle_login)
     app.router.add_post("/admin/logout", handle_logout)

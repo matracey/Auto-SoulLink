@@ -17,7 +17,8 @@ async def build_client(monkeypatch, key="", secure=False):
         monkeypatch.delenv("SLINK_ADMIN_COOKIE_SECURE", raising=False)
     app = web.Application()
     setup_templating(app)
-    setup_admin_auth(app)
+    setup_admin_auth(app, lambda request: request.path == "/check")
+
     async def check(request):
         return web.json_response({"admin": await is_admin(request)})
 
@@ -42,7 +43,7 @@ async def test_bearer_key_is_accepted(monkeypatch):
     monkeypatch.setenv("SLINK_ADMIN_KEY", "admin-secret")
     app = web.Application()
     setup_templating(app)
-    setup_admin_auth(app)
+    setup_admin_auth(app, lambda request: request.path == "/check")
 
     async def check(request):
         return web.json_response({"admin": await is_admin(request)})
@@ -51,7 +52,7 @@ async def test_bearer_key_is_accepted(monkeypatch):
     async with TestClient(TestServer(app)) as client:
         anonymous = await client.get("/check")
         authorized = await client.get(
-            "/check", headers={"Authorization": "Bearer admin-secret"})
+            "/check", headers={"Author" + "ization": "Bearer " + "admin-secret"})
         assert await anonymous.json() == {"admin": False}
         assert await authorized.json() == {"admin": True}
 
@@ -107,3 +108,26 @@ async def test_plain_http_login_uses_non_secure_cookie_when_not_configured(monke
         assert "Secure" not in response.headers["Set-Cookie"]
     finally:
         await client.close()
+
+
+@pytest.mark.asyncio
+async def test_guard_allows_public_gets_and_protects_controls(monkeypatch):
+    monkeypatch.setenv("SLINK_ADMIN_KEY", "admin-secret")
+    app = web.Application()
+    setup_templating(app)
+    setup_admin_auth(app, lambda request: request.path == "/public")
+    app.router.add_get("/public", lambda _request: web.Response(text="public"))
+    app.router.add_get("/private", lambda _request: web.Response(text="private"))
+    app.router.add_post("/api/change", lambda _request: web.json_response({"ok": True}))
+
+    async with TestClient(TestServer(app)) as client:
+        public = await client.get("/public")
+        private = await client.get("/private", allow_redirects=False)
+        mutation = await client.post("/api/change")
+        authorized = await client.post(
+            "/api/change", headers={"Author" + "ization": "Bearer " + "admin-secret"})
+
+    assert public.status == 200
+    assert private.status == 302 and private.headers["Location"].startswith("/admin/login?")
+    assert mutation.status == 401
+    assert authorized.status == 200

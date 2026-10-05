@@ -1038,6 +1038,23 @@ _STATUS_BADGE = {
 }
 
 
+def _manager_public_get(request: web.Request) -> bool:
+    path = request.path
+    if path in {"/", "/api/runs", "/api/status", "/broadcast"}:
+        return True
+    if path.startswith(("/stream", "/calc/")):
+        return True
+    if re.fullmatch(r"/api/runs/[^/]+/live", path):
+        return True
+    if re.fullmatch(r"/api/runs/[^/]+/player-pack/[ab]", path):
+        return True
+    if re.fullmatch(r"/runs/[^/]+(?:/board|/timeline)?", path):
+        return True
+    if re.fullmatch(r"/runs/[^/]+/calc(?:/.*)?", path):
+        return True
+    return bool(re.fullmatch(r"/runs/[^/]+/api/(?:status|events|calc/mons)", path))
+
+
 class RunManager:
     def __init__(self, bind_host: str, manager_port: int = MANAGER_HTTP_PORT, public_host: str = ""):
         self.bind_host = bind_host
@@ -1151,6 +1168,7 @@ class RunManager:
             "manager_port": self.manager_port,
             # Links to a run's own port (calc, debug) use the host the browser used for us.
             "host":         (request.host or "127.0.0.1").split(":")[0] or "127.0.0.1",
+            "is_admin":     request.get("is_admin", True),
         }
         if run:
             ctx.update(self._board_context(run, status))
@@ -2001,6 +2019,7 @@ class RunManager:
         """What _rail.html needs, for the pages that are not the run shell."""
         return {
             "runs": [self._augment_for_template(r) for r in runs],
+            "is_admin": request.get("is_admin", True),
             "run": None,
             "page": page, "standalone": False,
             "pinned_run_id": self._stream_pin_id,
@@ -2328,7 +2347,7 @@ async def main(host: str, port: int, public_host: str = ""):
     manager = RunManager(bind_host=host, manager_port=port, public_host=public_host)
     app = web.Application(middlewares=[csrf_protection, theme_cache, registry_errors])
     setup_templating(app)
-    setup_admin_auth(app)
+    setup_admin_auth(app, _manager_public_get)
 
     # Run-management routes
     app.router.add_get("/",                           manager.handle_index)
