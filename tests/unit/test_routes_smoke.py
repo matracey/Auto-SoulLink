@@ -132,11 +132,11 @@ async def test_status_json_is_wellformed(client):
     assert len(data["links"]) == 2
 
 
-# Every GET route on the run server (70 GET routes, including administrator login). Routes are walked off
+# Every GET route on the run server (72 GET routes, including auth and health). Routes are walked off
 # the live router above, which is the right way to cover new ones -- and exactly the wrong way to
 # notice that collapsing nine pages into three quietly dropped sixty parametrized tests. Change
 # this number on purpose, in the same commit that changes the router.
-EXPECTED_GET_ROUTES = 70
+EXPECTED_GET_ROUTES = 72
 
 
 def test_route_count_changes_are_deliberate():

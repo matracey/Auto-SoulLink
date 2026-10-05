@@ -52,6 +52,7 @@ import aiohttp_jinja2
 
 from server import calc_files
 from server.admin_auth import ADMIN_KEY_ENV, setup_admin_auth
+from server.health import writable_directory
 from server.http_safety import allow_hosts, csrf_protection, theme_cache
 from server.json_files import atomic_write_json
 from server.lua_literals import lua_comment, lua_string
@@ -1118,7 +1119,7 @@ _STATUS_BADGE = {
 
 def _manager_public_get(request: web.Request) -> bool:
     path = request.path
-    if path in {"/", "/api/runs", "/api/status", "/broadcast"}:
+    if path in {"/", "/healthz", "/readyz", "/api/runs", "/api/status", "/broadcast"}:
         return True
     if path.startswith(("/stream", "/calc/")):
         return True
@@ -1483,6 +1484,20 @@ class RunManager:
 
     async def handle_list(self, request: web.Request) -> web.Response:
         return web.json_response({"runs": [_public_run(run) for run in self._get()]})
+
+    async def handle_healthz(self, request: web.Request) -> web.Response:
+        return web.json_response({"ok": True})
+
+    async def handle_readyz(self, request: web.Request) -> web.Response:
+        try:
+            _load_registry()
+        except RegistryError as exc:
+            return web.json_response({"ok": False, "error": str(exc)}, status=503)
+        writable, error = writable_directory(MANAGER_DIR)
+        return web.json_response(
+            {"ok": writable, **({"error": error} if error else {})},
+            status=200 if writable else 503,
+        )
 
     async def handle_new(self, request: web.Request) -> web.Response:
         try:
@@ -2527,6 +2542,8 @@ async def main(host: str, port: int, public_host: str = ""):
 
     # Run-management routes
     app.router.add_get("/",                           manager.handle_index)
+    app.router.add_get("/healthz",                    manager.handle_healthz)
+    app.router.add_get("/readyz",                     manager.handle_readyz)
     app.router.add_get("/new",                        manager.handle_new_page)
     app.router.add_get("/runs/{run_id}",              manager.handle_run_page)
     app.router.add_get("/runs/{run_id}/board",        manager.handle_run_board)

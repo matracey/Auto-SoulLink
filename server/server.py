@@ -34,6 +34,7 @@ from datetime import datetime
 
 from server import calc_files
 from server.http_safety import allow_hosts, csrf_protection, theme_cache
+from server.health import writable_directory
 from server.lua_literals import lua_comment, lua_string
 from server.overlay_catalog import build_index_context as _build_stream_index_context
 from server.ui_capabilities import ui_capabilities
@@ -3275,6 +3276,21 @@ class SLinkServer:
     async def handle_status_json(self, request):
         return aiohttp_web.json_response(self._build_status_dict())
 
+    async def handle_healthz(self, request):
+        return aiohttp_web.json_response({"ok": True})
+
+    async def handle_readyz(self, request):
+        writable, error = writable_directory(self._data_dir or DATA_DIR)
+        ready = writable and not self.state.load_failed and not self.state.save_failed
+        if self.state.load_failed:
+            error = self.state.load_failed
+        elif self.state.save_failed:
+            error = self.state.save_failed
+        return aiohttp_web.json_response(
+            {"ok": ready, **({"error": error} if error else {})},
+            status=200 if ready else 503,
+        )
+
     # ── RR Damage Calculator handlers ───────────────────────────────────────
 
     async def handle_calc_redirect(self, request):
@@ -5713,7 +5729,10 @@ class SLinkServer:
 
 def _run_public_get(request) -> bool:
     path = request.path
-    if path in {"/", "/timeline", "/api/status", "/api/events", "/api/calc/mons"}:
+    if path in {
+        "/", "/healthz", "/readyz", "/timeline", "/api/status", "/api/events",
+        "/api/calc/mons",
+    }:
         return True
     return path.startswith(("/stream", "/calc/"))
 
@@ -5728,6 +5747,8 @@ def build_app(srv):
     setup_templating(app)
     setup_admin_auth(app, _run_public_get)
     app.router.add_get("/",            srv.handle_status_html)
+    app.router.add_get("/healthz",     srv.handle_healthz)
+    app.router.add_get("/readyz",      srv.handle_readyz)
     app.router.add_get("/timeline",    srv.handle_timeline_html)
     app.router.add_get("/api/status",  srv.handle_status_json)
     app.router.add_get("/api/events",  srv.handle_sse)
