@@ -1,5 +1,6 @@
 import json
 
+from server.board import pending_rows, timeline
 from server.server import SLinkServer
 from server.state import (
     AreaStatus,
@@ -224,3 +225,42 @@ def test_clause_reroll_releases_rejected_players_lock(tmp_path):
     )
 
     assert "route_4" not in state.encounter_locks
+
+
+def test_board_shows_locked_species_as_a_retry():
+    status = empty_status_payload()
+    status["encounter_locks"] = {
+        "route_4": {
+            "a": {
+                "species": 5,
+                "species_name": "Charmeleon",
+                "level": 12,
+                "sprite_html": "<img>",
+            }
+        }
+    }
+
+    row = pending_rows(status)[0]
+
+    assert row["status"] == "retry"
+    assert row["a"]["seeking"] is True
+    assert row["a"]["species_name"] == "Charmeleon"
+    assert row["b"] is None
+
+
+def test_timeline_open_area_lists_caught_and_seeking_players():
+    status = empty_status_payload()
+    status["pending_captures"] = {
+        "route_4": {"b": {"nickname": "RATTATA", "species_name": "Rattata"}}
+    }
+    status["encounter_locks"] = {
+        "route_4": {
+            "a": {"species": 5, "species_name": "Charmeleon", "level": 12},
+            "b": {"species": 19, "species_name": "Rattata", "level": 10},
+        }
+    }
+
+    area = timeline(status)["open_areas"][0]
+
+    assert area["caught"] == {"b": "RATTATA"}
+    assert area["seeking"] == {"a": "Charmeleon"}

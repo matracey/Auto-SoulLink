@@ -141,17 +141,35 @@ def pairs(status: dict) -> list[dict]:
 
 
 def pending_rows(status: dict) -> list[dict]:
-    """Captures waiting on the other player. One half filled, the other empty."""
+    """Captures waiting on a partner and first-species locks still being retried."""
     out = []
-    for area, sides in (status.get("pending_captures") or {}).items():
+    pending = status.get("pending_captures") or {}
+    locks = status.get("encounter_locks") or {}
+    for area in sorted(set(pending) | set(locks)):
+        sides = pending.get(area) or {}
+        area_locks = locks.get(area) or {}
         halves = {}
         for pid in PIDS:
             mon = sides.get(pid)
-            halves[pid] = ({**mon, "sprite": mon.get("sprite_html") or "", "hp": None,
-                            "where": None, "active": False, "ability": "", "item": ""}
-                           if mon else None)
+            lock = area_locks.get(pid)
+            if mon:
+                halves[pid] = {
+                    **mon, "sprite": mon.get("sprite_html") or "", "hp": None,
+                    "where": None, "active": False, "ability": "", "item": "",
+                    "seeking": False,
+                }
+            elif lock:
+                halves[pid] = {
+                    **lock, "nickname": "", "sprite": lock.get("sprite_html") or "",
+                    "hp": None, "where": None, "active": False, "ability": "", "item": "",
+                    "seeking": True,
+                }
+            else:
+                halves[pid] = None
+        retrying = any(half and half["seeking"] for half in halves.values())
         out.append({"area": area, "area_name": area_name(area), "section": "pending",
-                    "status": "pending", "a": halves["a"], "b": halves["b"],
+                    "status": "retry" if retrying else "pending",
+                    "a": halves["a"], "b": halves["b"],
                     "death": None})
     return out
 
@@ -191,6 +209,7 @@ def build_board(status: dict) -> dict:
 
 
 RULE_BADGES = (
+    ("retry_same_species", "retry", "Retry First Species"),
     ("species_lock", "dna", "Species Clause"),
     ("gender_lock", "gender", "Gender Clause"),
     ("type_lock", "type", "Type Clause"),
@@ -372,11 +391,27 @@ def timeline(status: dict) -> dict:
 
     resolved = {link.get("area_id") for link in status.get("links") or []}
     pending = status.get("pending_captures") or {}
+    locks = status.get("encounter_locks") or {}
     open_ids = sorted({a for a, s in (status.get("area_states") or {}).items()
-                       if s not in ("linked", "dead_zone") and a not in resolved} | set(pending))
-    open_areas = [{"area": area_name(a), "caught": {pid: m.get("nickname") or m.get("species_name") or "?"
-                                                     for pid, m in (pending.get(a) or {}).items()}}
-                  for a in open_ids]
+                       if s not in ("linked", "dead_zone") and a not in resolved}
+                      | set(pending) | set(locks))
+    open_areas = []
+    for area in open_ids:
+        entry = {
+            "area": area_name(area),
+            "caught": {
+                pid: mon.get("nickname") or mon.get("species_name") or "?"
+                for pid, mon in (pending.get(area) or {}).items()
+            },
+        }
+        seeking = {
+            pid: lock.get("species_name") or "?"
+            for pid, lock in (locks.get(area) or {}).items()
+            if pid not in (pending.get(area) or {})
+        }
+        if seeking:
+            entry["seeking"] = seeking
+        open_areas.append(entry)
     entries = [e for _, _, e in items]
     return {"entries": entries, "open_areas": open_areas,
             "untimed": sum(1 for e in entries if not e["ts"])}

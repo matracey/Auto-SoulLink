@@ -54,7 +54,7 @@
   <ul class="mk-card tl-list">
     {% for o in story.open_areas %}
       <li class="tl-ev open"><span class="tl-what"><span class="tl-head"><b>{{ o.area }}</b></span>
-        <span class="mk-sub">{% if o.caught %}{% for pid, n in o.caught.items() %}{{ pa if pid == 'a' else pb }} caught {{ n }}; {% endfor %}waiting on {{ pb if 'a' in o.caught else pa }}{% else %}entered, no catch yet{% endif %}</span></span></li>
+        <span class="mk-sub">{% if o.caught or o.get('seeking') %}{% for pid, n in o.caught.items() %}{{ pa if pid == 'a' else pb }} caught {{ n }}; {% endfor %}{% for pid, n in o.get('seeking', {}).items() %}{{ pa if pid == 'a' else pb }} must catch {{ n }}; {% endfor %}{% else %}entered, no catch yet{% endif %}</span></span></li>
     {% endfor %}
   </ul>
   {% endif %}

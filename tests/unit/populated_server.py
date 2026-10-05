@@ -98,7 +98,9 @@ async def populate(srv: SLinkServer, game: str):
 @pytest_asyncio.fixture(params=GAMES, ids=GAMES)
 async def populated(request, tmp_path):
     """(srv, client) for a fully populated run of the parametrized generation."""
-    srv = SLinkServer(data_dir=str(tmp_path))
+    # The fixture intentionally includes a legacy dead-zone row; keep that option explicit
+    # now that new runs default to same-species retries.
+    srv = SLinkServer(data_dir=str(tmp_path), retry_same_species=False)
     close = await populate(srv, request.param)
     client = TestClient(TestServer(build_app(srv)))
     await client.start_server()

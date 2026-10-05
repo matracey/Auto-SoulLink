@@ -51,8 +51,8 @@
       <div class="mk-half-in">
         {% if h.sprite %}<span class="mk-spr big">{{ h.sprite | safe }}</span>{% else %}<span class="mk-slot"></span>{% endif %}
         <span class="mk-half-txt">
-          <span class="mk-half-nick">{% if h.active %}<span class="mk-active" title="out in battle"><span aria-hidden="true">⚔</span><span class="sr-only">Out in battle</span></span>{% endif %}{{ h.nickname or h.species_name }}{% if h.shiny %} <span class="shiny-star"><span aria-hidden="true">✦</span><span class="sr-only">Shiny</span></span>{% endif %}</span>
-          <span class="mk-sub">{{ h.species_name }} · Lv {{ h.level }}</span>
+          <span class="mk-half-nick">{% if h.active %}<span class="mk-active" title="out in battle"><span aria-hidden="true">⚔</span><span class="sr-only">Out in battle</span></span>{% endif %}{% if h.seeking %}Seeking {{ h.species_name }}{% else %}{{ h.nickname or h.species_name }}{% endif %}{% if h.shiny %} <span class="shiny-star"><span aria-hidden="true">✦</span><span class="sr-only">Shiny</span></span>{% endif %}</span>
+          <span class="mk-sub">{% if h.seeking %}First encounter{% else %}{{ h.species_name }}{% endif %}{% if h.level %} · Lv {{ h.level }}{% endif %}</span>
           {% if h.hp is not none and row.section != 'fallen' %}{{ hp(h) }}{% endif %}
           {# Fallen rows keep the held item (what to take back out of the memorial box), not the ability. #}
           {% set show_ability = h.ability and row.section != 'fallen' %}
@@ -305,6 +305,7 @@
                   <span class="mk-bond-state">
                     {% if row.status == 'dead_zone' %}<span>dead zone</span>
                     {% elif row.section == 'fallen' and row.death %}<span>{{ row.death.cause | replace('_', ' ') }}{% if row.death.killer %} · {{ row.death.killer.trainer_name or row.death.killer.species_name }}{% endif %}</span>
+                    {% elif row.status == 'retry' %}<span>retrying first species</span>
                     {% elif row.section == 'pending' %}<span>waiting</span>
                     {% elif row.section == 'boxed' %}<span>boxed together</span>
                     {% elif row.section == 'split' %}<span>split</span>

@@ -1777,7 +1777,9 @@
       }
     }
   },
+  "encounter_locks": {},
   "rules": {
+    "retry_same_species": true,
     "species_lock": false,
     "gender_lock": false,
     "type_lock": false,
