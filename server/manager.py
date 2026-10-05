@@ -536,6 +536,14 @@ def _ensure_instrumentation_keys(run: dict) -> bool:
     return changed
 
 
+def _ensure_desired_status(run: dict) -> bool:
+    if run.get("desired_status") in {"running", "stopped", "archived"}:
+        return False
+    status = run.get("status")
+    run["desired_status"] = status if status in {"running", "archived"} else "stopped"
+    return True
+
+
 def _public_run(run: dict) -> dict:
     return {key: value for key, value in run.items() if key != "instrumentation_keys"}
 
@@ -579,7 +587,7 @@ def _next_ports(runs: list[dict]) -> tuple[int, int]:
     bindable on this machine."""
     # .get: a hand-edited or old entry without ports must not take every page down with a KeyError
     pool = _tcp_port_pool()
-    active = [run for run in runs if run.get("status") == "running"]
+    active = [run for run in runs if run.get("status") in {"running", "starting"}]
     used_tcp = {r.get("tcp_port") for r in (active if pool else runs)}
     used_http = {r.get("http_port") for r in (active if pool else runs)}
     if pool:
@@ -597,7 +605,36 @@ def _next_ports(runs: list[dict]) -> tuple[int, int]:
 
 
 def _released_ports() -> dict:
-    return {"tcp_port": None, "http_port": None} if _tcp_port_pool() else {}
+    # Keep the last lease as this run's preferred address. Cloud allocation ignores
+    # stopped runs, so another active run may borrow it; a later restart reuses it
+    # when free and safely falls back when occupied.
+    return {}
+
+
+def _preferred_cloud_ports(run: dict, runs: list[dict]) -> tuple[int, int] | None:
+    pool = _tcp_port_pool()
+    if not pool:
+        return None
+    tcp, preferred_http = run.get("tcp_port"), run.get("http_port")
+    if tcp not in pool:
+        return None
+    active_others = [
+        other for other in runs
+        if other.get("run_id") != run.get("run_id")
+        and other.get("status") in {"running", "starting"}
+    ]
+    if tcp in {other.get("tcp_port") for other in active_others}:
+        return None
+    if not _port_free(tcp):
+        return None
+    used_http = {other.get("http_port") for other in active_others}
+    if (isinstance(preferred_http, int) and preferred_http != MANAGER_HTTP_PORT
+            and preferred_http not in used_http and _port_free(preferred_http)):
+        return tcp, preferred_http
+    http = HTTP_PORT_BASE
+    while http in used_http or http == MANAGER_HTTP_PORT or not _port_free(http):
+        http += 1
+    return tcp, http
 
 
 # ── Launcher script generation (dynamic — served via HTTP) ──────────────────
@@ -1034,6 +1071,7 @@ def _adopt_orphans(runs: list[dict]) -> bool:
             "tcp_port":     tcp_port,
             "http_port":    http_port,
             "status":       "stopped",
+            "desired_status": "stopped",
             "pid":          None,
             "instrumentation_keys": {
                 "a": secrets.token_urlsafe(32),
@@ -1055,7 +1093,10 @@ def _reconcile(runs: list[dict]) -> bool:
     for run in runs:
         if _ensure_instrumentation_keys(run):
             changed = True
-        if run["status"] == "running" and not _is_alive(run.get("pid"), run.get("pid_created")):
+        if _ensure_desired_status(run):
+            changed = True
+        if run["status"] in {"running", "starting"} and not _is_alive(
+                run.get("pid"), run.get("pid_created")):
             run["status"] = "stopped"
             run["pid"] = None
             run["pid_created"] = None
@@ -1105,6 +1146,7 @@ class RunManager:
         # ponytail: in-process only. Two Managers sharing one registry are not locked
         # against each other (documented limitation: run one Manager per data dir).
         self._run_locks: dict[str, list] = {}      # run_id -> [lock, holders + waiters]
+        self._lease_lock = asyncio.Lock()
 
     @contextlib.asynccontextmanager
     async def _run_lock(self, run_id: str):
@@ -1126,6 +1168,87 @@ class RunManager:
         if _reconcile(runs):
             _save_registry(runs)
         return runs
+
+    def _port_lease_lock(self) -> asyncio.Lock:
+        lock = getattr(self, "_lease_lock", None)
+        if lock is None:
+            lock = self._lease_lock = asyncio.Lock()
+        return lock
+
+    async def _start_run(self, run_id: str) -> tuple[int | None, str]:
+        async with self._port_lease_lock():
+            runs = _load_registry()
+            run = _find_run(runs, run_id)
+            if run is None:
+                return None, "Run not found"
+            if run.get("status") == "archived":
+                return None, "Archived runs cannot be started"
+            if run.get("status") == "running" and _is_alive(
+                    run.get("pid"), run.get("pid_created")):
+                return run.get("pid"), ""
+            try:
+                if _tcp_port_pool():
+                    preferred = _preferred_cloud_ports(run, runs)
+                    if preferred is None:
+                        others = [other for other in runs if other.get("run_id") != run_id]
+                        preferred = _next_ports(others)
+                    run["tcp_port"], run["http_port"] = preferred
+                elif not run.get("tcp_port") or not run.get("http_port"):
+                    run["tcp_port"], run["http_port"] = _next_ports(runs)
+                pid = await _spawn_run(
+                    run, self.bind_host, manager_port=self.manager_port)
+            except Exception as exc:
+                return None, str(exc)
+            created = _create_time(pid)
+            try:
+                registered = _update_run(
+                    run_id,
+                    status="running",
+                    desired_status="running",
+                    pid=pid,
+                    pid_created=created,
+                    tcp_port=run["tcp_port"],
+                    http_port=run["http_port"],
+                )
+                if registered is None:
+                    raise RegistryError("Run disappeared before its server could be registered")
+            except (RegistryError, OSError) as exc:
+                error = f"Could not register started run {run_id}: {exc}"
+                if not await asyncio.to_thread(_kill_run, pid, created):
+                    error += f"; could not stop spawned PID {pid}"
+                log.error(error)
+                return None, error
+            return pid, ""
+
+    async def restore_desired_runs(self) -> None:
+        runs = self._get()
+        run_ids = [
+            run["run_id"] for run in runs
+            if run.get("desired_status") == "running" and run.get("status") != "archived"
+        ]
+
+        async def restore(run_id: str) -> None:
+            async with self._run_lock(run_id):
+                current = _find_run(_load_registry(), run_id)
+                if current is None or current.get("desired_status") != "running":
+                    return
+                _pid, error = await self._start_run(run_id)
+                if error:
+                    log.error("Could not restore desired run %s: %s", run_id, error)
+
+        await asyncio.gather(*(restore(run_id) for run_id in run_ids))
+
+    async def stop_child_processes(self) -> None:
+        try:
+            runs = _load_registry()
+        except RegistryError as exc:
+            log.error("Could not stop child processes from unreadable registry: %s", exc)
+            return
+        await asyncio.gather(*(
+            asyncio.to_thread(_kill_run, run.get("pid"), run.get("pid_created"))
+            for run in runs
+            if run.get("status") == "running" and run.get("pid")
+        ))
 
     def _active_stream_run(self) -> dict | None:
         """Return the run that stream overlays should proxy to.
@@ -1403,6 +1526,7 @@ class RunManager:
             "tcp_port":   tcp_port,
             "http_port":  http_port,
             "status":     "stopped",
+            "desired_status": "running" if tcp_port is not None else "stopped",
             "pid":        None,
             "instrumentation_keys": {
                 "a": secrets.token_urlsafe(32),
@@ -1423,34 +1547,24 @@ class RunManager:
             if tcp_port is None:
                 return web.json_response(
                     {"ok": True, "run": _public_run(run), "start_error": start_error})
-            try:
-                pid = await _spawn_run(run, self.bind_host, manager_port=self.manager_port)
-                run = _update_run(run_id, status="running", pid=pid, pid_created=_create_time(pid)) or run
-            except Exception as e:
-                start_error = str(e)
-                log.error(f"Failed to auto-start run {run_id}: {e}")
+            _pid, start_error = await self._start_run(run_id)
+            run = _find_run(_load_registry(), run_id) or run
+            if start_error:
+                log.error("Failed to auto-start run %s: %s", run_id, start_error)
 
         return web.json_response({"ok": True, "run": _public_run(run), "start_error": start_error})
 
     async def handle_start(self, request: web.Request) -> web.Response:
         run_id = request.match_info["run_id"]
         async with self._run_lock(run_id):
-            runs = _load_registry()          # re-read inside the lock: a start may just have finished
-            run = _find_run(runs, run_id)
-            if run is None:
-                return web.json_response({"ok": False, "error": "Run not found"}, status=404)
-            if run["status"] == "archived":
-                return web.json_response({"ok": False, "error": "Archived runs cannot be started"}, status=400)
-            if run["status"] == "running" and _is_alive(run.get("pid"), run.get("pid_created")):
-                return web.json_response({"ok": True, "message": "Already running"})
-            try:
-                if _tcp_port_pool():
-                    run["tcp_port"], run["http_port"] = _next_ports(runs)
-                pid = await _spawn_run(run, self.bind_host, manager_port=self.manager_port)
-            except Exception as e:
-                return web.json_response({"ok": False, "error": str(e)}, status=409)
-            _update_run(run_id, status="running", pid=pid, pid_created=_create_time(pid),
-                        tcp_port=run["tcp_port"], http_port=run["http_port"])
+            pid, error = await self._start_run(run_id)
+            if error == "Run not found":
+                return web.json_response({"ok": False, "error": error}, status=404)
+            if error == "Archived runs cannot be started":
+                return web.json_response({"ok": False, "error": error}, status=400)
+            if error:
+                status = 409 if error.startswith("All ") and "configured game ports" in error else 500
+                return web.json_response({"ok": False, "error": error}, status=status)
             return web.json_response({"ok": True, "pid": pid})
 
     async def handle_stop(self, request: web.Request) -> web.Response:
@@ -1465,7 +1579,8 @@ class RunManager:
                 # Keep the pid: the server is still up, and a later stop must be able to retry.
                 return web.json_response({"ok": False, "error": f"Could not stop the run's server (PID {pid})"},
                                          status=500)
-            _update_run(run_id, status="stopped", pid=None, pid_created=None,
+            _update_run(run_id, status="stopped", desired_status="stopped",
+                        pid=None, pid_created=None,
                         **_released_ports())
             return web.json_response({"ok": True})
 
@@ -1480,7 +1595,8 @@ class RunManager:
             if pid and not await asyncio.to_thread(_kill_run, pid, run.get("pid_created")):
                 return web.json_response({"ok": False, "error": f"Could not stop the run's server (PID {pid})"},
                                          status=500)
-            _update_run(run_id, status="archived", pid=None, pid_created=None,
+            _update_run(run_id, status="archived", desired_status="archived",
+                        pid=None, pid_created=None,
                         **_released_ports())
             return web.json_response({"ok": True})
 
@@ -2489,8 +2605,10 @@ async def main(host: str, port: int, public_host: str = ""):
     # Lifecycle: shared aiohttp ClientSession for proxy requests
     async def _startup(app: web.Application) -> None:
         app["proxy_session"] = aiohttp.ClientSession()
+        await manager.restore_desired_runs()
 
     async def _cleanup(app: web.Application) -> None:
+        await manager.stop_child_processes()
         session = app.get("proxy_session")
         if session and not session.closed:
             await session.close()

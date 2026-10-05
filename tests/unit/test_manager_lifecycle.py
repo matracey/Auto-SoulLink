@@ -73,6 +73,43 @@ async def test_a_stop_during_a_start_ends_stopped_and_kills_the_child(manager_cl
     assert run["status"] == "stopped" and run["pid"] is None
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize("failure", ["write", "unreadable", "removed"])
+@pytest.mark.parametrize("stopped", [True, False])
+async def test_unpublished_ready_child_is_stopped(manager_dir, monkeypatch, failure, stopped):
+    _stopped_run()
+    instance = manager.RunManager("127.0.0.1")
+    killed = []
+
+    async def spawn(*args, **kwargs):
+        return 4242
+
+    def publish(*args, **kwargs):
+        if failure == "removed":
+            manager._save_registry([])
+            return None
+        if failure == "unreadable":
+            raise manager.RegistryError("registry unreadable")
+        raise OSError("registry write failed")
+
+    def kill(pid, created):
+        killed.append((pid, created))
+        return stopped
+
+    monkeypatch.setattr(manager, "_spawn_run", spawn)
+    monkeypatch.setattr(manager, "_create_time", lambda pid: 100.0)
+    monkeypatch.setattr(manager, "_update_run", publish)
+    monkeypatch.setattr(manager, "_kill_run", kill)
+    pid, error = await instance._start_run("r1")
+    assert pid is None and error
+    assert killed == [(4242, 100.0)]
+    if not stopped:
+        assert "could not stop" in error and "4242" in error
+    run = _registry_run()
+    assert run is None if failure == "removed" else run["pid"] is None
+    assert not instance._port_lease_lock().locked()
+
+
 def _fake_child(monkeypatch, *, exits_after: float | None, log_line: str = ""):
     """A child that never answers HTTP; it exits (code 1) after `exits_after` s, or never."""
     killed = []
