@@ -2738,6 +2738,29 @@ class SoulLinkState:
         # Don't wait for the partner to catch — reject now, unresolve the area,
         # and let the player try again.
         cap_species = msg.get("species_id", 0)
+        encounter_lock = None if gift_capture else self.encounter_locks.get(area_id, {}).get(player_id)
+        if (self.retry_same_species and encounter_lock
+                and cap_species != encounter_lock.species):
+            required = self.adapter.species_name(encounter_lock.species) or f"species {encounter_lock.species}"
+            caught = self.adapter.species_name(cap_species) if cap_species else "unknown species"
+            nickname = msg.get("nickname", "")
+            log.warning("[%s] capture %s violates %s encounter lock %s; retiring %s",
+                        player_id, caught, area_id, required, key)
+            self.party_keys[player_id].discard(key)
+            self.queued_commands[player_id].append(
+                {"cmd": "force_faint", "key": key, "nickname": nickname})
+            self._queue_memorialize(player_id, key)
+            self.queued_commands[player_id].append({"cmd": "play_sound", "sound": 26})
+            self.queued_commands[player_id].append({
+                "cmd": "gui_prompt",
+                "text": f"[x] {area_id}: catch {required}",
+                "r": 255, "g": 200, "b": 60, "frames": 360,
+            })
+            self.queued_commands[player_id].append(
+                {"cmd": "unresolve_area", "area_id": area_id})
+            self._save()
+            return
+
         if self.species_lock and cap_species and not self.adapter.is_fixed_species_gift(area_id):
             cap_base = self.adapter.evo_family(cap_species)
             dup_name: str | None = None
@@ -2789,9 +2812,17 @@ class SoulLinkState:
                     "cmd": "unresolve_area",
                     "area_id": area_id,
                 })
+                locks = self.encounter_locks.get(area_id, {})
+                locks.pop(player_id, None)
+                if not locks:
+                    self.encounter_locks.pop(area_id, None)
                 self.retry_areas[player_id].add(area_id)
                 self._save()
                 return
+
+        if self.retry_same_species and not gift_capture and cap_species and encounter_lock is None:
+            self.encounter_locks.setdefault(area_id, {})[player_id] = EncounterLock(
+                species=cap_species, level=msg.get("level", 0))
 
         if area_id not in self.pending_captures:
             self.pending_captures[area_id] = {}
@@ -2874,6 +2905,10 @@ class SoulLinkState:
                     "cmd": "unresolve_area",
                     "area_id": area_id,
                 })
+                locks = self.encounter_locks.get(area_id, {})
+                locks.pop(reject_pid, None)
+                if not locks:
+                    self.encounter_locks.pop(area_id, None)
                 self.retry_areas[reject_pid].add(area_id)
                 self._save()
                 return
@@ -2883,6 +2918,7 @@ class SoulLinkState:
             self._index_entry(entry)
             self._set_area_state(area_id, AreaStatus.LINKED, player=player_id, reason="both_captured")
             del self.pending_captures[area_id]
+            self.encounter_locks.pop(area_id, None)
             for pid in ("a", "b"):
                 self._queue_resolved_areas(pid)
             log.debug(f"[PENDING] {area_id}  removed  (link formed)")

@@ -1,7 +1,14 @@
 import json
 
 from server.server import SLinkServer
-from server.state import AreaStatus, EncounterLock, MonInfo, SoulLinkState
+from server.state import (
+    AreaStatus,
+    EncounterLock,
+    LinkEntry,
+    LinkStatus,
+    MonInfo,
+    SoulLinkState,
+)
 from server.status_payload import empty_status_payload
 
 
@@ -130,3 +137,90 @@ def test_disabled_retry_rule_keeps_legacy_dead_zone(tmp_path):
 
     assert state.area_states["route_4"].value == "dead_zone"
     assert state.encounter_locks == {}
+
+
+def test_first_successful_capture_establishes_lock(tmp_path):
+    state = SoulLinkState(data_dir=str(tmp_path))
+
+    state.handle_event(
+        "a",
+        {"event": "capture", "area_id": "route_4", "key": "A:1",
+         "species_id": 5, "level": 12},
+    )
+
+    assert state.encounter_locks["route_4"]["a"] == EncounterLock(species=5, level=12)
+    assert state.pending_captures["route_4"]["a"].key == "A:1"
+
+
+def test_wrong_species_capture_is_retired_and_lock_is_preserved(tmp_path):
+    state = SoulLinkState(data_dir=str(tmp_path))
+    state.encounter_locks["route_4"] = {"a": EncounterLock(species=5, level=12)}
+    state.pending_captures["route_4"] = {"b": MonInfo(key="B:1", species=19, level=10)}
+
+    commands = state.handle_event(
+        "a",
+        {"event": "capture", "area_id": "route_4", "key": "A:wrong",
+         "species_id": 19, "level": 14, "nickname": "RATTATA"},
+    )
+
+    assert any(c.get("cmd") == "force_faint" and c.get("key") == "A:wrong" for c in commands)
+    assert any(c.get("cmd") == "memorialize" and c.get("key") == "A:wrong" for c in commands)
+    assert {"cmd": "unresolve_area", "area_id": "route_4"} in commands
+    assert state.encounter_locks["route_4"]["a"].species == 5
+    assert state.pending_captures["route_4"]["b"].key == "B:1"
+    assert "a" not in state.pending_captures["route_4"]
+
+
+def test_correct_species_capture_links_and_clears_locks(tmp_path):
+    state = SoulLinkState(data_dir=str(tmp_path))
+    state.encounter_locks["route_4"] = {
+        "a": EncounterLock(species=5, level=12),
+        "b": EncounterLock(species=19, level=10),
+    }
+    state.pending_captures["route_4"] = {"b": MonInfo(key="B:1", species=19, level=10)}
+
+    state.handle_event(
+        "a",
+        {"event": "capture", "area_id": "route_4", "key": "A:1",
+         "species_id": 5, "level": 14},
+    )
+
+    assert state.links[0].a.key == "A:1"
+    assert state.links[0].b.key == "B:1"
+    assert "route_4" not in state.encounter_locks
+
+
+def test_gift_capture_does_not_consume_wild_encounter_lock(tmp_path):
+    state = SoulLinkState(data_dir=str(tmp_path))
+    state.encounter_locks["route_4"] = {"a": EncounterLock(species=5, level=12)}
+
+    state.handle_event(
+        "a",
+        {"event": "capture", "area_id": "route_4", "key": "A:gift",
+         "species_id": 19, "level": 10, "gift": True},
+    )
+
+    assert state.encounter_locks["route_4"]["a"].species == 5
+    assert state.pending_captures["gift_route_4"]["a"].key == "A:gift"
+
+
+def test_clause_reroll_releases_rejected_players_lock(tmp_path):
+    state = SoulLinkState(data_dir=str(tmp_path), species_lock=True)
+    state.links.append(
+        LinkEntry(
+            area_id="route_1",
+            a=MonInfo(key="A:old", species=5),
+            b=MonInfo(key="B:old", species=19),
+            status=LinkStatus.ALIVE,
+        )
+    )
+    state._index_entry(state.links[0])
+    state.encounter_locks["route_4"] = {"a": EncounterLock(species=5, level=12)}
+
+    state.handle_event(
+        "a",
+        {"event": "capture", "area_id": "route_4", "key": "A:dup",
+         "species_id": 5, "level": 14},
+    )
+
+    assert "route_4" not in state.encounter_locks
