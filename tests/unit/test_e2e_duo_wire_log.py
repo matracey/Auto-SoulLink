@@ -326,6 +326,22 @@ def _tap(tmp_path, files=None):
     return _WireTap(_Writer(), str(tmp_path / "wire"), files if files is not None else {})
 
 
+def test_wire_log_redacts_instrumentation_key_without_mutating_message(tmp_path):
+    tap = _tap(tmp_path)
+    msg = {
+        "event": "hello",
+        "player": "a",
+        "seq": 1,
+        "instrumentation_key": "player-a-key",
+    }
+
+    tap.c2s(json.dumps(msg), msg)
+
+    row = next(row for row in _lines(tmp_path / "wire", "a") if row["dir"] == "c2s")
+    assert row["msg"]["instrumentation_key"] == "[redacted]"
+    assert msg["instrumentation_key"] == "player-a-key"
+
+
 def test_an_unrecognised_player_id_goes_to_the_bounded_rejected_sink(tmp_path):
     tap = _tap(tmp_path)
     tap.c2s('{"event":"hello","player":"c"}', {"event": "hello", "player": "c"})
@@ -559,7 +575,7 @@ async def test_multibyte_raw_truncation_at_most_1024_bytes(wired, line):
 async def test_non_object_json_through_handle_client_without_the_wire_tap(tmp_path, message):
     from tests.unit.test_mixed_foundations import _hello
     from tests.unit.test_server_run_reconnect import _send as send, _tcp
-    srv = SLinkServer(data_dir=str(tmp_path))
+    srv = SLinkServer(data_dir=str(tmp_path), retry_same_species=False)
     assert srv._wire_log is None
     async with _tcp(srv) as (connect, _):
         socket = await connect()

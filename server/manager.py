@@ -780,6 +780,11 @@ async def _spawn_run(run: dict, host: str, manager_port: int = 0) -> int:
     if manager_port:
         cmd += ["--manager-port", str(manager_port)]
     cmd += run_flags(run)
+    child_env = os.environ.copy()
+    for player, env_name in (("a", "SLINK_PLAYER_KEY_A"), ("b", "SLINK_PLAYER_KEY_B")):
+        key = (run.get("instrumentation_keys") or {}).get(player)
+        if key:
+            child_env[env_name] = key
     # Keep the child's stderr. It used to go to DEVNULL, so a run that died on startup — a taken
     # port, a bad ROM path, a stack trace — vanished without trace and the Manager just showed it
     # as stopped.
@@ -794,6 +799,7 @@ async def _spawn_run(run: dict, host: str, manager_port: int = 0) -> int:
             *cmd,
             stdout=asyncio.subprocess.DEVNULL,
             stderr=_errf,
+            env=child_env,
             # Detach from our process group so CTRL-C on the manager doesn't kill runs
             creationflags=0x00000008 if sys.platform == "win32" else 0,  # DETACHED_PROCESS on Windows
         )

@@ -20,6 +20,7 @@ import asyncio
 import contextlib
 import copy
 import functools
+import hmac
 import html
 import json
 import logging
@@ -385,7 +386,10 @@ class _WireTap:
             key = player if isinstance(player, str) and player in VALID_PLAYERS else "rejected"
             if key != "rejected":
                 self.player = key
-            t = self._emit(key, "c2s", msg=msg)
+            logged = dict(msg)
+            if "instrumentation_key" in logged:
+                logged["instrumentation_key"] = "[redacted]"
+            t = self._emit(key, "c2s", msg=logged)
             if t is not None:
                 self._request = (key, t)
         except Exception as exc:  # noqa: BLE001
@@ -528,6 +532,7 @@ class SLinkServer:
                  battle_calc: bool = True, pc_trade_npc: bool = True, phone_calls: bool = True,
                  retry_same_species: bool = True,
                  ignore_wild_faints: bool = False,
+                 instrumentation_keys: dict[str, str] | None = None,
                  wire_log: str = None):
         # --wire-log DIR: capture every line of every connection (card gen3-P1-C1-3).
         # None (the default) means no _WireTap is ever built and nothing changes.
@@ -539,6 +544,16 @@ class SLinkServer:
         self._run_name = run_name
         self._tcp_port = tcp_port
         self._manager_port = manager_port
+        configured_keys = instrumentation_keys if instrumentation_keys is not None else {
+            "a": os.environ.get("SLINK_PLAYER_KEY_A", ""),
+            "b": os.environ.get("SLINK_PLAYER_KEY_B", ""),
+        }
+        self._instrumentation_keys = {
+            player: key for player, key in configured_keys.items()
+            if player in VALID_PLAYERS and isinstance(key, str) and key
+        }
+        if len(set(self._instrumentation_keys.values())) != len(self._instrumentation_keys):
+            raise ValueError("instrumentation keys must be unique per player")
         self.state = SoulLinkState.load(data_dir=data_dir,
                                         species_lock=species_lock,
                                         gender_lock=gender_lock,
@@ -1639,6 +1654,7 @@ class SLinkServer:
         last_seq = -1
         hello_players = set()
         conn_gen: dict[str, int] = {}   # player -> the generation this connection's hello was given
+        bound_player: str | None = None
         no_hello_warned = False
         dropping_oversized_line = False
         try:
@@ -1681,6 +1697,31 @@ class SLinkServer:
                     log.warning("Rejected non-integer seq from %s", peer)
                     await self._respond(writer, [{"cmd": "noop", "refused": "malformed"}])
                     continue
+
+                if self._instrumentation_keys and msg.get("event") == "hello":
+                    supplied = msg.get("instrumentation_key")
+                    matched = next((
+                        player for player, expected in self._instrumentation_keys.items()
+                        if isinstance(supplied, str) and hmac.compare_digest(supplied, expected)
+                    ), None)
+                    if matched is None:
+                        log.warning("Rejected hello with missing or unknown instrumentation key from %s", peer)
+                        await self._respond(
+                            writer, [{"cmd": "noop", "refused": "instrumentation_key"}])
+                        continue
+                    if bound_player is not None and bound_player != matched:
+                        log.warning("Rejected instrumentation slot change on one connection from %s", peer)
+                        await self._respond(
+                            writer, [{"cmd": "noop", "refused": "instrumentation_slot"}])
+                        continue
+                    if msg.get("player") != matched:
+                        log.warning("Rejected hello whose player does not match its instrumentation key from %s", peer)
+                        await self._respond(
+                            writer, [{"cmd": "noop", "refused": "instrumentation_player"}])
+                        continue
+                    bound_player = matched
+                elif self._instrumentation_keys and bound_player is not None:
+                    msg["player"] = bound_player
 
                 player_id = msg.get("player", "")
                 if player_id not in VALID_PLAYERS:

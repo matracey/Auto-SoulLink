@@ -11,12 +11,13 @@ import pytest
 import server.manager as manager
 
 
-def _captured_spawn_cmd(run: dict) -> list:
+def _captured_spawn(run: dict) -> dict:
     """Run manager._spawn_run with the subprocess swapped for a capture stub."""
     captured = {}
 
     async def fake_exec(*cmd, **kwargs):
         captured["cmd"] = list(cmd)
+        captured["kwargs"] = kwargs
 
         class P:                          # a healthy child: still running after the startup check
             pid = 4242
@@ -39,7 +40,11 @@ def _captured_spawn_cmd(run: dict) -> list:
     finally:
         asyncio.create_subprocess_exec = real
         manager._http_ready, manager.SPAWN_POLL_S = ready, poll
-    return captured["cmd"]
+    return captured
+
+
+def _captured_spawn_cmd(run: dict) -> list:
+    return _captured_spawn(run)["cmd"]
 
 
 @pytest.fixture(autouse=True)
@@ -81,3 +86,12 @@ def test_every_opt_in_registry_key_reaches_the_cli(key, flag):
 def test_default_on_keys_use_inverse_flags(key, flag):
     assert flag not in _captured_spawn_cmd(dict(BASE))              # default ON → no flag
     assert flag in _captured_spawn_cmd(dict(BASE, **{key: False}))  # turned off → --no-*
+
+
+def test_instrumentation_keys_reach_child_environment():
+    run = dict(BASE, instrumentation_keys={"a": "a-key", "b": "b-key"})
+
+    env = _captured_spawn(run)["kwargs"]["env"]
+
+    assert env["SLINK_PLAYER_KEY_A"] == "a-key"
+    assert env["SLINK_PLAYER_KEY_B"] == "b-key"
