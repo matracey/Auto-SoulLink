@@ -1,6 +1,5 @@
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 INFRA = ROOT / "infra"
 
@@ -37,3 +36,42 @@ def test_environment_connects_logs_vnet_and_azure_files():
     assert "workloadProfileType: 'Consumption'" in environment
     assert "accessMode: 'ReadWrite'" in environment
     assert "storageAccount.listKeys().keys[0].value" in environment
+
+
+def test_container_app_is_single_replica_with_http_and_five_tcp_ports():
+    app = text("modules/app.bicep")
+    assert "targetPort: 8090" in app
+    assert "additionalPortMappings" in app
+    assert "for port in tcpPorts" in app
+    assert "minReplicas: 1" in app and "maxReplicas: 1" in app
+    assert "activeRevisionsMode: 'Single'" in app
+
+
+def test_container_app_mounts_data_and_configures_runtime():
+    app = text("modules/app.bicep")
+    for value in (
+        "SLINK_ADMIN_KEY",
+        "SLINK_ALLOWED_HOSTS",
+        "SLINK_PUBLIC_HOST",
+        "SLINK_TCP_PORT_POOL",
+        "SLINK_DATA_DIR",
+        "SLINK_ROM_DIR",
+    ):
+        assert value in app
+    assert "mountPath: '/data'" in app
+    assert "storageType: 'AzureFile'" in app
+
+
+def test_container_app_has_liveness_and_readiness_probes():
+    app = text("modules/app.bicep")
+    assert "path: '/healthz'" in app
+    assert "path: '/readyz'" in app
+
+
+def test_consumption_size_derives_valid_cpu_memory_pairs():
+    main = text("main.bicep")
+    assert "param containerSize string = 'small'" in main
+    assert "containerSize == 'large' ? 4" in main
+    assert "containerSize == 'medium' ? 2 : 1" in main
+    assert "containerSize == 'large' ? '8Gi'" in main
+    assert "containerSize == 'medium' ? '4Gi' : '2Gi'" in main
