@@ -49,7 +49,8 @@ def test_rr_native_night_species_rerolls_against_either_evolved_link_half(
 
 def test_base_linoone_alone_does_not_qualify_a_galarian_encounter(monkeypatch, tmp_path):
     monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
-    state = SoulLinkState(adapter=Gen3Adapter(is_rr=True), species_lock=True)
+    state = SoulLinkState(
+        adapter=Gen3Adapter(is_rr=True), species_lock=True, retry_same_species=False)
     state.pokeballs_obtained = {"a": True, "b": True}
     state.links.append(LinkEntry(area_id="duo", a=MonInfo(key="AA:11", species=289),
                                 b=MonInfo(key="BB:22", species=16), status=LinkStatus.ALIVE))

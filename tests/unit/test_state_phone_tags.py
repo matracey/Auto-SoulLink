@@ -51,7 +51,7 @@ def test_the_identity_loss_retirement_carries_no_tag():
 # -- dead_zone ----------------------------------------------------------------------------------
 
 def test_both_dead_zone_msgboxes_are_tagged():
-    state = SoulLinkState()
+    state = SoulLinkState(retry_same_species=False)
     replied = state.handle_event("b", {"event": "no_catch", "area_id": "route_1"})
     assert tagged(state, "a") == tagged(state, "b", replied) == [("msgbox", "dead_zone")]
 
@@ -64,7 +64,7 @@ def link(state, area, a_key, b_key):
 
 
 def test_only_the_runs_first_two_sided_link_is_tagged():
-    state = SoulLinkState()
+    state = SoulLinkState(retry_same_species=False)
     state.pokeballs_obtained = {"a": True, "b": True}
     state.handle_event("b", {"event": "no_catch", "area_id": "route_9"})   # a one-sided entry first
     for pid in "ab":
@@ -166,7 +166,7 @@ def test_first_link_gives_each_receiver_its_own_object():
 
 
 def test_dead_zone_names_only_the_other_trainer():
-    state = named(SoulLinkState())
+    state = named(SoulLinkState(retry_same_species=False))
     replied = state.handle_event("b", {"event": "no_catch", "area_id": "route_1"})
     assert phone_data(state, "a") == [{"trainer_name": "BOB"}]
     assert phone_data(state, "b", replied) == [{"trainer_name": "ALICE"}]

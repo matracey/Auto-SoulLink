@@ -526,6 +526,7 @@ class SLinkServer:
                  rival_team_swap: bool = False, overworld_presence: bool = False,
                  native_messages: bool = False, native_sounds: bool = False,
                  battle_calc: bool = True, pc_trade_npc: bool = True, phone_calls: bool = True,
+                 retry_same_species: bool = True,
                  wire_log: str = None):
         # --wire-log DIR: capture every line of every connection (card gen3-P1-C1-3).
         # None (the default) means no _WireTap is ever built and nothing changes.
@@ -548,7 +549,8 @@ class SLinkServer:
                                         native_sounds=native_sounds,
                                         battle_calc=battle_calc,
                                         pc_trade_npc=pc_trade_npc,
-                                        phone_calls=phone_calls)
+                                        phone_calls=phone_calls,
+                                        retry_same_species=retry_same_species)
         self.state.presentation_key_in_use = self._presentation_key_in_use
         self.state.on_trade_outcome = self._journal_trade
         # Game adapter — shared with state machine for consistent behavior.
@@ -3094,6 +3096,7 @@ class SLinkServer:
                 "species_lock": s.species_lock,
                 "gender_lock": s.gender_lock,
                 "type_lock": s.type_lock,
+                "retry_same_species": s.retry_same_species,
                 "explode_mode": s.explode_mode,
                 "rival_team_swap": s.rival_team_swap,
                 "overworld_presence": s.overworld_presence,
@@ -5062,7 +5065,8 @@ class SLinkServer:
                 native_sounds=self.state.native_sounds,
                 battle_calc=self.state.battle_calc,
                 pc_trade_npc=self.state.pc_trade_npc,
-                phone_calls=self.state.phone_calls)
+                phone_calls=self.state.phone_calls,
+                retry_same_species=self.state.retry_same_species)
             problem = restored.load_failed
         except Exception as exc:                        # e.g. UnsafeGameMigration from an old slot
             restored, problem = None, f"{type(exc).__name__}: {exc}"
@@ -5131,7 +5135,8 @@ class SLinkServer:
                                    native_sounds=self.state.native_sounds,
                                    battle_calc=self.state.battle_calc,
                                    pc_trade_npc=self.state.pc_trade_npc,
-                                   phone_calls=self.state.phone_calls)
+                                   phone_calls=self.state.phone_calls,
+                                   retry_same_species=self.state.retry_same_species)
         self.state.presentation_key_in_use = self._presentation_key_in_use
         self.state.on_trade_outcome = self._journal_trade
         self.adapter = self.state.adapter
@@ -5714,6 +5719,7 @@ async def main(host: str, port: int, http_port: int, reset: bool = False,
                rival_team_swap: bool = False, overworld_presence: bool = False,
                native_messages: bool = False, native_sounds: bool = False,
                battle_calc: bool = True, pc_trade_npc: bool = True, phone_calls: bool = True,
+               retry_same_species: bool = True,
                manager_port: int = 0, verbose: bool = False,
                wire_log: str = None):
     _configure_logging(data_dir, verbose)
@@ -5735,6 +5741,7 @@ async def main(host: str, port: int, http_port: int, reset: bool = False,
                       battle_calc=battle_calc,
                       pc_trade_npc=pc_trade_npc,
                       phone_calls=phone_calls,
+                      retry_same_species=retry_same_species,
                       wire_log=wire_log)
 
     # TCP game server.
@@ -5806,6 +5813,8 @@ if __name__ == "__main__":
     parser.add_argument("--species-clause", action="store_true", dest="species_lock", help="Reject links where both mons share the same evolution family")
     parser.add_argument("--gender-clause",  action="store_true", dest="gender_lock",  help="Reject links where both mons share the same gender")
     parser.add_argument("--type-clause",    action="store_true", dest="type_lock",    help="Reject links where both mons share any type")
+    parser.add_argument("--dead-zone-on-miss", action="store_false", dest="retry_same_species",
+        help="Close an area after a failed encounter instead of retrying its first species")
     parser.add_argument("--explode-mode",   action="store_true", dest="explode_mode", help="On partner death, force the linked mon to auto-Explode (every game except the Emerald Expansion)")
     parser.add_argument("--rival-team-swap", action="store_true", dest="rival_team_swap",
         help="On rival battles, replace the rival's team with the partner's current party (Gen 1, pureRGB, Gen 2, Radical Red)")
@@ -5841,6 +5850,7 @@ if __name__ == "__main__":
                      battle_calc=args.battle_calc,
                      pc_trade_npc=args.pc_trade_npc,
                      phone_calls=args.phone_calls,
+                     retry_same_species=args.retry_same_species,
                      manager_port=args.manager_port,
                      verbose=args.verbose,
                      wire_log=args.wire_log))

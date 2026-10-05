@@ -409,10 +409,12 @@ def test_run_flags_follow_one_table():
     from server.manager import RUN_FLAGS, run_flags, run_options
     defaults = run_options({})
     assert defaults["battle_calc"] is True and defaults["pc_trade_npc"] is True
+    assert defaults["retry_same_species"] is True
     assert run_flags(defaults) == [], "defaults pass no flags"
     everything_on = run_options({k: True for k, _, _ in RUN_FLAGS})
     assert "--verbose" in run_flags(everything_on) and "--no-battle-calc" not in run_flags(everything_on)
     assert run_flags(run_options({"battle_calc": False})) == ["--no-battle-calc"]
+    assert run_flags(run_options({"retry_same_species": False})) == ["--dead-zone-on-miss"]
 
 
 # ── a run's secondary pages, in the Manager's chrome ────────────────────────────────────

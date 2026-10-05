@@ -75,7 +75,7 @@ async def _replace(srv, replacement):
 @pytest.mark.parametrize("rom_type", ["red", "firered"])
 @pytest.mark.parametrize("replacement", ["reset", "rollback"])
 async def test_contractless_run_reconnects_and_processes_events(tmp_path, rom_type, replacement):
-    srv = SLinkServer(data_dir=str(tmp_path))
+    srv = SLinkServer(data_dir=str(tmp_path), retry_same_species=False)
     hello = _hello("a", {"rom_type": rom_type, **companion(rom_type)})
     async with _tcp(srv) as (connect, _):
         old = await connect()
@@ -111,7 +111,7 @@ async def test_run_replacement_closes_all_sockets_including_unidentified(tmp_pat
 
 @pytest.mark.asyncio
 async def test_old_disconnect_does_not_mark_live_replacement_disconnected(tmp_path):
-    srv = SLinkServer(data_dir=str(tmp_path))
+    srv = SLinkServer(data_dir=str(tmp_path), retry_same_species=False)
     hello = _hello("a", {"rom_type": "red", **companion("red")})
     async with _tcp(srv) as (connect, tasks):
         old = await connect()

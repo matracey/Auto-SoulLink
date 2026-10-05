@@ -157,11 +157,13 @@ def _legacy_cartridges(run: dict) -> dict | None:
 # it. Reasons are shown on the option that is greyed, so "off" and "impossible" look
 # different. Keyed by game_id, with a "_rr" suffix for the Radical Red build of Gen 3.
 OPTION_GROUPS = [
+    ("Encounter", ["retry_same_species"]),
     ("Link clauses", ["species_lock", "gender_lock", "type_lock"]),
     ("Battle", ["explode_mode", "rival_team_swap", "overworld_presence"]),
     ("Native UI", ["native_messages", "native_sounds", "phone_calls", "battle_calc", "pc_trade_npc"]),
 ]
 OPTIONS = {
+    "retry_same_species": ("Retry First Species", "A failed first encounter stays open, but only that species may be caught."),
     "species_lock": ("Species Clause", "Reject links where both mons are in the same evolution family."),
     "gender_lock": ("Gender Clause", "Reject links where both mons share a gender."),
     "type_lock": ("Type Clause", "Reject links where both mons share any type."),
@@ -175,6 +177,7 @@ OPTIONS = {
     "pc_trade_npc": ("PC Trade NPC", "A Pokémon-Center trade NPC, when Overworld Presence is off."),
 }
 OPTION_SUPPORT = {
+    "retry_same_species": {"all": True},
     "species_lock": {"all": True},
     "gender_lock": {"all": True,
                     "gen1_rby": {"ok": False, "why": "Gen 1 has no gender mechanic, so the clause can never fire."},
@@ -239,6 +242,7 @@ OPTION_SUPPORT = {
 # out by hand at four sites before, and they had drifted: handle_new stored `verbose`,
 # _adopt_orphans did not, so an adopted run could never be started verbose.
 RUN_FLAGS = (
+    ("retry_same_species", "--dead-zone-on-miss", True),
     ("species_lock", "--species-clause", False),
     ("gender_lock", "--gender-clause", False),
     ("type_lock", "--type-clause", False),

@@ -275,7 +275,7 @@
     return Object.assign(randomizerFields(window.SLINK_RANDOMIZER), {
       form: form,
       ports: window.SLINK_NEXT_PORTS,
-      draft: { name: '', game: '', opts: { battle_calc: true, pc_trade_npc: true, phone_calls: true } },
+      draft: { name: '', game: '', opts: { retry_same_species: true, battle_calc: true, pc_trade_npc: true, phone_calls: true } },
       busy: false, error: '', stage: '', tried: false,
       init() {
         var self = this;

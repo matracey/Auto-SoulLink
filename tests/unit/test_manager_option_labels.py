@@ -145,6 +145,14 @@ def test_phone_calls_is_a_gen2_checkbox_default_on():
     assert ("phone_calls", "--no-phone-calls", True) in manager.RUN_FLAGS
 
 
+def test_retry_first_species_is_available_and_default_on():
+    from server import manager
+
+    assert "retry_same_species" in dict(manager.OPTION_GROUPS)["Encounter"]
+    assert manager.OPTION_SUPPORT["retry_same_species"] == {"all": True}
+    assert ("retry_same_species", "--dead-zone-on-miss", True) in manager.RUN_FLAGS
+
+
 def test_the_new_run_form_seeds_every_default_on_option_checked():
     """A default-ON run flag must render checked on a fresh New-run form (review cx-158f3337 F1: phone_calls
     rendered unchecked while the run was ON, so the box read the opposite of what the run did)."""

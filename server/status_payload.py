@@ -68,6 +68,7 @@ def empty_status_payload() -> dict:
             "species_lock": False,
             "gender_lock": False,
             "type_lock": False,
+            "retry_same_species": True,
             "explode_mode": False,
             "rival_team_swap": False,
             "overworld_presence": False,

@@ -120,7 +120,8 @@ def test_no_companion_title_is_offered_for_the_expansion():
 def test_the_expansion_option_rows_are_explicit(routed):
     support = mgr.new_run_form()["support"][KEY]
     ok = {k: v["ok"] for k, v in support.items()}
-    assert ok == {"species_lock": True, "gender_lock": True, "type_lock": True,
+    assert ok == {"retry_same_species": True,
+                  "species_lock": True, "gender_lock": True, "type_lock": True,
                   "explode_mode": False, "rival_team_swap": False, "overworld_presence": False,
                   "native_messages": False, "native_sounds": False, "phone_calls": False,
                   "battle_calc": True, "pc_trade_npc": False}
@@ -138,7 +139,11 @@ def test_every_other_game_keeps_exactly_its_table(routed):
         return {k: v for k, v in d.items() if k != KEY}
 
     assert [g for g in form["games"] if g["key"] != KEY] == want["games"]
-    assert others(form["support"]) == want["support"]
+    existing_support = {
+        game: {key: value for key, value in options.items() if key != "retry_same_species"}
+        for game, options in others(form["support"]).items()
+    }
+    assert existing_support == want["support"]
     assert [g for g in form["randomizer_games"] if g != KEY] == want["randomizer_games"]
     assert [g for g in form["gen1_games"] if g != KEY] == want["gen1_games"]
     assert others(mgr.GAME_FAMILY) == want["game_family"]

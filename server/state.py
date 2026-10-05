@@ -185,7 +185,7 @@ def _valid_battle_identity(session, battle_id) -> bool:
 
 
 class SoulLinkState:
-    def __init__(self, data_dir: str = None, species_lock: bool = False, gender_lock: bool = False, type_lock: bool = False, explode_mode: bool = False, is_rr: bool = False, adapter: GameRulesAdapter = None, rival_team_swap: bool = False, overworld_presence: bool = False, native_messages: bool = False, native_sounds: bool = False, battle_calc: bool = True, pc_trade_npc: bool = True, phone_calls: bool = True):
+    def __init__(self, data_dir: str = None, species_lock: bool = False, gender_lock: bool = False, type_lock: bool = False, explode_mode: bool = False, is_rr: bool = False, adapter: GameRulesAdapter = None, rival_team_swap: bool = False, overworld_presence: bool = False, native_messages: bool = False, native_sounds: bool = False, battle_calc: bool = True, pc_trade_npc: bool = True, phone_calls: bool = True, retry_same_species: bool = True):
         # When data_dir is provided (manager mode) use it; otherwise fall back to the
         # module-level globals so monkeypatch works in tests and the standalone server
         # keeps working unchanged.
@@ -274,6 +274,7 @@ class SoulLinkState:
         self.species_lock: bool = species_lock
         self.gender_lock: bool = gender_lock
         self.type_lock: bool = type_lock
+        self.retry_same_species: bool = retry_same_species
         # Explode Mode: when true, partner-faint propagation sends `force_explode`
         # to the surviving partner instead of `force_faint`.  The client's
         # force_explode handler runs the Variant-3 menu-skip path (auto-fires
@@ -1816,9 +1817,9 @@ class SoulLinkState:
         self._trade_settle_ticks = {"a": self.TRADE_SETTLE_TICKS, "b": self.TRADE_SETTLE_TICKS}
 
     @classmethod
-    def load(cls, data_dir: str = None, species_lock: bool = False, gender_lock: bool = False, type_lock: bool = False, explode_mode: bool = False, is_rr: bool = False, adapter: GameRulesAdapter = None, rival_team_swap: bool = False, overworld_presence: bool = False, native_messages: bool = False, native_sounds: bool = False, battle_calc: bool = True, pc_trade_npc: bool = True, phone_calls: bool = True) -> "SoulLinkState":
+    def load(cls, data_dir: str = None, species_lock: bool = False, gender_lock: bool = False, type_lock: bool = False, explode_mode: bool = False, is_rr: bool = False, adapter: GameRulesAdapter = None, rival_team_swap: bool = False, overworld_presence: bool = False, native_messages: bool = False, native_sounds: bool = False, battle_calc: bool = True, pc_trade_npc: bool = True, phone_calls: bool = True, retry_same_species: bool = True) -> "SoulLinkState":
         """Load persisted state from data/links.json, or return a fresh instance."""
-        state = cls(data_dir=data_dir, species_lock=species_lock, gender_lock=gender_lock, type_lock=type_lock, explode_mode=explode_mode, is_rr=is_rr, adapter=adapter, rival_team_swap=rival_team_swap, overworld_presence=overworld_presence, native_messages=native_messages, native_sounds=native_sounds, battle_calc=battle_calc, pc_trade_npc=pc_trade_npc, phone_calls=phone_calls)
+        state = cls(data_dir=data_dir, species_lock=species_lock, gender_lock=gender_lock, type_lock=type_lock, explode_mode=explode_mode, is_rr=is_rr, adapter=adapter, rival_team_swap=rival_team_swap, overworld_presence=overworld_presence, native_messages=native_messages, native_sounds=native_sounds, battle_calc=battle_calc, pc_trade_npc=pc_trade_npc, phone_calls=phone_calls, retry_same_species=retry_same_species)
         try:
             with open(state._links_path) as f:
                 data = json.load(f)
@@ -1875,6 +1876,7 @@ class SoulLinkState:
                 state.species_lock = bool(saved_rules.get("species_lock", species_lock))
                 state.gender_lock = bool(saved_rules.get("gender_lock", gender_lock))
                 state.type_lock = bool(saved_rules.get("type_lock", type_lock))
+                state.retry_same_species = bool(saved_rules.get("retry_same_species", retry_same_species))
                 state.explode_mode = bool(saved_rules.get("explode_mode", explode_mode))
                 state.rival_team_swap = bool(saved_rules.get("rival_team_swap", rival_team_swap))
                 state.overworld_presence = False  # deferred post-RC; see __init__
@@ -4754,6 +4756,7 @@ class SoulLinkState:
                 "species_lock": self.species_lock,
                 "gender_lock": self.gender_lock,
                 "type_lock": self.type_lock,
+                "retry_same_species": self.retry_same_species,
                 "explode_mode": self.explode_mode,
                 "rival_team_swap": self.rival_team_swap,
                 "overworld_presence": self.overworld_presence,
