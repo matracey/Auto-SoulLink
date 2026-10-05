@@ -87,6 +87,8 @@ Then open http://localhost:8090/.
 
 For a player on another machine, set **Players connect to** under Launchers to an address they can reach, then download their setup again.
 
+Already playing in standalone mGBA? Follow [Move a Radical Red save from mGBA to BizHawk](docs/mgba-to-bizhawk.md). Battery saves transfer; emulator savestates do not.
+
 Each run gets its own board, on port 8081 and up. Port 8080 is only used when you start a single run by hand with `python -m server.server`.
 
 ## Games
