@@ -373,7 +373,7 @@ MANAGER_DIR  = os.path.join(PROJECT_ROOT, "data", "runs")
 # pureRGB tooling builds the pinned pure cartridges and their overlays into -- a git
 # worktree has no .cache of its own, so it is looked for upward like find_upr_jar does.
 # .gitignore already refuses every *.gb / *.gbc / *.gba anywhere in the repo.
-ROM_UPLOAD_DIR = os.path.join(PROJECT_ROOT, "roms")
+ROM_UPLOAD_DIR = os.environ.get("SLINK_ROM_DIR") or os.path.join(PROJECT_ROOT, "roms")
 
 
 def _cache_rom_dirs() -> list[str]:
@@ -2657,12 +2657,12 @@ if __name__ == "__main__":
     parser.add_argument("--host", default="0.0.0.0", help="Bind address (default: 0.0.0.0)")
     parser.add_argument("--port", type=int, default=MANAGER_HTTP_PORT,
                         help=f"Manager HTTP port (default: {MANAGER_HTTP_PORT})")
-    parser.add_argument("--data-dir", default=None,
+    parser.add_argument("--data-dir", default=os.environ.get("SLINK_DATA_DIR"),
                         help="Where runs live (default: data/runs). A fresh directory is a fresh Manager")
     parser.add_argument("--allow-host", action="append", default=[], metavar="NAME",
                         help="Extra Host name the web UI answers to, e.g. a tunnel name or '*.<tailnet>.ts.net' "
                              "(repeatable; also SLINK_ALLOWED_HOSTS, comma-separated). Runs inherit it")
-    parser.add_argument("--public-host", default="", metavar="ADDRESS",
+    parser.add_argument("--public-host", default=os.environ.get("SLINK_PUBLIC_HOST", ""), metavar="ADDRESS",
                         help="Address players' launchers connect to (default: this machine's LAN address; "
                              "also settable on a run page)")
     args = parser.parse_args()

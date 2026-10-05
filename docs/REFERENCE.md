@@ -289,8 +289,10 @@ Each overlay polls its own `/stream/{slug}/fragment` every 2 seconds. Query para
 `calc/` is a fork of the [RadicalRedShowdown damage calculator](https://github.com/RadicalRedShowdown/damage-calc), itself a fork of the Smogon calculator. The run server serves it at `/calc/` (which redirects to `/calc/normal.html`; `hardcore.html` is the other page) and the Manager at `/runs/{id}/calc`. Files resolve from `calc/src/` first, then `calc/dist/` (`server/calc_files.py`); the HTML entry points exist only in `dist/`, so the calculator, and the board's damage preview, need a build:
 
 ```bash
-cd calc && npm install && npm run build
+cd calc && npm ci --ignore-scripts && npm ci --prefix calc --ignore-scripts && npm run build
 ```
+
+The production `Dockerfile` runs that locked build in its `calc-builder` stage and copies `calc/dist/` into the runtime image, so hosted deployments do not depend on generated files being present in the checkout.
 
 The adapter's `calc_profile()` picks the mechanics, dex and trainer sets: Radical Red and the Emerald Expansion at generation 9 with their own sets; FireRed, LeafGreen and Emerald at generation 3; Gold, Silver and Crystal at generation 2 (only Crystal has trainer sets); Red, Blue and Yellow at generation 1; pureRGB at generation 1 with its own dex and sets. A game whose profile is `None` (Gen 4, Gen 5) has no calculator.
 
