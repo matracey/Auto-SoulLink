@@ -159,7 +159,7 @@ def _legacy_cartridges(run: dict) -> dict | None:
 OPTION_GROUPS = [
     ("Encounter", ["retry_same_species"]),
     ("Link clauses", ["species_lock", "gender_lock", "type_lock"]),
-    ("Battle", ["explode_mode", "rival_team_swap", "overworld_presence"]),
+    ("Battle", ["ignore_wild_faints", "explode_mode", "rival_team_swap", "overworld_presence"]),
     ("Native UI", ["native_messages", "native_sounds", "phone_calls", "battle_calc", "pc_trade_npc"]),
 ]
 OPTIONS = {
@@ -167,6 +167,7 @@ OPTIONS = {
     "species_lock": ("Species Clause", "Reject links where both mons are in the same evolution family."),
     "gender_lock": ("Gender Clause", "Reject links where both mons share a gender."),
     "type_lock": ("Type Clause", "Reject links where both mons share any type."),
+    "ignore_wild_faints": ("Ignore Wild Faints", "Wild-battle faints and whiteouts do not retire linked pairs."),
     "explode_mode": ("Explode Mode", "On a partner's death, force the linked mon to auto-Explode."),
     "rival_team_swap": ("Rival Swap", "Rival battles load your partner's exact team instead of the canned one."),
     "overworld_presence": ("Overworld Presence", "See your partner walking in your overworld as a live peer ghost."),
@@ -183,6 +184,7 @@ OPTION_SUPPORT = {
                     "gen1_rby": {"ok": False, "why": "Gen 1 has no gender mechanic, so the clause can never fire."},
                     "gen1_purergb": {"ok": False, "why": "pureRGB has no gender mechanic, so the clause can never fire."}},
     "type_lock": {"all": True},
+    "ignore_wild_faints": {"all": True},
     "explode_mode": {"all": False, "why": "Explode Mode is not supported for this cartridge.",
                      "rom_types": {title: {"ok": True} for title in ("firered", "leafgreen", "emerald")},
                      "gen1_rby": {"ok": True, "why": "No patch needed — Explosion is move 153 and the choice is a plain RAM write."},
@@ -246,6 +248,7 @@ RUN_FLAGS = (
     ("species_lock", "--species-clause", False),
     ("gender_lock", "--gender-clause", False),
     ("type_lock", "--type-clause", False),
+    ("ignore_wild_faints", "--ignore-wild-faints", False),
     ("explode_mode", "--explode-mode", False),
     ("rival_team_swap", "--rival-team-swap", False),
     ("overworld_presence", "--overworld-presence", False),

@@ -72,6 +72,31 @@ def test_faint_marks_entry_dead(tmp_path, monkeypatch):
     assert state.links[0].status == LinkStatus.DEAD
 
 
+def test_wild_faint_is_ignored_when_rule_enabled(tmp_path, monkeypatch):
+    monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
+    state = make_state_with_link()
+    state.ignore_wild_faints = True
+
+    cmds_a = state.handle_event(
+        "a", {"event": "faint", "key": "A:1", "_is_wild_battle": True})
+    cmds_b = state.handle_event("b", {"event": "tick"})
+
+    assert noop_only(cmds_a) and noop_only(cmds_b)
+    assert state.links[0].status == LinkStatus.ALIVE
+    assert "A:1" in state.party_keys["a"]
+
+
+def test_trainer_faint_still_counts_when_wild_faints_ignored(tmp_path, monkeypatch):
+    monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
+    state = make_state_with_link()
+    state.ignore_wild_faints = True
+
+    state.handle_event(
+        "a", {"event": "faint", "key": "A:1", "_is_wild_battle": False})
+
+    assert state.links[0].status == LinkStatus.DEAD
+
+
 def test_faint_of_unknown_key_is_ignored(tmp_path, monkeypatch):
     monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
     state = SoulLinkState()
@@ -1767,6 +1792,19 @@ def test_hello_reconcile_fainted_in_party(tmp_path, monkeypatch):
     })
     cmds_b = state.handle_event("b", {"event": "tick"})
     assert has_cmd(cmds_b, "force_faint", "B:2")
+
+
+def test_wild_whiteout_is_ignored_when_rule_enabled(tmp_path, monkeypatch):
+    monkeypatch.setattr("server.state.LINKS_PATH", str(tmp_path / "links.json"))
+    state = make_state_with_link()
+    state.ignore_wild_faints = True
+
+    cmds_a = state.handle_event("a", {"event": "whiteout", "_is_wild_battle": True})
+    cmds_b = state.handle_event("b", {"event": "tick"})
+
+    assert noop_only(cmds_a) and noop_only(cmds_b)
+    assert state.links[0].status == LinkStatus.ALIVE
+    assert state.rebuild_pending["a"] is None
 
 
 def test_hello_reconcile_missing_mon_is_not_treated_as_dead(tmp_path, monkeypatch):

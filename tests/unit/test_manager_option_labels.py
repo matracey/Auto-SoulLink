@@ -153,6 +153,14 @@ def test_retry_first_species_is_available_and_default_on():
     assert ("retry_same_species", "--dead-zone-on-miss", True) in manager.RUN_FLAGS
 
 
+def test_ignore_wild_faints_is_available_and_default_off():
+    from server import manager
+
+    assert "ignore_wild_faints" in dict(manager.OPTION_GROUPS)["Battle"]
+    assert manager.OPTION_SUPPORT["ignore_wild_faints"] == {"all": True}
+    assert ("ignore_wild_faints", "--ignore-wild-faints", False) in manager.RUN_FLAGS
+
+
 def test_the_new_run_form_seeds_every_default_on_option_checked():
     """A default-ON run flag must render checked on a fresh New-run form (review cx-158f3337 F1: phone_calls
     rendered unchecked while the run was ON, so the box read the opposite of what the run did)."""

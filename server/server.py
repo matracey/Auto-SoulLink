@@ -527,6 +527,7 @@ class SLinkServer:
                  native_messages: bool = False, native_sounds: bool = False,
                  battle_calc: bool = True, pc_trade_npc: bool = True, phone_calls: bool = True,
                  retry_same_species: bool = True,
+                 ignore_wild_faints: bool = False,
                  wire_log: str = None):
         # --wire-log DIR: capture every line of every connection (card gen3-P1-C1-3).
         # None (the default) means no _WireTap is ever built and nothing changes.
@@ -550,7 +551,8 @@ class SLinkServer:
                                         battle_calc=battle_calc,
                                         pc_trade_npc=pc_trade_npc,
                                         phone_calls=phone_calls,
-                                        retry_same_species=retry_same_species)
+                                        retry_same_species=retry_same_species,
+                                        ignore_wild_faints=ignore_wild_faints)
         self.state.presentation_key_in_use = self._presentation_key_in_use
         self.state.on_trade_outcome = self._journal_trade
         # Game adapter — shared with state machine for consistent behavior.
@@ -2492,6 +2494,7 @@ class SLinkServer:
                 msg["_killer_species"] = active_foe.get("species_id", 0)
                 msg["_killer_level"]   = active_foe.get("level", 0)
             msg["_is_trainer"] = bool(bs.get("is_trainer_battle", False))
+            msg["_is_wild_battle"] = bool(bs.get("in_battle")) and not msg["_is_trainer"]
             if msg["_is_trainer"]:
                 msg["_trainer_name"] = bs.get("opponent_name", "")
                 msg["_trainer_class"] = bs.get("opponent_class", "")
@@ -2506,6 +2509,9 @@ class SLinkServer:
                             msg.get("area_id", ""))
         elif event == "whiteout":
             log.info(f"[{player_id}] whiteout")
+            bs = self.battle_state.get(player_id, {})
+            msg["_is_wild_battle"] = (
+                bool(bs.get("in_battle")) and not bool(bs.get("is_trainer_battle", False)))
             for key in self.party_details[player_id]:
                 self.party_details[player_id][key]["hp"] = 0
             self._log_event(player_id, "whiteout", "WHITED OUT! All party mons fainted")
@@ -3109,6 +3115,7 @@ class SLinkServer:
                 "gender_lock": s.gender_lock,
                 "type_lock": s.type_lock,
                 "retry_same_species": s.retry_same_species,
+                "ignore_wild_faints": s.ignore_wild_faints,
                 "explode_mode": s.explode_mode,
                 "rival_team_swap": s.rival_team_swap,
                 "overworld_presence": s.overworld_presence,
@@ -5078,7 +5085,8 @@ class SLinkServer:
                 battle_calc=self.state.battle_calc,
                 pc_trade_npc=self.state.pc_trade_npc,
                 phone_calls=self.state.phone_calls,
-                retry_same_species=self.state.retry_same_species)
+                retry_same_species=self.state.retry_same_species,
+                ignore_wild_faints=self.state.ignore_wild_faints)
             problem = restored.load_failed
         except Exception as exc:                        # e.g. UnsafeGameMigration from an old slot
             restored, problem = None, f"{type(exc).__name__}: {exc}"
@@ -5148,7 +5156,8 @@ class SLinkServer:
                                    battle_calc=self.state.battle_calc,
                                    pc_trade_npc=self.state.pc_trade_npc,
                                    phone_calls=self.state.phone_calls,
-                                   retry_same_species=self.state.retry_same_species)
+                                   retry_same_species=self.state.retry_same_species,
+                                   ignore_wild_faints=self.state.ignore_wild_faints)
         self.state.presentation_key_in_use = self._presentation_key_in_use
         self.state.on_trade_outcome = self._journal_trade
         self.adapter = self.state.adapter
@@ -5738,6 +5747,7 @@ async def main(host: str, port: int, http_port: int, reset: bool = False,
                native_messages: bool = False, native_sounds: bool = False,
                battle_calc: bool = True, pc_trade_npc: bool = True, phone_calls: bool = True,
                retry_same_species: bool = True,
+               ignore_wild_faints: bool = False,
                manager_port: int = 0, verbose: bool = False,
                wire_log: str = None):
     _configure_logging(data_dir, verbose)
@@ -5760,6 +5770,7 @@ async def main(host: str, port: int, http_port: int, reset: bool = False,
                       pc_trade_npc=pc_trade_npc,
                       phone_calls=phone_calls,
                       retry_same_species=retry_same_species,
+                      ignore_wild_faints=ignore_wild_faints,
                       wire_log=wire_log)
 
     # TCP game server.
@@ -5833,6 +5844,8 @@ if __name__ == "__main__":
     parser.add_argument("--type-clause",    action="store_true", dest="type_lock",    help="Reject links where both mons share any type")
     parser.add_argument("--dead-zone-on-miss", action="store_false", dest="retry_same_species",
         help="Close an area after a failed encounter instead of retrying its first species")
+    parser.add_argument("--ignore-wild-faints", action="store_true", dest="ignore_wild_faints",
+        help="Do not retire linked pairs for faints or whiteouts during wild battles")
     parser.add_argument("--explode-mode",   action="store_true", dest="explode_mode", help="On partner death, force the linked mon to auto-Explode (every game except the Emerald Expansion)")
     parser.add_argument("--rival-team-swap", action="store_true", dest="rival_team_swap",
         help="On rival battles, replace the rival's team with the partner's current party (Gen 1, pureRGB, Gen 2, Radical Red)")
@@ -5869,6 +5882,7 @@ if __name__ == "__main__":
                      pc_trade_npc=args.pc_trade_npc,
                      phone_calls=args.phone_calls,
                      retry_same_species=args.retry_same_species,
+                     ignore_wild_faints=args.ignore_wild_faints,
                      manager_port=args.manager_port,
                      verbose=args.verbose,
                      wire_log=args.wire_log))

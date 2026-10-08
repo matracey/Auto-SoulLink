@@ -62,6 +62,7 @@ def test_verbose_reaches_the_server_cli():
     ("species_lock", "--species-clause"),
     ("gender_lock", "--gender-clause"),
     ("type_lock", "--type-clause"),
+    ("ignore_wild_faints", "--ignore-wild-faints"),
     ("explode_mode", "--explode-mode"),
     ("rival_team_swap", "--rival-team-swap"),
     ("overworld_presence", "--overworld-presence"),

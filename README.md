@@ -60,6 +60,7 @@ Pick these when you create a run. The form greys out anything the chosen game ca
 |---|---|---|
 | Retry First Species | Keep a failed encounter open, but require that player to catch the same species on a later encounter. Enabled by default; turn it off for classic dead zones. | All |
 | Species, Gender, Type Clause | Refuse a link when both Pokémon share an evolution family, a gender, or a type. | All (no Gender Clause on Gen 1) |
+| Ignore Wild Faints | Faints and whiteouts during wild battles do not retire linked pairs. Trainer-battle and overworld faints still count. | All |
 | Explode Mode | When your partner's Pokémon dies, yours is forced to use Explosion. | All except Emerald Expansion |
 | Rival Swap | Rival battles use your partner's real team instead of the usual one. | Gen 1, pureRGB, Gen 2, Radical Red |
 | Native Sounds | Run events play sounds through the game itself. | Patched games |

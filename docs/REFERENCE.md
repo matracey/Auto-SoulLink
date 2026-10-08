@@ -80,6 +80,7 @@ Server options (`python -m server.server --help`):
 | `--run-id`, `--run-name` | | Run label for logs and display name for page titles. |
 | `--manager-port` | | Set by the Manager. A managed run redirects its HTML pages to the Manager. |
 | `--species-clause`, `--gender-clause`, `--type-clause` | off | Link clauses (see [Soul Link rules](#soul-link-rules)). |
+| `--ignore-wild-faints` | off | Do not retire linked pairs for faints or whiteouts during wild battles. |
 | `--explode-mode`, `--rival-team-swap`, `--overworld-presence`, `--native-messages`, `--native-sounds` | off | Run options (see [Run options](#run-options)). |
 | `--no-battle-calc`, `--no-pc-trade-npc`, `--no-phone-calls` | | Turn off run options that default on. |
 | `--verbose` | | DEBUG level for the console and `<data-dir>/slink.log` (the log file is always written, at INFO by default). |
@@ -188,6 +189,7 @@ The New-run form greys out what a family cannot do, with the reason, from `OPTIO
 | Species Clause | `--species-clause` | off | All families |
 | Gender Clause | `--gender-clause` | off | All except Gen 1 and pureRGB (no genders) |
 | Type Clause | `--type-clause` | off | All families |
+| Ignore Wild Faints | `--ignore-wild-faints` | off | All families |
 | Explode Mode | `--explode-mode` | off | All except Emerald Expansion |
 | Rival Swap | `--rival-team-swap` | off | All except Emerald Expansion |
 | Overworld Presence | `--overworld-presence` | off | None yet |
@@ -198,6 +200,8 @@ The New-run form greys out what a family cannot do, with the reason, from `OPTIO
 | PC Trade NPC | `--no-pc-trade-npc` | on | FireRed, LeafGreen, Emerald, Radical Red |
 
 Explode Mode: when a linked Pokémon dies in battle, its partner's active battler is forced to use Explosion (`force_explode`); a benched partner is fainted normally. Gen 1 and Gen 2 need no patch for it, since the move choice is a plain RAM write.
+
+Ignore Wild Faints: when the server's live battle state identifies a wild battle, individual faint and whiteout events do not retire any linked pair. Trainer-battle faints and out-of-battle deaths still use the normal Soul Link death rule.
 
 Rival Swap: on a `trainer_battle_start` against one of the adapter's rival IDs, the server sends `replace_rival_team` with the partner's live party blobs, and the client writes them over the enemy party. Gen 1 and Gen 2 write the plaintext enemy party directly; Gen 3 needs the companion patch because the enemy party is encrypted. On FireRed, LeafGreen and Emerald the Manager offers the option, but the Gen 3 adapter lists rival trainers only for Radical Red, so it has no effect there.
 

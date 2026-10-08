@@ -213,6 +213,7 @@ RULE_BADGES = (
     ("species_lock", "dna", "Species Clause"),
     ("gender_lock", "gender", "Gender Clause"),
     ("type_lock", "type", "Type Clause"),
+    ("ignore_wild_faints", "wild-safe", "Ignore Wild Faints"),
     ("explode_mode", "explode", "Explode Mode"),
     ("rival_team_swap", "rival-swap", "Rival Team Swap"),
     ("overworld_presence", "presence", "Overworld Presence"),

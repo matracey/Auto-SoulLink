@@ -9,14 +9,17 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+from pathlib import Path
 
 import pytest
 
 pytest.importorskip("aiohttp", reason="the manager is an aiohttp app")
 
-from server import adapters  # noqa: E402
-from server import manager as mgr  # noqa: E402
-from server import upr_pipeline  # noqa: E402
+from server import (
+    adapters,  # noqa: E402
+    manager as mgr,  # noqa: E402
+    upr_pipeline,  # noqa: E402
+)
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 ROM = os.path.join(ROOT, "patch", "build", "gen3_pokeemerald.gba")
@@ -120,7 +123,7 @@ def test_no_companion_title_is_offered_for_the_expansion():
 def test_the_expansion_option_rows_are_explicit(routed):
     support = mgr.new_run_form()["support"][KEY]
     ok = {k: v["ok"] for k, v in support.items()}
-    assert ok == {"retry_same_species": True,
+    assert ok == {"retry_same_species": True, "ignore_wild_faints": True,
                   "species_lock": True, "gender_lock": True, "type_lock": True,
                   "explode_mode": False, "rival_team_swap": False, "overworld_presence": False,
                   "native_messages": False, "native_sounds": False, "phone_calls": False,
@@ -140,7 +143,8 @@ def test_every_other_game_keeps_exactly_its_table(routed):
 
     assert [g for g in form["games"] if g["key"] != KEY] == want["games"]
     existing_support = {
-        game: {key: value for key, value in options.items() if key != "retry_same_species"}
+        game: {key: value for key, value in options.items()
+               if key not in {"retry_same_species", "ignore_wild_faints"}}
         for game, options in others(form["support"]).items()
     }
     assert existing_support == want["support"]
@@ -211,7 +215,7 @@ def test_a_plain_expansion_pair_is_handed_out_unchanged(manager_dir):
         player = out["cartridges"]["players"][pid]
         assert player["kind"] == "clean" and player["output"].endswith(f"{pid}.gba")
         assert player["fingerprint"] == ""
-        assert open(player["output"], "rb").read() == open(ROM, "rb").read()
+        assert Path(player["output"]).read_bytes() == Path(ROM).read_bytes()
 
 
 def test_an_emerald_run_refuses_expansion_cartridges_naming_both(manager_dir):
