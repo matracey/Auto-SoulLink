@@ -564,20 +564,21 @@ local function _valid_root(path)
     return false
 end
 
--- 1. Load cached path from config file
+-- 1. Prefer the runtime shipped beside this launcher. A stale slink_path.cfg
+-- must never redirect a freshly downloaded player pack to an older connector.
+if not SLINK_ROOT then
+    local dir = _launcher_dir
+    for _, rel in ipairs({{"", "../", "../../", "../../../"}}) do
+        if _valid_root(dir .. rel) then SLINK_ROOT = dir .. rel; break end
+    end
+end
+
+-- 2. Fall back to a previously selected standalone project folder.
 if not SLINK_ROOT then
     local f = io.open(_cfg_path, "r")
     if f then
         local cached = f:read("*l"); f:close()
         if _valid_root(cached) then SLINK_ROOT = cached end
-    end
-end
-
--- 2. Auto-detect: search from this script's directory upward for lua/slink.lua
-if not SLINK_ROOT then
-    local dir = _launcher_dir
-    for _, rel in ipairs({{"", "../", "../../", "../../../"}}) do
-        if _valid_root(dir .. rel) then SLINK_ROOT = dir .. rel; break end
     end
 end
 

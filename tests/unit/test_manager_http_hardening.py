@@ -145,6 +145,7 @@ def test_launcher_host_and_comment_cannot_execute_lua(host):
     runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
     evaluate = runtime.eval("""function(source)
         local env = {
+            ipairs = ipairs,
             debug = {getinfo = function() return {source = '@C:/test/launcher.lua'} end},
             io = {open = function() return {
                 read = function() return 'C:/SLink/' end,

@@ -46,3 +46,10 @@ def test_launcher_embeds_connect_params():
     assert 'SLINK_HOST   = "192.168.1.10"' in src
     assert "SLINK_PORT   = 54321" in src
     assert 'SLINK_PLAYER = "a"' in src
+
+
+def test_launcher_prefers_packaged_runtime_over_cached_path():
+    src = _build_launcher(RUN, "b", "soullink.example")
+    adjacent = src.index("-- 1. Prefer the runtime shipped beside this launcher.")
+    cached = src.index("-- 2. Fall back to a previously selected standalone project folder.")
+    assert adjacent < cached
