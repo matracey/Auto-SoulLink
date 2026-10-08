@@ -51,15 +51,17 @@ local _drop_until_newline = false  -- true while skipping the tail of an over-lo
 local MAX_LINE        = 4 * 1024 * 1024   -- matches the server's own per-line cap
 local _fail_logged = false   -- one connect-failure message per outage
 local _reconnect_cd   = 0       -- frames remaining before next reconnect attempt
+local _connect_wait   = 0       -- frames left for an in-progress OS connect
 
 local RECONNECT_FRAMES = 30     -- ~0.5 s at 60 fps (initial retry interval)
 local RECONNECT_MAX   = 1800   -- ~30 s cap (exponential backoff)
+local CONNECT_TIMEOUT = 300    -- ~5 s for a WAN handshake before retrying
 local _reconnect_step = RECONNECT_FRAMES  -- current backoff interval
 
 -- ── Internal: connect attempt ─────────────────────────────────────────────────
 -- Non-blocking connect: settimeout(0) so BizHawk never stalls.
 -- On loopback this connects in < 1 ms; over LAN the OS returns EINPROGRESS
--- and the next pump() detects completion via a zero-length send.
+-- and pump() waits until a protocol-safe newline can actually be written.
 local function _do_connect()
     _safe_close(_sock)
     _sock = nil
@@ -81,6 +83,7 @@ local function _do_connect()
         -- Connection in progress — store socket, we'll check on next pump()
         _sock = s
         _connected = false
+        _connect_wait = CONNECT_TIMEOUT
         return false, "connecting"
     else
         _safe_close(s)
@@ -91,22 +94,29 @@ end
 -- Check if a pending non-blocking connect has completed.
 local function _check_pending_connect()
     if not _sock or _connected then return end
-    -- Attempt a zero-length send to probe the connection state.
-    -- LuaSocket send returns: bytes_sent, err_msg, partial_idx
-    -- On connected socket: 0, nil  (success)
-    -- On still-connecting: nil, "timeout"  (not ready yet)
-    -- On failed connect:   nil, "closed"/"refused"  (give up)
-    local bytes, err = _sock:send("")
-    if bytes then
-        -- Send succeeded → connected
+    -- Neither a zero-length send nor getpeername() proves completion on Winsock:
+    -- both can succeed before the socket is writable. A single newline is safe
+    -- protocol traffic (the server ignores empty lines) and can only leave once
+    -- the OS has completed the handshake.
+    local bytes, err, last = _sock:send("\n")
+    if (type(bytes) == "number" and bytes >= 1)
+       or (type(last) == "number" and last >= 1) then
         _connected = true
+        _connect_wait = 0
         _reconnect_step = RECONNECT_FRAMES
         console.log(string.format("[SLink] TCP connected to %s:%d", _host, _port))
-    elseif err == "timeout" then
-        -- Still connecting, check again next frame
         return
-    else
-        -- Connect failed
+    end
+
+    if err and err ~= "timeout" and err ~= "Socket is not connected"
+       and err ~= "Operation already in progress" then
+        _safe_close(_sock)
+        _sock = nil
+        _connect_wait = 0
+        return
+    end
+    _connect_wait = _connect_wait - 1
+    if _connect_wait <= 0 then
         _safe_close(_sock)
         _sock = nil
     end
@@ -269,6 +279,7 @@ function M.disconnect()
     _send_offset = 0
     _recv_buf = ""
     _drop_until_newline = false
+    _connect_wait = 0
     -- An event queued the frame the socket died must not outlive the connection: every
     -- client re-sends hello first thing on (re)connect (e.g. lua/gen1/client.lua frame_end,
     -- archive/gen3-old-client:lua/clients/gen3_frlge_client.lua), and server.py refuses any event that arrives
