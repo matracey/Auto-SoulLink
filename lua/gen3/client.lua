@@ -487,6 +487,23 @@ function Client.new(p)
         end
     end
 
+    local function unknown_acquisition_count(party)
+        local fresh, seen = 0, {}
+        for _, m in ipairs(party) do
+            local k = key(m)
+            if not st.known[k] and not st.eggs[k] and m.is_egg == 0 and m.is_bad_egg == 0 then
+                fresh, seen[k] = fresh + 1, true
+            end
+        end
+        rescan_boxes()
+        for _, e in ipairs(st.box_cache) do
+            if not seen[e.key] and not st.known[e.key] and not st.eggs[e.key] and e.is_egg == 0 then
+                fresh, seen[e.key] = fresh + 1, true
+            end
+        end
+        return fresh
+    end
+
     local function settle_acquisitions(party, area_id, caught)
         local gift = not caught
         local function resolve_area()
@@ -649,7 +666,7 @@ function Client.new(p)
     end
 
     -- per-battle facts the end of the battle needs: the foe and whether it was a trainer
-    local function note_battle(b)
+    local function note_battle(b, announce)
         local bt = st.battle
         if not (bt and b) then return end
         if b.is_trainer ~= nil then bt.is_trainer = b.is_trainer end
@@ -661,8 +678,12 @@ function Client.new(p)
         end
         -- one announcement per battle id (OMP F5): a battle a pre-battle announcement already named
         -- is never announced again, even when its battle_begin refused the carry
-        if bt.battle_id and bt.battle_id == st.pre_announced_id then bt.trainer_sent = true end
-        if b.is_trainer and num(b.trainer_id) and b.trainer_id ~= 0 and not bt.trainer_sent then
+        if announce ~= false and b.is_trainer
+           and bt.battle_id and bt.battle_id == st.pre_announced_id then
+            bt.trainer_sent = true
+        end
+        if announce ~= false and b.is_trainer
+           and num(b.trainer_id) and b.trainer_id ~= 0 and not bt.trainer_sent then
             bt.trainer_sent = true
             bt.trainer_id = b.trainer_id
             -- battle_id rides with the announcement: it is what this battle's
@@ -809,6 +830,20 @@ function Client.new(p)
         -- keeps going
         local trading = st.trading_now()
         if trading then st.trade = nil end
+        if f.battle_end and not f.acquire and st.battle and st.battle.is_trainer == false
+           and not st.frozen and not trading then
+            local fresh = unknown_acquisition_count(party)
+            if fresh == 1 then
+                f.acquire, f.caught = true, true
+                f.acq_area = st.battle.area_id or area_id
+                st.battle.caught = true
+                log(string.format("ACQ fallback via=battle_end area=%s unknown=1",
+                                  tostring(f.acq_area)))
+            elseif fresh > 1 then
+                log(string.format("ACQ fallback ambiguous via=battle_end area=%s unknown=%d",
+                                  tostring(st.battle.area_id or area_id), fresh))
+            end
+        end
         if f.acquire and (st.frozen or trading) then
             -- the flags were already cleared above: this acquisition signal is dropped, not retried
             log(string.format("ACQ skipped reason=%s dropped=true caught=%s", st.frozen and "frozen" or "trading", tostring(f.caught)))
@@ -1534,7 +1569,9 @@ function Client.new(p)
             -- both halves of the request identity live on the epoch record: the guard below and
             -- the harness read them from here, never from a second copy
             st.battle = { caught = false, base_keys = base, battle_id = battle_seq,
+                          area_id = area_now(),
                           session = session_nonce }
+            note_battle(battle_now(), false)
             -- the battle a pre-battle announcement already named: never announce it twice (the
             -- server queues one swap per trainer_battle_start)
             local ra = rival_authority
@@ -1613,6 +1650,7 @@ function Client.new(p)
         if st.baselined and f < st.observe_at then return end
         st.observe_at = nil
         if not drv.game_is_live() then return end
+        if st.battle or in_battle() then return end
         local party = party_read()
         if not party then return end
         update_frozen(party)

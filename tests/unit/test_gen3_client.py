@@ -224,6 +224,38 @@ def test_a_catch_with_a_full_party_is_a_boxed_capture():
     assert cap["stats"] == FULL_STATS and cap["level"] == 5 and cap["maxHP"] == 20
 
 
+def test_battle_end_recovers_a_missed_party_capture_signal():
+    w = caught_world()
+    w.enter_battle([FOE])
+    w.step()
+    w.set_party(party(A, B, C))
+    w.step(5)
+    assert w.events("capture") == []
+    w.leave_battle(outcome=7)
+    w.step()
+
+    (cap,) = w.events("capture")
+    assert cap["key"] == KC and cap["area_id"] == "route_1"
+    assert len(acq(w, "fallback via=battle_end", "unknown=1")) == 1
+
+
+def test_battle_end_recovers_a_missed_boxed_capture_signal():
+    w = live(pids=(A, B))
+    w.set_balls(5)
+    w.step(30)
+    w.logs.clear()
+    w.enter_battle([mon_record(C, OT, species=19)])
+    w.step()
+    w.set_box(1, 0, mon_record(C, OT, species=19))
+    w.step(5)
+    w.leave_battle(outcome=7)
+    w.step()
+
+    (cap,) = w.events("capture")
+    assert cap["key"] == KC and cap["in_box"] is True and cap["area_id"] == "route_1"
+    assert len(acq(w, "fallback via=battle_end", "unknown=1")) == 1
+
+
 @pytest.mark.parametrize("pack,title", [("gen3_frlg", "firered"), ("gen3_rr", "radical_red")])
 def test_major4_party_to_box_carries_the_complete_stats_on_both_packs(pack, title):
     w = live(pack, title, pids=(A, B))
