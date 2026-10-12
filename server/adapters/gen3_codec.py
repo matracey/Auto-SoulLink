@@ -136,7 +136,10 @@ def encode_name(name: str, size: int) -> bytes:
     i = 0
     while i < len(name):
         if name[i] == "<" and name[i:i + 2] == "<$" and name[i + 4:i + 5] == ">":
-            out.append(int(name[i + 2:i + 4], 16))
+            byte = int(name[i + 2:i + 4], 16)
+            if byte == NAME_EOS:
+                raise ValueError("name cannot contain a terminator escape")
+            out.append(byte)
             i += 5
             continue
         try:

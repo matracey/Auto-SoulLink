@@ -238,6 +238,12 @@ def test_name_round_trip_and_unknown_glyph_token():
     assert codec.decode_name(bytes([0xFF, 0xBB])) == ""      # stops at EOS
 
 
+@pytest.mark.parametrize("name", ["<$FF>", "<$FF>A", "A<$ff>B", "ASH<$FF>"])
+def test_name_refuses_embedded_terminator_escape(name):
+    with pytest.raises(ValueError, match="terminator"):
+        codec.encode_name(name, 7)
+
+
 def test_charmap_letters_and_digits_match_pret():
     # charmap.txt#L67-L156 at the pinned commit.
     assert codec.FR_CHARMAP[0xBB] == "A" and codec.FR_CHARMAP[0xD4] == "Z"
