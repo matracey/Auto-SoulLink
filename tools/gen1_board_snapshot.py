@@ -222,13 +222,16 @@ def main():
         partial = fetch(content.attrs["hx-get"], "poll.html", partial=True)
         (receipt / "capture.json").write_text(json.dumps(provenance, indent=2) + "\n", encoding="utf-8")
     results = inspect_board(source, status)
+    required_failed = any(not results[name][0] for name in args.require)
     lines = ["BOARD_CAPTURE " + json.dumps(provenance, ensure_ascii=True)]
     for name, (ok, evidence) in results.items():
         snippet = json.dumps(evidence, ensure_ascii=True, separators=(",", ":"))
         lines.append(f"BOARD_ASSERT {name} ok={str(ok).lower()} evidence={snippet}")
     if not args.selftest:
         # Never combine two HTML responses to manufacture a pass across different moments.
-        for name, (ok, evidence) in inspect_board(partial, status).items():
+        poll_results = inspect_board(partial, status)
+        required_failed |= any(not poll_results[name][0] for name in args.require)
+        for name, (ok, evidence) in poll_results.items():
             lines.append(f"BOARD_POLL_ASSERT {name} ok={str(ok).lower()} evidence="
                          + json.dumps(evidence, ensure_ascii=True, separators=(",", ":")))
     text = "\n".join(lines) + "\n"
@@ -236,7 +239,7 @@ def main():
         (receipt / "assertions.txt").write_text(text, encoding="utf-8")
         print("BOARD_RECEIPT " + str(receipt))
     print(text, end="")
-    return int(any(not results[name][0] for name in args.require))
+    return int(required_failed)
 
 
 if __name__ == "__main__":
