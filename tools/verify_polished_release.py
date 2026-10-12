@@ -38,14 +38,18 @@ Fail-closed rules, all of them load-bearing:
     sha1 the CURRENT `data/polished/overlay_provenance.json` publishes, the item is STALE and
     fails, printing both hashes. The phone-card commit moved the overlay from 29ea04c2 to
     34942315, so every earlier receipt is stale until it is re-run: that is the gate working.
-  * Every primary/secondary artifact and every run witness is re-hashed. The witness must
-    bind the declared execution cut, current digest/overlay and artifact scope. Missing,
-    corrupt or contradictory supporting evidence fails; a receipt cannot vouch for itself.
-    Producer verdicts are interpreted, and supported scenario oracles replay the retained
-    observations with the current judge. This consumes evidence, never launches an emulator.
-    The digest includes the shared panel/core, ROM scan/encounter presentation, and runtime
-    pack tree. Only the pack's *.md/*.txt prose may be excluded. A missing declared runtime
-    file is red; widening this scope requires a fresh execution, never a receipt restamp.
+  * Every primary/secondary artifact and every run witness is re-hashed. Literal absolute
+    paths and exact binding fields are required; a witness's optional head must equal its
+    source_head. Supporting artifacts must have distinct canonical paths; the primary cannot
+    match a supporting artifact or witness by content hash. Independent empty audits may
+    match by content and run-witness references may repeat. Missing, corrupt or contradictory
+    supporting evidence fails; a receipt cannot vouch for itself. Capture evidence must
+    be text with the failed-throw label and its bound raw throws must pass the oracle;
+    title/R1 controls must be JSON. Other supported oracles replay retained observations.
+    This never launches an emulator. The digest includes the entire Gen 2 Lua tree, shared
+    panel/core, ROM scan/encounter presentation and runtime pack tree. Only pack *.md/*.txt
+    prose may be excluded. A missing declared input is red; widening scope requires a fresh
+    execution, never a receipt restamp.
   * A MANAGER item is an import and an assertion against the live server modules. The jar pin is
     compared both to `data/upr_jars.json` and, when the jar file is reachable, to its own bytes.
   * A RELEASE item builds with companion patches and must pass ZIP hygiene. Its Polished UPS
@@ -322,6 +326,59 @@ def receipt_schema_errors(doc: object) -> list[str]:
     return errs
 
 
+_WITNESS_FIELDS = {"path", "sha256", "scope", "source_head", "code_digest"}
+_ARTIFACT_FIELDS = {"path", "sha256", "run_witness"}
+_WITNESS_DOCUMENT_FIELDS = {"evidence_root", "source_head", "code_digest", "overlay_sha1"}
+
+
+def literal_evidence_path(value: object) -> Path:
+    """Shared binder boundary: a nonempty literal absolute path, never implicit CWD."""
+    if not isinstance(value, str) or not value or any(char in value for char in "*?[]"):
+        raise ValueError("literal absolute evidence path required")
+    path = Path(value)
+    if not path.is_absolute():
+        raise ValueError(f"relative evidence path: {value}")
+    return path.resolve()
+
+
+def validate_evidence_descriptor(record: object) -> None:
+    """Shared artifact descriptor contract, excluding witness reads and snapshot mechanics."""
+    if not isinstance(record, dict) or set(record) != _ARTIFACT_FIELDS:
+        raise ValueError("artifact descriptor exact fields required")
+    literal_evidence_path(record["path"])
+    if not isinstance(record["sha256"], str) or not _HEX64.fullmatch(record["sha256"]):
+        raise ValueError("artifact needs lowercase sha256")
+
+
+def validate_run_witness(record: object, witness: object, artifact: Path, *,
+                         code_digest: str, overlay_sha1: str | None,
+                         source_head: str | None = None) -> None:
+    """Validate already-hashed witness metadata; reusable by rebind3 without its Snapshot."""
+    if not isinstance(record, dict) or set(record) != _WITNESS_FIELDS:
+        raise ValueError("run_witness exact fields required (no aliases)")
+    literal_evidence_path(record["path"])
+    if not isinstance(record["sha256"], str) or not _HEX64.fullmatch(record["sha256"]):
+        raise ValueError("witness needs lowercase sha256")
+    base = literal_evidence_path(record["scope"])
+    if not isinstance(witness, dict) or set(witness) not in (
+            _WITNESS_DOCUMENT_FIELDS, _WITNESS_DOCUMENT_FIELDS | {"head"}):
+        raise ValueError("witness document exact fields required")
+    if not artifact.resolve().is_relative_to(base):
+        raise ValueError(f"artifact outside witness scope: {artifact}")
+    if literal_evidence_path(witness["evidence_root"]) != base:
+        raise ValueError("evidence_root does not equal declared scope")
+    source = record["source_head"]
+    if not isinstance(source, str) or not _HEX40.fullmatch(source):
+        raise ValueError("missing source_head execution cut")
+    if (witness["source_head"] != source or witness.get("head", source) != source
+            or (source_head is not None and source != source_head)):
+        raise ValueError("source_head disagrees with recorded execution cut")
+    if record["code_digest"] != code_digest or witness["code_digest"] != code_digest:
+        raise ValueError("code_digest disagrees with receipt execution binding")
+    if witness["overlay_sha1"] != overlay_sha1:
+        raise ValueError("overlay_sha1 disagrees with current provenance")
+
+
 def _evidence_bytes(record: object, label: str, row: Row) -> bytes | None:
     """Read once: the bytes hashed are also the bytes interpreted."""
     if not isinstance(record, dict):
@@ -332,9 +389,9 @@ def _evidence_bytes(record: object, label: str, row: Row) -> bytes | None:
         row.fail(f"{label}: needs path and lowercase sha256")
         return None
     try:
-        raw = Path(path).read_bytes()
-    except OSError as exc:
-        row.fail(f"{label}: evidence file not reachable: {path}: {exc}")
+        raw = literal_evidence_path(path).read_bytes()
+    except (OSError, ValueError) as exc:
+        row.fail(f"{label}: evidence file not reachable or invalid path: {path}: {exc}")
         return None
     if hashlib.sha256(raw).hexdigest() != expected:
         row.fail(f"{label}: evidence sha256 mismatch: {path}")
@@ -351,28 +408,45 @@ def _check_witness(record: object, artifact: Path, doc: dict, current_rom: str |
         return
     try:
         witness = loads_json(raw.decode("utf-8"))
-        if not isinstance(witness, dict):
-            raise ValueError("witness must be an object")
-        scope = record.get("scope")
-        if not isinstance(scope, str) or not scope:
-            raise ValueError("missing scope")
-        base = Path(scope).resolve()
-        if not artifact.resolve().is_relative_to(base):
-            raise ValueError(f"artifact outside witness scope: {artifact}")
-        evidence_root = witness.get("evidence_root")
-        if not isinstance(evidence_root, str) or Path(evidence_root).resolve() != base:
-            raise ValueError("evidence_root does not equal declared scope")
-        source = record.get("source_head")
-        if not isinstance(source, str) or not _HEX40.fullmatch(source):
-            raise ValueError("missing source_head execution cut")
-        if witness.get("source_head") != source or witness.get("head", source) != source:
-            raise ValueError("source_head disagrees with recorded execution cut")
-        if record.get("code_digest") != doc["code_digest"] or witness.get("code_digest") != doc["code_digest"]:
-            raise ValueError("code_digest disagrees with receipt execution binding")
-        if witness.get("overlay_sha1") != current_rom:
-            raise ValueError("overlay_sha1 disagrees with current provenance")
+        validate_run_witness(record, witness, artifact, code_digest=doc["code_digest"],
+                             overlay_sha1=current_rom)
     except (UnicodeError, ValueError, TypeError, OSError) as exc:
         row.fail(f"{label}: invalid witness binding: {exc}")
+
+
+def _check_evidence_aliases(doc: dict, row: Row) -> None:
+    """Distinct supporting paths, primary content isolation, and reusable run witnesses."""
+    records = [{"path": doc["evidence_file"], "sha256": doc["evidence_sha256"]},
+               *doc["secondary_evidence"]]
+    paths = set()
+    primary_sha = doc["evidence_sha256"]
+    for index, record in enumerate(records):
+        if not isinstance(record, dict):
+            continue
+        try:
+            path = literal_evidence_path(record.get("path"))
+        except ValueError:
+            continue  # the byte/binding checks report the invalid record
+        sha = record.get("sha256")
+        if not isinstance(sha, str) or not _HEX64.fullmatch(sha):
+            continue
+        if path in paths or (index > 0 and sha == primary_sha):
+            row.fail(f"supporting evidence aliases another artifact: {path}")
+        paths.add(path)
+    witnesses = [doc["run_witness"], *(record.get("run_witness") for record in doc["secondary_evidence"]
+                                      if isinstance(record, dict))]
+    for record in witnesses:
+        if not isinstance(record, dict):
+            continue
+        try:
+            path = literal_evidence_path(record.get("path"))
+        except ValueError:
+            continue
+        sha = record.get("sha256")
+        if not isinstance(sha, str) or not _HEX64.fullmatch(sha):
+            continue
+        if path in paths or sha == primary_sha:
+            row.fail(f"run witness aliases evidence artifact: {path}")
 
 
 def _producer_errors(item: dict, raw: bytes) -> list[str]:
@@ -382,6 +456,20 @@ def _producer_errors(item: dict, raw: bytes) -> list[str]:
     try:
         text = raw.decode("utf-8")
         scenario = item["expect_scenario"]
+        json_primary = text.lstrip().startswith("{")
+        if scenario == "live/capture-party-only":
+            try:
+                loads_json(text)
+            except ValueError:
+                pass
+            else:
+                return ["capture primary must be text, not a JSON verdict"]
+            contract = loads_json((ROOT / "tools/polished_live/capture_contract.json").read_text(encoding="utf-8"))
+            label = "STAGE2 " + contract["failed_throw_check"]
+            if not re.search(r"^\s*\[ok\] " + re.escape(label) + r"\b", text, re.MULTILINE):
+                return ["producer missing observed failed-throw negative"]
+        if scenario in ("title/wordmark-vs-clean-control", "r1/manager-randomized-pair") and not json_primary:
+            return ["scenario primary must be JSON with its native control observations"]
         if scenario == "live/hello-panel-true":
             records = [loads_json(line) for line in text.splitlines() if line.strip()]
             hellos = [r["msg"] for r in records if r.get("dir") == "c2s"
@@ -389,7 +477,7 @@ def _producer_errors(item: dict, raw: bytes) -> list[str]:
             if not hellos or any(h.get("panel") is not True or h.get("panel_abi") != 3 for h in hellos):
                 return ["producer has no valid panel hello"]
             return []
-        if text.lstrip().startswith("{"):
+        if json_primary:
             doc = loads_json(text)
             if not isinstance(doc, dict):
                 return ["producer is not an object"]
@@ -418,11 +506,6 @@ def _producer_errors(item: dict, raw: bytes) -> list[str]:
         verdicts = re.findall(r"^RESULT:\s+(PASS|FAIL)\b.*$", text, re.MULTILINE)
         if verdicts != ["PASS"] or re.search(r"^\s*\[(?:fail|FAIL)\]", text, re.MULTILINE):
             return ["producer needs one PASS verdict and no failed checks"]
-        if scenario == "live/capture-party-only":
-            contract = loads_json((ROOT / "tools/polished_live/capture_contract.json").read_text(encoding="utf-8"))
-            label = "STAGE2 " + contract["failed_throw_check"]
-            if not re.search(r"^\s*\[ok\] " + re.escape(label) + r"\b", text, re.MULTILINE):
-                return ["producer missing observed failed-throw negative"]
         return []
     except (OSError, UnicodeError, ValueError, TypeError, KeyError, AttributeError) as exc:
         return [f"producer evidence malformed: {exc}"]
@@ -435,6 +518,27 @@ def _replay_errors(item: dict, primary: bytes, evidence: Path,
 
     scenario = item["expect_scenario"]
     try:
+        if scenario == "live/capture-party-only":
+            negatives = [raw for path, raw in artifacts.items() if path.name == "capture_negative.json"]
+            if len(negatives) != 1:
+                return ["capture replay needs one bound capture_negative.json"]
+            recorded = loads_json(negatives[0].decode("utf-8"))
+            throws = recorded.get("throws") if isinstance(recorded, dict) else None
+            if not isinstance(throws, list):
+                return ["capture replay missing throw observations"]
+            # Mirror live.lua Oracle.evaluate_failed_throws: successful captures
+            # do not count; at least one failed throw and zero failed-throw hits.
+            failed, hits = 0, 0
+            for throw in throws:
+                if (not isinstance(throw, dict) or type(throw.get("caught")) is not bool
+                        or type(throw.get("cap_hits")) is not int or throw["cap_hits"] < 0):
+                    return ["capture replay malformed throw observation"]
+                if not throw["caught"]:
+                    failed += 1
+                    hits += throw["cap_hits"]
+            if failed == 0 or hits != 0:
+                return [f"capture replay failed throws {failed}; capture hits during failed throws {hits}"]
+            return []
         if scenario in ("duo/play-faint-natural", "duo/play-whiteout-natural"):
             from tools.polished_live import duo
 
@@ -557,12 +661,17 @@ def check_live(item: dict, root: Path, current_rom: str | None,
     artifacts: dict[Path, bytes] = {}
     for index, record in enumerate(secondary):
         label = f"secondary_evidence[{index}]"
+        try:
+            validate_evidence_descriptor(record)
+        except ValueError as exc:
+            row.fail(f"{label}: invalid artifact binding: {exc}")
         raw = _evidence_bytes(record, label, row)
         if raw is not None:
             artifacts[Path(record["path"]).resolve()] = raw
         if isinstance(record, dict) and isinstance(record.get("path"), str):
             _check_witness(record.get("run_witness"), Path(record["path"]), doc, current_rom,
                            label + " witness", row)
+    _check_evidence_aliases(doc, row)
     if primary is not None:
         for error in _producer_errors(item, primary):
             row.fail(error)

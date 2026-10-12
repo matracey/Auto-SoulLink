@@ -73,11 +73,7 @@
   "code_digest_files": [
     "lua/*.lua",
     "server/**/*.py",
-    "lua/gen2/polished*.lua",
-    "lua/gen2/entry.lua",
-    "lua/gen2/client.lua",
-    "lua/gen2/panel.lua",
-    "lua/gen2/signals.lua",
+    "lua/gen2/**/*",
     "server/adapters/polished_codec.py",
     "server/adapters/gen2_polished.py",
     "patch/polished/src/*.asm",
