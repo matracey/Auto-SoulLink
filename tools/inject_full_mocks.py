@@ -1,6 +1,7 @@
 """Comprehensive mock data injector — populates every widget with realistic
 state for visual testing. Run while the SLink server is listening on
 TCP 54321 and HTTP 8080 (the defaults).
+Set SLINK_ADMIN_KEY for protected servers. A failed reset aborts injection.
 
 What you get after running:
 * Both players (Alice / Bob) connected, FireRed / LeafGreen
@@ -29,6 +30,7 @@ import asyncio
 import contextlib
 import json
 import os
+import sys
 import urllib.request
 
 # Defaults match `python -m server.server`. A run spawned by the Run Manager gets its own
@@ -77,6 +79,8 @@ def http_post(path: str, body: dict) -> dict:
         headers={"Content-Type": "application/json"},
         method="POST",
     )
+    if key := os.environ.get("SLINK_ADMIN_KEY"):
+        req.add_unredirected_header("Authorization", f"Bearer {key}")
     with urllib.request.urlopen(req, timeout=4) as r:
         return json.loads(r.read().decode("utf-8"))
 
@@ -585,9 +589,12 @@ def _memorial_box_rows(side: int) -> list[dict]:
 async def main() -> None:
     print("Resetting server state...")
     try:
-        http_post("/api/reset", {})
-    except Exception as e:
-        print(f"  reset failed: {e}")
+        result = http_post("/api/reset", {})
+        if not isinstance(result, dict) or result.get("ok") is not True:
+            raise ValueError("server did not acknowledge a successful reset")
+    except (OSError, ValueError) as e:
+        print(f"  reset failed: {e}", file=sys.stderr)
+        raise SystemExit(1) from e
 
     print("Sending hellos + initial tick...")
     # ONE socket for the whole session. The server binds a socket to the first player who
