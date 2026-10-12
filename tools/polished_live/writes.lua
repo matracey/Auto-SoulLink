@@ -88,6 +88,7 @@ L.log(fmt("[writes] parts: pack %s kind %s sha1 %s; overworld writer=%s boxes=%s
 -- every event the client sends after the build (net = the connector module, looked up per send): (e)/(f) judge
 -- memorialize_done / memorialize_failed on the wire the server sees, not on an executor return.
 local sent_events = {}
+trace.sent_events = sent_events
 do
     local C = package.loaded["connector"]
     if C and type(C.send) == "function" then
@@ -95,7 +96,7 @@ do
         C.send = function(line, ...)
             local ok, msg = pcall(J.decode, line)
             if ok and type(msg) == "table" and type(msg.event) == "string" then
-                sent_events[#sent_events + 1] = {event = msg.event, key = msg.key, reason = msg.reason}
+                sent_events[#sent_events + 1] = msg
             end
             return orig(line, ...)
         end
@@ -211,20 +212,112 @@ local function is_subset(got, expect)
     return #extra == 0, extra, missing
 end
 
-local function record_diff(name, before, after, diff, expected)
-    local function image(snap)
-        local cart, party, alloc = {}, {}, {}
-        for a = 0, 0x7FFF do cart[#cart + 1] = fmt("%02X", snap[1][a]) end
-        for a = PARTY_COUNT_AT, PARTY_END_AT - 1 do party[#party + 1] = fmt("%02X", snap[2][a]) end
-        for a, v in pairs(snap[3]) do alloc[tostring(a)] = v end
-        return {cart_hex = table.concat(cart), party_start = PARTY_COUNT_AT,
-                party_hex = table.concat(party), allocation = alloc}
-    end
+local function image(snap)
+    local cart, party, alloc = {}, {}, {}
+    for a = 0, 0x7FFF do cart[#cart + 1] = fmt("%02X", snap[1][a]) end
+    for a = PARTY_COUNT_AT, PARTY_END_AT - 1 do party[#party + 1] = fmt("%02X", snap[2][a]) end
+    for a, v in pairs(snap[3]) do alloc[tostring(a)] = v end
+    return {cart_hex = table.concat(cart), party_start = PARTY_COUNT_AT,
+            party_hex = table.concat(party), allocation = alloc}
+end
+local function operation(name)
+    local op = trace.operations[name]
+    if not op then op = {}; trace.operations[name] = op end
+    return op
+end
+local function allowed_addresses(expected)
     local allowed = {}
     for key in pairs(expected) do allowed[#allowed + 1] = key end
     table.sort(allowed)
-    trace.operations[name] = {before = image(before), after = image(after),
-                              changed = diff, expected = allowed}
+    return allowed
+end
+local function record_diff(name, before, after, diff, expected)
+    local op = operation(name)
+    op.before, op.after = image(before), image(after)
+    op.changed, op.expected = diff, allowed_addresses(expected)
+end
+local function write_interval(since)
+    local out = {}
+    for i = since + 1, #writes do out[#out + 1] = writes[i] end
+    return out
+end
+local function record_writes(name, since)
+    operation(name).writes = write_interval(since)
+end
+local function record_control(name, diff, wrong)
+    -- This is a readonly diff-allowance judge, not a refused client command.
+    local cart, party, alloc = snapshot()
+    local since, start = #writes, emu.framecount()
+    local _, unexpected = is_subset(diff, wrong)
+    table.sort(unexpected)
+    local post_cart, post_party, post_alloc = snapshot()
+    local observed = write_interval(since)
+    operation(name).control = {
+        kind = "diff_allowance", expected = allowed_addresses(wrong), unexpected = unexpected,
+        reason = #unexpected > 0 and "diff_outside_control_allowance" or J.null,
+        before = image({cart, party, alloc}), after = image({post_cart, post_party, post_alloc}),
+        writes = observed, write_count = #observed,
+        frames = {start = start, ["end"] = emu.framecount()},
+    }
+end
+local function copy_return(value)
+    -- Readers can reuse cached result tables on the very next call.
+    return value ~= nil and J.decode(J.encode(value)) or J.null
+end
+local function record_party(name, phase, value, why)
+    local op = operation(name)
+    op.party_reads = op.party_reads or {}
+    op.party_reads[#op.party_reads + 1] = {
+        phase = phase, frame = emu.framecount(), returned = copy_return(value),
+        reason = why ~= nil and why or J.null,
+    }
+end
+local function read_census(name, phase, reader, box)
+    local value, why
+    if reader and type(reader.read_storage_box) == "function" then
+        value, why = reader.read_storage_box(box)
+    else
+        why = "census unavailable"
+    end
+    local op = operation(name)
+    op.census = op.census or {}
+    op.census[#op.census + 1] = {
+        phase = phase, box_index = box, frame = emu.framecount(),
+        returned = copy_return(value), reason = why ~= nil and why or J.null,
+    }
+    return value, why
+end
+local function bytes_hex(bytes)
+    if type(bytes) ~= "table" then return J.null end
+    local out = {}
+    for _, v in ipairs(bytes) do
+        if type(v) ~= "number" or v % 1 ~= 0 or v < 0 or v > 255 then return J.null end
+        out[#out + 1] = fmt("%02X", v)
+    end
+    return table.concat(out)
+end
+local function checksum_operands(Boxes, entry)
+    local input = bytes_hex(entry)
+    local out = {input_hex = input, computed = J.null, stored = J.null,
+                 tail_msb = J.null, reason = J.null}
+    if type(entry) ~= "table" or #entry ~= 49 then
+        out.reason = "entry_size_49_required"
+    elseif input == J.null then
+        out.reason = "entry_bytes_invalid"
+    elseif type(Boxes.checksum) ~= "function" then
+        out.reason = "checksum_api_unavailable"
+    else
+        out.computed = Boxes.checksum(entry)
+        local stored = 0
+        for i = 33, 48 do stored = (stored << 1) | ((entry[i] >> 7) & 1) end
+        out.stored, out.tail_msb = stored, (entry[49] >> 7) & 1
+    end
+    return out
+end
+local function record_events(name, since)
+    local op, events = operation(name), {}
+    for i = since + 1, #sent_events do events[#events + 1] = sent_events[i] end
+    op.events_start, op.events_end, op.events = since, #sent_events, events
 end
 
 local function be16(slot, off) return L.bus(SB_BASE + slot * STRIDE + off) * 256
@@ -290,6 +383,7 @@ L.check("(a5d) at least one byte actually changed (the diff is not empty)", #dif
 -- one slot) MUST fail. Without this, (a5) could pass vacuously -- e.g. if the diff were empty.
 local wrong = {}
 for _, off in ipairs({ STATUS_OFF, HP_OFF, HP_OFF + 1 }) do wrong["party@" .. (SB_BASE + (SLOT + 1) * STRIDE + off)] = true end
+record_control("a", diff_a, wrong)
 local wrong_ok = is_subset(diff_a, wrong)
 L.check("(a5c) CONTROL: the same diff against a deliberately wrong expected set FAILS", wrong_ok == false,
         fmt("subset reported %s against a one-slot-shifted set", tostring(wrong_ok)))
@@ -312,8 +406,7 @@ L.log(fmt("[writes] (a) %d client write(s): %s", n, table.concat(seen_addrs, " |
 L.check("(a4) every write landed in ONLY the target slot's +32/+34/+35 bytes", #outside == 0,
         #outside == 0 and n .. " write(s), all in the target's three bytes" or table.concat(outside, ", "))
 L.check("(a4b) the client wrote something at all", n > 0, n)
-trace.operations.a.writes = {}
-for i = w_before + 1, #writes do trace.operations.a.writes[#trace.operations.a.writes + 1] = writes[i] end
+record_writes("a", w_before)
 
 if os.getenv("POL_STOP_AFTER_A") == "1" then
     L.log(fmt("[writes] POL_STOP_AFTER_A=1: stopping after (a); box_mon and the negatives are NOT RUN"))
@@ -374,6 +467,7 @@ else
     L.idle(150)
     local count_after = L.rw("wPartyCount")
     local after_party, after_party_why = P.reads:read_party()
+    record_party("b", "after", after_party, after_party_why)
     L.check("(b1c) read_party() succeeded after the deposit", after_party ~= nil, tostring(after_party_why))
     local after_keys = {}
     for i, m in ipairs((after_party and after_party.mons) or {}) do after_keys[i] = m.key end
@@ -390,7 +484,7 @@ else
     -- reason for this driver to build a second reader (it did, and that reader is what hung).
     local census = P.overworld and P.overworld.census
     local t0 = os.clock()
-    local got, why = census and census.read_storage_box(0)
+    local got, why = read_census("b", "after", census, 0)
     L.log(fmt("[writes] (b2) census.read_storage_box(0) returned %s in %.2f s CPU%s",
               got and "a mon list" or "nil", os.clock() - t0, got and "" or (" -- " .. tostring(why))))
     L.check("the composed census read is complete (P.census fails closed on incomplete/Bad Egg/"
@@ -404,7 +498,7 @@ else
         -- boxes 1..19 are served from it. Walk them and time the walk.
         local tw = os.clock()
         for box = 1, 19 do
-            local mons = census.read_storage_box(box)
+            local mons = read_census("b", "after", census, box)
             for _, m in ipairs((mons and mons.mons) or {}) do if m.key == bkey then found = m end end
         end
         L.log(fmt("[writes] (b2b) walked boxes 1..19 in %.2f s CPU", os.clock() - tw))
@@ -415,9 +509,11 @@ else
     local Boxes = dofile(L.ROOT .. "/lua/gen2/polished_boxes.lua")
     if found and found.raw_hex then
         local entry = L.unhex(found.raw_hex)
+        operation("b").checksum = checksum_operands(Boxes, entry)
         local okc = Boxes.verify(entry)
         L.check("(b3) the pokedb entry checksum verifies (B.verify)", okc == true, tostring(okc))
     else
+        operation("b").checksum = checksum_operands(Boxes, nil)
         L.check("(b3) the pokedb entry checksum verifies (B.verify)", false, "no stored entry to verify")
     end
 
@@ -445,7 +541,7 @@ else
     -- whose `slot` is 0-based (polished.lua:790-797 copy.slot = mon.slot - 1); the executor's
     -- pointer()/bank_byte() are 1-based (polished_boxes.lua: rec + slot - 1 / rec + 0x14 + (slot-1 >> 3)).
     for i = 0, 19 do
-        local bx = P.overworld.census.read_storage_box(i)
+        local bx = read_census("b", "after", P.overworld.census, i)
         for _, m in ipairs((bx and bx.mons) or {}) do
             if m.key == bkey then d_box, d_slot = i + 1, m.slot + 1 end
         end
@@ -492,9 +588,11 @@ else
     L.check("(b6) EXACT diff subset: one Entries byte, Banks byte, allocation byte, 49-byte entry and party shift only",
             bok, #bextra == 0 and "exact; every other record byte-identical" or ("unexpected: " .. table.concat(bextra, ",")))
     record_diff("b", {b_cart, b_party, b_alloc}, {a_cart2, a_party2, a_alloc2}, diff_b, expect_b)
+    record_writes("b", wb)
     trace.operations.b.destination = {bank = bank, entry = d_entries_dep, entry_at = entry_at,
                                       entries_at = d_entries_at, banks_at = d_banks_at, flag_at = flag_at}
     local wrong_b = {["party@" .. PARTY_COUNT_AT] = true}
+    record_control("b", diff_b, wrong_b)
     L.check("(b6c) CONTROL: deposit diff against a count-only expected set FAILS", not is_subset(diff_b, wrong_b))
 
     L.check("(b5) the deposit wrote the pokedb entry (49 B; N changed) and moved its allocation flag",
@@ -535,6 +633,7 @@ if os.getenv("POL_STOP_AFTER_D") == "1" or true then
     -- d4's evidence is captured BEFORE the withdraw
     local d_cart0, d_party0, d_alloc0 = snapshot()
     local count_d = L.rw("wPartyCount")
+    local wd = #writes
     SLINK_GEN2_CLIENT:handle_command({ cmd = "party_mon", key = bkey })
     L.check("(d0a) party_mon was queued into the client's command path", true, tostring(bkey))
     L.idle(150)
@@ -544,7 +643,8 @@ if os.getenv("POL_STOP_AFTER_D") == "1" or true then
 
     -- (d1) the party is back to 5 and the key is at the LAST slot
     local count_after = L.rw("wPartyCount")
-    local back = P.reads:read_party()
+    local back, back_why = P.reads:read_party()
+    record_party("d", "after", back, back_why)
     local back_mons = (back and back.mons) or {}
     local last = back_mons[#back_mons]
     L.check("(d1a) wPartyCount went 4 -> 5", count_after == count_d + 1, fmt("%d -> %d", count_d, count_after))
@@ -560,7 +660,7 @@ if os.getenv("POL_STOP_AFTER_D") == "1" or true then
     -- (d3) no longer boxed; the slot's Entries byte is 0 and its Banks bit clear
     local any_box, complete = false, true
     for i = 0, 19 do
-        local box = P.overworld.census.read_storage_box(i)
+        local box = read_census("d", "after", P.overworld.census, i)
         if not box then complete = false end
         for _, m in ipairs((box and box.mons) or {}) do if m.key == bkey then any_box = true end end
     end
@@ -604,6 +704,7 @@ if os.getenv("POL_STOP_AFTER_D") == "1" or true then
     L.check("(d5) EXACT diff: only the new party slot's record+OT+nickname, wPartyCount, the Entries and Banks bytes changed",
             dok, #dextra == 0 and "exact" or ("unexpected: " .. table.concat(dextra, ",")))
     record_diff("d", {d_cart0, d_party0, d_alloc0}, {d_cart1, d_party1, d_alloc1}, diff_d, expect_d)
+    record_writes("d", wd)
     local party_changed, cart_changed = 0, 0
     for _, c in ipairs(diff_d) do
         if c.kind == "party" then party_changed = party_changed + 1 else cart_changed = cart_changed + 1 end
@@ -612,6 +713,7 @@ if os.getenv("POL_STOP_AFTER_D") == "1" or true then
                 party_changed, cart_changed), party_changed <= 48 + 11 + 11 + 1 and cart_changed <= 2)
     local wrong_d = {}
     for i = 0, 48 - 1 do wrong_d["party@" .. (SB_BASE + (dslot + 1) * STRIDE + i)] = true end
+    record_control("d", diff_d, wrong_d)
     local wrong_ok = is_subset(diff_d, wrong_d)
     L.check("(d5c) CONTROL: the same diff against a one-slot-shifted expected set FAILS", wrong_ok == false,
             fmt("subset reported %s", tostring(wrong_ok)))
@@ -636,11 +738,12 @@ else
             end
         end
     end
+    local memorial_leg, memorial_phase = "e", "before"
     -- every box slot the composed census reads `k` in: {box, slot (1-based), bank, entry}, and whether all 20 read
     local function where(k)
         local hits, complete = {}, true
         for i = 0, 19 do
-            local bx = P.overworld.census.read_storage_box(i)
+            local bx = read_census(memorial_leg, memorial_phase, P.overworld.census, i)
             if not bx then complete = false end
             for _, m in ipairs((bx and bx.mons) or {}) do
                 if m.key == k then hits[#hits + 1] = {box = i + 1, slot = m.slot + 1, bank = m.bank, entry = m.entry} end
@@ -649,7 +752,8 @@ else
         return hits, complete
     end
     local function party_keys()
-        local r = P.reads:read_party()
+        local r, why = P.reads:read_party()
+        record_party(memorial_leg, memorial_phase, r, why)
         local out = {}
         for i, m in ipairs((r and r.mons) or {}) do out[i] = m.key end
         return out
@@ -699,6 +803,7 @@ else
     L.check("(e1) the client sent memorialize_done exactly once and no memorialize_failed",
             wire("memorialize_done", ekey, se) == 1 and wire("memorialize_failed", ekey, se) == 0,
             fmt("done %d failed %d", wire("memorialize_done", ekey, se), wire("memorialize_failed", ekey, se)))
+    memorial_phase = "after"
     local count_x = L.rw("wPartyCount")
     L.check("(e2) wPartyCount went down by one and the key left the party",
             count_x == count_e - 1 and not has(party_keys(), ekey), fmt("%d -> %d", count_e, count_x))
@@ -736,6 +841,14 @@ else
     L.check("(e6) EXACT diff subset: the box-20 Entries/Banks bytes, the fresh 49-byte entry, its flag byte, party compaction only",
             eok and #diff_e > 0, #eextra == 0 and fmt("%d byte(s), all expected", #diff_e) or ("unexpected: " .. table.concat(eextra, ",")))
     record_diff("e", {e_cart, e_party, e_alloc}, {x_cart, x_party, x_alloc}, diff_e, expect_e)
+    record_writes("e", we)
+    record_events("e", se)
+    operation("e").encoding = {
+        party_blob_hex = bytes_hex(blob), computed_entry_hex = bytes_hex(want_entry),
+        stored_entry_hex = bytes_hex(stored), entry_at = e_entry_at or J.null,
+        checksum = checksum_operands(Boxes, stored),
+    }
+    record_control("e", diff_e, {["party@" .. PARTY_COUNT_AT] = true})
     L.check("(e6c) CONTROL: the same diff against a party-only expected set FAILS (the box-20 bytes are real)",
             not is_subset(diff_e, {["party@" .. PARTY_COUNT_AT] = true}))
     local e_others, e_n = undeclared(we, "e")
@@ -745,9 +858,11 @@ else
     -- (f) BOX origin: deposit the (b)/(d) mon again (the (b) path, judged there), then bury it FROM its box: the same
     -- (bank, entry) is published in box 20, then the source pointer cleared. No allocation, no party change.
     local fkey = bkey
+    memorial_leg, memorial_phase = "f", "before"
     L.check("(f0) the (b)/(d) key is in the party to deposit", fkey ~= nil and has(party_keys(), fkey), tostring(fkey))
     SLINK_GEN2_CLIENT:handle_command({ cmd = "box_mon", key = fkey })
     L.idle(150)
+    memorial_phase = "source"
     local src_hits, src_complete = where(fkey)
     local src = src_hits[1] or {}
     L.check("(f0a) the deposit put it in exactly one ordinary box", src_complete and #src_hits == 1 and src.box ~= 20,
@@ -767,6 +882,7 @@ else
     L.check("(f1) the client sent memorialize_done exactly once and no memorialize_failed",
             wire("memorialize_done", fkey, sf) == 1 and wire("memorialize_failed", fkey, sf) == 0,
             fmt("done %d failed %d", wire("memorialize_done", fkey, sf), wire("memorialize_failed", fkey, sf)))
+    memorial_phase = "after"
     local now, now_complete = where(fkey)
     local n1 = now[1] or {}
     L.check("(f2) the census reads the key ONLY in box 20, at the first empty slot, at the SAME (bank, entry)",
@@ -789,6 +905,9 @@ else
             #fextra == 0 and fmt("%d byte(s), all expected", #diff_f) or ("unexpected: " .. table.concat(fextra, ",")))
     record_diff("f", {f_cart, f_party, f_alloc}, {y_cart, y_party, y_alloc}, diff_f, expect_f)
     trace.operations.f.source, trace.operations.f.destination = src, {box = 20, slot = f_mslot}
+    record_writes("f", wf)
+    record_events("f", sf)
+    record_control("f", diff_f, {["cart@" .. tostring(dst_at)] = true, ["cart@" .. tostring(dst_banks)] = true})
     L.check("(f4c) CONTROL: the same diff against the destination-only set FAILS (the source byte really moved)",
             not is_subset(diff_f, {["cart@" .. tostring(dst_at)] = true, ["cart@" .. tostring(dst_banks)] = true}))
     local f_others, f_n = undeclared(wf, "f")

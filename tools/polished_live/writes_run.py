@@ -6,10 +6,15 @@ legs (a) force_faint, (b) box_mon, (d) party_mon, and (e)/(f) memorialize from t
     python tools/polished_live/writes_run.py
 
 Nothing is rebuilt. The staged ROM is the pinned release with the committed
-patch/dist/SLink-Polished.ups applied, and it is refused unless its sha1 is the integrated
-overlay `68894579…` (C5 present, commit gate disabled). The save fixture is
-copied into this lane and its sha256 printed, so another card rewriting its own lane cannot move
-this run's inputs.
+patch/dist/SLink-Polished.ups applied, and its SHA1 must match the published
+overlay provenance. The save fixture is copied into this lane and its SHA256
+printed, so another card rewriting its own lane cannot move this run's inputs.
+
+trace.json retains the full pre/post images, per-leg write taps, native census
+and party returns, memorial wire payloads, and encoding/checksum operands.
+Wrong-set controls are readonly diff-allowance evaluations with equal images
+and zero-write measurements, not refused client commands. The receipt binder
+must replay these raw records; result.txt's producer verdict alone is not proof.
 
 A private SLink server settles the real client's connection; commands are driven through
 `Client:handle_command`, the same public entry the real reply path uses.
@@ -104,6 +109,9 @@ def main() -> int:
     result = run / "result.txt"
     if result.is_file():
         print(f"[writes] result.txt sha256 {hashlib.sha256(result.read_bytes()).hexdigest()}", flush=True)
+    trace = run / "trace.json"
+    if trace.is_file():
+        print(f"[writes] trace.json sha256 {hashlib.sha256(trace.read_bytes()).hexdigest()}", flush=True)
     ok = "RESULT: PASS" in text
     print(f"[writes] {'PASS' if ok else 'FAIL'} (EmuHawk pid {pid})", flush=True)
     return 0 if ok else 1
