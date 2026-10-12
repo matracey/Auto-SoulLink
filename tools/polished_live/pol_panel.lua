@@ -22,13 +22,32 @@ L.log("[panel] step 1: libraries loaded")
 client.speedmode(400)
 L.log(fmt("[panel] boot frame %d rom %s", emu.framecount(), gameinfo.getromhash()))
 
+local ev = {pages = J.array({}), inputs = J.array({}), panel_edges = J.array({}),
+    native_hooks = J.array({}), hook_registrations = J.array({})}
+local native_context
+local function native_observer(name)
+    return function(right_bank)
+        if not right_bank or not native_context then return end
+        local hit = native_context()
+        hit.site, hit.bank, hit.addr = name, L.SYM[name][1], L.SYM[name][2]
+        ev.native_hooks[#ev.native_hooks + 1] = hit
+    end
+end
+local function register_native(name)
+    local handle = L.hook(name, native_observer(name))
+    assert(handle ~= nil and handle ~= false and handle ~= "", "native panel hook registration failed: " .. name)
+    ev.hook_registrations[#ev.hook_registrations + 1] = {
+        site = name, bank = L.SYM[name][1], addr = L.SYM[name][2], handle = tostring(handle),
+        frame = emu.framecount(), domain = "System Bus"}
+end
 for _, n in ipairs({"OWPlayerInput", "StartMenu", "PokeGear", "PokegearPhoneContactSubmenu",
                     "SlinkPhone_CallGate", "MakePhoneCallFromPokegear", "SlinkPanel", "YesNoBox"}) do
-    L.hook(n)
+    if n == "PokegearPhoneContactSubmenu" or n == "SlinkPhone_CallGate"
+        or n == "MakePhoneCallFromPokegear" or n == "SlinkPanel" then register_native(n)
+    else L.hook(n) end
 end
 L.log("[panel] step 2: boot logged")
 local function write(path, s) local f = assert(io.open(path, "w")) f:write(s) f:close() end
-local ev = {pages = {}}
 
 -- ── the mailbox contract, read off the generated profile so nothing is hardcoded ──────────
 local PROF = J.decode(L.slurp(L.ROOT .. "/data/games/polished_crystal/profile.json"))
@@ -42,39 +61,70 @@ local TEXT = L.woff("wSlinkPanelText", 0)
 L.log(fmt("[panel] step 4: geometry base=$%X span $%X..$%X lines=%d stride=%d term=$%02X",
           TEXT, MB_LO, MB_HI, PAN.lines, PAN.stride, PAN.terminator))
 
--- every byte this driver writes, audited against the mailbox span (the "wrap memory.write_*" check)
-local AUDIT = {n = 0, lo = 0x7fffffff, hi = -1, outside = {}, seen = {}}
-local raw_write = memory.write_u8
--- C5 audits the PANEL's writes only. The SYNTH setup below writes wPokegearFlags and wPhoneList
--- on purpose, outside the mailbox, so the audit is armed after it and reset. (Round 10: `wb` used
--- raw_write and therefore bypassed this wrapper entirely, so C5 would have reported "0 writes" and
--- passed VACUOUSLY -- the check was measuring nothing.)
-AUDIT.on = false
-memory.write_u8 = function(a, v, d)
+-- Preserve actual calls and synchronous byte images; the proxy sticks even when
+-- BizHawk's memory table does not accept replacement function bindings.
+local AUDIT = {n = 0, lo = 0x7fffffff, hi = -1, outside = {}, seen = {}, on = false}
+local raw_memory = memory
+local write_ops, touched_spans, batches = J.array({}), J.array({}), J.array({})
+local write_phase = "synth"
+local function image(addr, n, domain)
+    local bytes = {}
+    for i = 0, n - 1 do bytes[#bytes + 1] = raw_memory.read_u8(addr + i, domain) end
+    return L.hex(bytes)
+end
+local function wram_image()
+    local n = raw_memory.getmemorydomainsize("WRAM")
+    assert(type(n) == "number" and n > 0, "WRAM image geometry unavailable")
+    return {domain = "WRAM", addr = 0, n = n, hex = image(0, n, "WRAM")}
+end
+local G = dofile(L.ROOT .. "/tools/polished_live/recording_guard.lua")
+local observed_memory = G.observe_memory(raw_memory, function(_, a, _, d)
     if AUDIT.on then
         AUDIT.n = AUDIT.n + 1
         if a < AUDIT.lo then AUDIT.lo = a end
         if a > AUDIT.hi then AUDIT.hi = a end
-        if a < MB_LO or a > MB_HI then AUDIT.outside[#AUDIT.outside + 1] = fmt("%X", a) end
-        -- the address list, capped: 68 panel writes, so a dump can be read in full
+        if d ~= "WRAM" or a < MB_LO or a > MB_HI then AUDIT.outside[#AUDIT.outside + 1] = fmt("%X", a) end
         if #AUDIT.seen < 80 then AUDIT.seen[#AUDIT.seen + 1] = fmt("%X", a) end
     end
-    return raw_write(a, v, d)
-end
---- Every panel write goes THROUGH the audited wrapper; nothing may bypass it.
---- Count and range-check HERE, not by wrapping memory.write_u8: assigning to that binding does
---- not stick in BizHawk (round 11 measured n=0 with the wrapper in place), so a wrapper-based audit
---- reports a clean run while seeing nothing. This is the only path a panel write takes.
-local function wb(addr, v)
-    if AUDIT.on then
-        AUDIT.n = AUDIT.n + 1
-        if addr < AUDIT.lo then AUDIT.lo = addr end
-        if addr > AUDIT.hi then AUDIT.hi = addr end
-        if addr < MB_LO or addr > MB_HI then AUDIT.outside[#AUDIT.outside + 1] = fmt("%X", addr) end
-        if #AUDIT.seen < 80 then AUDIT.seen[#AUDIT.seen + 1] = fmt("%X", addr) end
+end)
+local host_depth = 0
+memory = setmetatable({}, {__index = function(_, api)
+    local fn = observed_memory[api]
+    if type(api) ~= "string" or not api:match("^write")
+       or (type(fn) ~= "function" and type(fn) ~= "userdata") then return fn end
+    return function(...)
+        local addr, value, domain = ...
+        domain = domain or raw_memory.getcurrentmemorydomain()
+        local sequence = #write_ops + 1
+        local op = {sequence = sequence, api = api, addr = addr, value = value,
+            domain = domain, bank = domain == "WRAM" and math.floor(addr / 0x1000) or J.null,
+            frame = emu.framecount(), n = api == "write_u8" and 1 or J.null, phase = write_phase}
+        local span = {sequence = sequence, addr = addr, domain = domain, bank = op.bank, n = op.n}
+        if api == "write_u8" then
+            op.old = raw_memory.read_u8(addr, domain)
+            span.pre_hex = fmt("%02x", op.old)
+        else
+            op.old, span.pre_hex, span.reason = J.null, J.null, "unsupported image API: " .. api
+        end
+        write_ops[sequence], touched_spans[sequence] = op, span
+        host_depth = host_depth + 1
+        local result = table.pack(pcall(fn, ...))
+        host_depth = host_depth - 1
+        if api == "write_u8" then
+            op.new = raw_memory.read_u8(addr, domain)
+            span.post_hex = fmt("%02x", op.new)
+        else op.new, span.post_hex = J.null, J.null end
+        op.status, op.error = result[1] and "returned" or "raised", result[1] and J.null or tostring(result[2])
+        op.result = result[2] == nil and J.null or result[2]
+        span.frame_after = emu.framecount()
+        if not result[1] then error(result[2], 0) end
+        return table.unpack(result, 2, result.n)
     end
-    return raw_write(addr, v, "WRAM")
-end
+end})
+local function wb(addr, v) return memory.write_u8(addr, v, "WRAM") end
+ev.write_audit = {schema = "polished-panel-write-audit-v1", write_ops = write_ops,
+    touched_spans = touched_spans, batches = batches, domain = "WRAM",
+    mailbox = {addr = MB_LO, last = MB_HI, n = MB_HI - MB_LO + 1}}
 
 -- ── the pages this host publishes ────────────────────────────────────────────────────────
 L.log("[panel] step 5: writer closed over")
@@ -98,7 +148,14 @@ local staged_at, staged_page, staged_count = nil, nil, 0
 -- called AFTER the boot, never at load.
 local stage_frame_before_input = nil
 local presses = 0
-local function press(btn, settle) presses = presses + 1 for _ = 1, 2 do L.frame({[btn] = true}) end L.idle(settle or 24) end
+local function press(btn, settle)
+    presses = presses + 1
+    local input = {button = btn, start_frame = emu.framecount(), press_count = presses, frames = J.array({})}
+    ev.inputs[#ev.inputs + 1] = input
+    for _ = 1, 2 do L.frame({[btn] = true}) input.frames[#input.frames + 1] = emu.framecount() end
+    L.idle(settle or 24)
+    input.end_frame = emu.framecount()
+end
 local function writer()
     local st = L.rw("wSlinkMailbox", OFF_STATE)
     if st ~= AWAIT then staged_at = nil return end
@@ -106,6 +163,9 @@ local function writer()
     local page = L.rw("wSlinkMailbox", OFF_PAGE) or 0
     if page >= #PAGES then page = #PAGES - 1 end
     local lines = PAGES[page + 1]
+    local batch = {phase = "panel", page = page, start_frame = emu.framecount(),
+        presses = presses, sequence_start = #write_ops + 1, before = wram_image()}
+    batches[#batches + 1] = batch
     for i = 0, PAN.lines - 1 do
         local bytes = encode(lines[i + 1] or "")
         for c = 1, PAN.stride do wb(TEXT + i * PAN.stride + c - 1, bytes[c]) end
@@ -114,6 +174,10 @@ local function writer()
     wb(L.woff("wSlinkMailbox", OFF_STATE), STAGED)  -- published last, exactly like gb_panel
     staged_at, staged_page, staged_count = emu.framecount(), page + 1, staged_count + 1
     if staged_count == 1 then stage_frame_before_input = presses end
+    batch.after, batch.end_frame, batch.sequence_end = wram_image(), emu.framecount(), #write_ops
+    ev.pages[#ev.pages + 1] = {frame = staged_at, page = page, presses = presses,
+        state = L.rw("wSlinkMailbox", OFF_STATE), pages = L.rw("wSlinkMailbox", OFF_PAGES),
+        text_hex = L.hex(L.wbytes("wSlinkPanelText", 0, PAN.lines * PAN.stride))}
 end
 L.on_frame = nil
 
@@ -162,22 +226,126 @@ local function state() return L.rw("wJumptableIndex") end
 local function cur() return L.rw("wPokegearPhoneCursorPosition"), L.rw("wPokegearPhoneScrollPosition") end
 local function shot(name) client.screenshot(fmt("%s/%s.png", L.RUN, name)) end
 
+-- Native closing is a distinct actor. Bus callback payloads are not values:
+-- bracket the native stores with frame images, never interpolate multiple stores.
+local close_active, close_pending, close_previous
+local close_handles, close_hooks = {}, {}
+local function context()
+    return {frame = emu.framecount(), pc = emu.getregister("PC"), rom_bank = L.rombank(),
+        wram_bank = L.bus(0xFF70) & 7}
+end
+native_context = context
+for _, name in ipairs({"SlinkPanel.page", "SlinkPanel.ready", "SlinkPanel.WaitForStage"}) do
+    register_native(name)
+end
+local function phone_snapshot()
+    local s = context()
+    s.phone_state, s.card = state(), L.rw("wPokegearCard")
+    s.cursor, s.scroll = cur()
+    s.caller, s.phone_list = L.rw("wCurCaller"), plist()
+    s.calls = L.hits.MakePhoneCallFromPokegear
+    s.panel_state, s.page, s.pages = L.rw("wSlinkMailbox", OFF_STATE),
+        L.rw("wSlinkMailbox", OFF_PAGE), L.rw("wSlinkMailbox", OFF_PAGES)
+    s.mailbox_hex = L.hex(L.wbytes("wSlinkMailbox", 0, MB_HI - MB_LO + 1))
+    s.tilemap_hex = L.hex(L.wbytes("wTilemap", 0, 360))
+    s.attrmap_hex = L.hex(L.wbytes("wAttrmap", 0, 360))
+    return s
+end
+local function close_frame()
+    if not close_active then return end
+    local after = phone_snapshot()
+    local bracket = {before = close_previous, after = after}
+    close_active.frames[#close_active.frames + 1] = bracket
+    for _, w in ipairs(close_pending) do
+        if #close_pending == 1 then
+            w.old, w.new, w.reason = close_previous.panel_state, after.panel_state, J.null
+        else w.old, w.new, w.reason = J.null, J.null, "multiple qualified stores in frame bracket" end
+        w.bracket = #close_active.frames
+        close_active.writes[#close_active.writes + 1] = w
+    end
+    close_pending, close_previous = {}, after
+end
+local function close_remove()
+    local failures = {}
+    local function remove(api, handle, fn)
+        local ok, why = pcall(fn)
+        local row = {api = api, handle = tostring(handle), status = ok and "returned" or "raised"}
+        row.error = ok and J.null or tostring(why)
+        ev.close.removals[#ev.close.removals + 1] = row
+        if not ok then failures[#failures + 1] = tostring(why) end
+    end
+    for _, id in ipairs(close_handles) do
+        remove("event.unregisterbyid", id, function() event.unregisterbyid(id) end)
+    end
+    for _, name in ipairs(close_hooks) do
+        remove("L.unhook", name, function() L.unhook(name) end)
+    end
+    close_handles, close_hooks, close_active = {}, {}, nil
+    return #failures == 0, table.concat(failures, "; ")
+end
+local function close_begin()
+    local before = phone_snapshot()
+    ev.close = {before = before, start_frame = before.frame, frames = J.array({}),
+        writes = J.array({}), native_hooks = J.array({}), removals = J.array({}), input_index = #ev.inputs + 1}
+    close_active, close_previous, close_pending = ev.close, before, {}
+    local ok, why = pcall(function()
+        local addr = L.SYM.wSlinkMailbox[2] + OFF_STATE
+        local id = event.onmemorywrite(function(_, value)
+            if not close_active or host_depth > 0 then return end
+            local w = context()
+            w.sequence, w.addr, w.domain, w.bank, w.n = #close_active.writes + #close_pending + 1,
+                addr, "System Bus", 0, 1
+            w.callback_value = type(value) == "number" and value or J.null
+            w.old, w.new, w.reason = J.null, J.null, "pending frame bracket"
+            close_pending[#close_pending + 1] = w
+        end, addr, "pol_panel_close_state", "System Bus")
+        assert(id ~= nil and id ~= false and id ~= "", "native close write hook registration failed")
+        close_handles[#close_handles + 1] = id
+        for _, name in ipairs({"SlinkPanel.close", "PokegearPhone_Joypad"}) do
+            local handle = L.hook(name, function(right_bank)
+                if not close_active or not right_bank then return end
+                local hit = context()
+                hit.site, hit.bank, hit.addr = name, L.SYM[name][1], L.SYM[name][2]
+                close_active.native_hooks[#close_active.native_hooks + 1] = hit
+            end)
+            assert(handle ~= nil and handle ~= false and handle ~= "", "native close exec hook registration failed")
+            close_hooks[#close_hooks + 1] = name
+        end
+    end)
+    if not ok then close_remove() error(why, 0) end
+end
+local function panel_edge(origin)
+    local state_value, page, pages = L.rw("wSlinkMailbox", OFF_STATE),
+        L.rw("wSlinkMailbox", OFF_PAGE), L.rw("wSlinkMailbox", OFF_PAGES)
+    local previous = ev.panel_edges[#ev.panel_edges]
+    if previous and previous.state == state_value and previous.page == page and previous.pages == pages then return end
+    local edge = context()
+    edge.origin, edge.state, edge.page, edge.pages, edge.presses = origin, state_value, page, pages, presses
+    edge.mailbox_hex = L.hex(L.wbytes("wSlinkMailbox", 0, MB_HI - MB_LO + 1))
+    ev.panel_edges[#ev.panel_edges + 1] = edge
+end
+
 L.log("[panel] step 6: helpers defined, entering boot")
 -- ── drive to the Phone card ──────────────────────────────────────────────────────────────
 -- (the round-2 boot probe that pulsed A/B here MOVED THE MAIN MENU off CONTINUE and was
 -- the real cause of the boot-gate abort; it must never press anything here)
 L.log("[panel] step 7: calling to_overworld (writer NOT yet installed)")
 if not L.to_overworld(24, 3, 60, 8000, "continue") then L.die("CONTINUE did not reach ROUTE_29") end
-L.on_frame = writer
+L.on_frame = function() close_frame() panel_edge("native-frame") writer() panel_edge("host-stage") end
 L.log("[panel] step 8: overworld reached; mailbox writer installed")
 local flags0 = L.rw("wPokegearFlags")
-raw_write(L.woff("wPokegearFlags", 0), 0x87, "WRAM")
+local synth_batch = {phase = "synth", start_frame = emu.framecount(), sequence_start = #write_ops + 1, before = wram_image()}
+batches[#batches + 1] = synth_batch
+wb(L.woff("wPokegearFlags", 0), 0x87)
 local list0 = plist()
-raw_write(L.woff("wPhoneList", 0), 0, "WRAM")
-for i = 1, 4 do raw_write(L.woff("wPhoneList", i), 0, "WRAM") end
+wb(L.woff("wPhoneList", 0), 0)
+for i = 1, 4 do wb(L.woff("wPhoneList", i), 0) end
+synth_batch.after, synth_batch.end_frame, synth_batch.sequence_end = wram_image(), emu.framecount(), #write_ops
 -- the SYNTH setup above wrote outside the mailbox on purpose; from here on every host-side panel write is audited
 AUDIT.n, AUDIT.lo, AUDIT.hi, AUDIT.outside, AUDIT.seen = 0, 0x7fffffff, -1, {}, {}
 AUDIT.on = true
+write_phase = "panel"
+ev.write_audit.start_frame = emu.framecount()
 L.log(fmt("[panel] SYNTH wPokegearFlags %02X -> 87, wPhoneList %s -> 0000000000 (SLink is row 0)",
           flags0, list0))
 
@@ -219,6 +387,8 @@ L.check("C1 mailbox span is the overlay's own 69 bytes (symbol addresses, not co
 -- the list has exactly the SLink row
 for _ = 1, 40 do local c, s = cur() if c + s == 0 then break end press("Up", 10) end
 local c0, s0 = cur()
+ev.initial = phone_snapshot()
+ev.initial.submenu_hits = L.hits.PokegearPhoneContactSubmenu
 L.check("C0 the SLink row is row 0 and is labelled by the overlay",
         row(4):find("SLink:", 1, true) ~= nil, row(4))
 
@@ -227,7 +397,10 @@ local calls0, gate0, panel0 = L.hits.MakePhoneCallFromPokegear, L.hits.SlinkPhon
 local caller0, plist_before = L.rw("wCurCaller"), plist()
 press("A", 30)                                     -- contact submenu
 L.check("C0 A opened the contact submenu", L.hits.PokegearPhoneContactSubmenu >= 1)
+ev.submenu = phone_snapshot()
+ev.submenu.hits = L.hits.PokegearPhoneContactSubmenu
 local presses_before_call = presses
+ev.presses_before_call = presses_before_call
 press("A", 10)                                     -- Call
 wait(function() return L.hits.SlinkPhone_CallGate > gate0 end, 300, "Call never reached SlinkPhone_CallGate")
 wait(function() return L.hits.SlinkPanel > panel0 end, 300, "the gate never entered SlinkPanel")
@@ -262,6 +435,8 @@ shot("panel_2_page1")
 local p1 = box()
 ev.page1 = p1
 local br1 = box_rows()
+ev.page1_rows, ev.page1_snapshot = J.array(br1), phone_snapshot()
+ev.staging_press_count = stage_frame_before_input
 local on_row = function(s) for _, r in ipairs(br1) do if r:find(s, 1, true) then return r end end end
 L.check("C2 page 1 rendered: SOUL LINK on one row", on_row("SOUL LINK") ~= nil, table.concat(br1, " / "))
 L.check("C2 page 1 rendered: PARTNER: RED on ONE row (row-aware)",
@@ -281,12 +456,15 @@ local p2 = box()
 shot("panel_3_page2")
 ev.page2 = p2
 local br2 = box_rows()
+ev.page2_rows, ev.page2_snapshot = J.array(br2), phone_snapshot()
 local on_row2 = function(s) for _, r in ipairs(br2) do if r:find(s, 1, true) then return r end end end
 L.check("C3 A advanced to page 2: PAIRS 2/3 on one row", on_row2("PAIRS 2/3") ~= nil, table.concat(br2, " / "))
 L.check("C3 A advanced to page 2: BADGES 4/8 on one row", on_row2("BADGES 4/8") ~= nil, table.concat(br2, " / "))
 L.check("C3 PANEL_PAGE advanced to 1", L.rw("wSlinkMailbox", OFF_PAGE) == 1, L.rw("wSlinkMailbox", OFF_PAGE))
 
 -- ── B closes back to the Phone list ──────────────────────────────────────────────────────
+close_begin()
+local close_ok, close_error = pcall(function()
 press("B", 10)
 wait(function() return state() == 0x0a end, 400, "B did not return to PHONEJOYPAD")
 L.idle(40)
@@ -303,6 +481,21 @@ L.check("C4 wPhoneList untouched by the panel", plist() == plist_before, plist()
 L.check("C4 the panel cleared PANEL_STATE on close", L.rw("wSlinkMailbox", OFF_STATE) == 0,
         L.rw("wSlinkMailbox", OFF_STATE))
 ev.back = back
+end)
+local close_snapshot_ok, close_snapshot_error = pcall(function()
+    close_frame()
+    ev.close.after, ev.close.end_frame, ev.close.input = phone_snapshot(), emu.framecount(), ev.inputs[ev.close.input_index]
+end)
+local close_cleanup_ok, close_cleanup_error = close_remove()
+if not close_ok or not close_snapshot_ok or not close_cleanup_ok then
+    local failures = {}
+    if not close_ok then failures[#failures + 1] = tostring(close_error) end
+    if not close_snapshot_ok then failures[#failures + 1] = tostring(close_snapshot_error) end
+    if not close_cleanup_ok then failures[#failures + 1] = tostring(close_cleanup_error) end
+    ev.close.error = table.concat(failures, "; ")
+    write(L.RUN .. "/panel.json", J.encode(ev))
+    error(ev.close.error, 0)
+end
 
 -- ── write audit ──────────────────────────────────────────────────────────────────────────
 -- The whole block is wrapped so a Lua error here cannot silently swallow the run: the harness
@@ -327,6 +520,10 @@ local okC5, errC5 = pcall(function()
     L.check("C5 the audit actually SAW writes (not a vacuous pass)", AUDIT.n > 0, AUDIT.n)
     L.log("[panel] C5 CHECKS DONE, ev.hits/panel.json next")
     ev.hits = L.hits
+    ev.write_audit.end_frame = emu.framecount()
+    memory = raw_memory
+    for _, name in ipairs({"SlinkPanel.page", "SlinkPanel.ready", "SlinkPanel.WaitForStage"}) do L.unhook(name) end
+    L.on_frame = nil
     write(L.RUN .. "/panel.json", J.encode(ev))
     L.log("[panel] C5 write addresses: " .. table.concat(AUDIT.seen, " "))
     L.log("[panel] C5 BLOCK OK")
