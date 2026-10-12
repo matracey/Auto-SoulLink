@@ -1945,7 +1945,7 @@ function Client.new(p)
     function self:run_box(cmd)
         local phys = self.retired_alias[cmd.key] or cmd.key
         -- O-30: a memorial follows the dead mon through an evolution like its force_faint did
-        local _, mon = find_party_slot(cmd.key, cmd.cmd == "memorialize" and cmd.cmd or nil)
+        local _, mon, party, party_why = find_party_slot(cmd.key, cmd.cmd == "memorialize" and cmd.cmd or nil)
         if mon and cmd.cmd == "memorialize" then phys = mon_key(mon) end
         local name = nick_label(cmd.key, cmd.nickname or (mon and mon.nickname))
         if settle and FS.guard_box(cmd, phys) then return end -- F2: an unsettled death owns the target
@@ -1956,9 +1956,9 @@ function Client.new(p)
         -- save persisted the party (a reset then loses the mon). Matched by the resolved physical key AND, for a
         -- memorial, by the server's own key (the alias that resolved `phys` can be reset while the settle waits).
         local function waiting(memorial)
-            for _, s in ipairs(self.settle) do
+            for i, s in ipairs(self.settle) do
                 if memorial and s.memorial and (s.key == phys or s.memorial.key == cmd.key) then return s end
-                if not memorial and not s.memorial and s.key == phys then return s end
+                if not memorial and not s.memorial and s.key == phys then return s, i end
             end
         end
         local function note_duplicate(s)
@@ -1982,11 +1982,21 @@ function Client.new(p)
                 hud.show("X Box fail: " .. name, 255, 80, 80, 240)
             end
         elseif cmd.cmd == "party_mon" then
-            local pending = waiting(false)
+            local pending, pending_index = waiting(false)
             if pending then
-                note_duplicate(pending)
-                send("sync_retrieve_done", { key = cmd.key })   -- re-acked (the mon IS in the party); nothing re-run
-                return
+                if mon then
+                    note_duplicate(pending)
+                    send("sync_retrieve_done", { key = cmd.key })
+                    return
+                end
+                if not party or party_why then
+                    local why = party_why or "party unavailable"
+                    log("[SLink-gen2] party_mon refused: " .. why .. " " .. cmd.key)
+                    send("sync_retrieve_failed", { key = cmd.key, reason = why })
+                    return
+                end
+                table.remove(self.settle, pending_index)
+                log("[SLink-gen2] party_mon " .. cmd.key .. ": party copy missing, retrying withdrawal")
             end
             local done, why = boxes.withdraw(phys, { defer_backing = true })
             if done and why then

@@ -1700,6 +1700,83 @@ def test_a_repeated_party_mon_inside_the_deferred_backing_window_never_deletes_t
     assert storage(world, 4)[0] == 0 and party_count(world) == 2
 
 
+@pytest.mark.parametrize("state", ["present", "reset", "reload", "full", "unreadable", "ambiguous"])
+def test_backing_withdrawal_retry_requires_a_current_party_copy(state):
+    source = (ROOT / "lua/gen2/client.lua").read_text(encoding="utf-8")
+
+    def method(signature):
+        start = source.index("    " + signature)
+        end = source.index("\n    end\n", start) + len("\n    end\n")
+        return source[start:end]
+
+    lua = LuaRuntime(unpack_returned_tuples=True)
+    model = lua.execute(r"""
+        local key = "7AAA:1234:13"
+        local party = {mons={{slot=0, key="2AAA:1234:19"}}}
+        local probe = {messages={}, calls=0, durable=true}
+        local self = {
+            epoch=0, settle={}, retired_alias={}, deferred={}, held={}, pending_battle_writes={},
+            rival_close=function() end, trade_forget=function() end,
+            hello_session={invalidate=function() end},
+        }
+        local function current_party() return party end
+        local function mon_key(mon) return mon.key end
+        local function nick_label(k) return k end
+        local function log() end
+        local function drop_held() end
+        local function send(event, fields)
+            probe.messages[#probe.messages + 1] = {event=event, key=fields.key, reason=fields.reason}
+        end
+        local hud = {show=function() end}
+        local boxes = {}
+        function boxes.withdraw(k, opts)
+            assert(k == key and opts.defer_backing == true)
+            probe.calls = probe.calls + 1
+            for _, mon in ipairs(party.mons) do
+                if mon.key == key then
+                    probe.durable = false
+                    return true
+                end
+            end
+            if #party.mons >= 6 then return false, "party full" end
+            party.mons[#party.mons + 1] = {slot=#party.mons, key=key}
+            return true, "backing removal deferred to the save witness"
+        end
+    """ + method("function self:boundary(kind, why)") +
+        method("local function find_party_slot(key, death)") +
+        method("function self:run_box(cmd)") + r"""
+        function probe.run()
+            self:run_box({cmd="party_mon", key=key, full_budget=0})
+        end
+        function probe.restore(state)
+            if state == "present" then return end
+            self:boundary(state == "reload" and "reload" or "reset")
+            if state == "unreadable" then party = nil
+            elseif state == "ambiguous" then
+                party = {mons={{slot=0, key=key}, {slot=1, key=key}}}
+            elseif state == "full" then
+                party = {mons={}}
+                for i = 1, 6 do party.mons[i] = {slot=i-1, key="other-" .. i} end
+            else party = {mons={{slot=0, key="2AAA:1234:19"}}} end
+        end
+        probe.client = self
+        return probe
+    """)
+    model.run()
+    assert model.calls == 1 and model.durable is True
+    assert len(model.client.settle) == 1
+    model.restore(state)
+    model.run()
+    messages = list(model.messages.values())
+    assert model.durable is True
+    assert model.calls == (2 if state in {"reset", "reload", "full"} else 1)
+    assert len(model.client.settle) == (0 if state == "full" else 1)
+    expected = "sync_retrieve_failed" if state in {"full", "unreadable", "ambiguous"} else "sync_retrieve_done"
+    assert [message.event for message in messages] == ["sync_retrieve_done", expected]
+    if expected == "sync_retrieve_failed":
+        assert messages[-1].reason
+
+
 def test_a_parked_burial_with_no_save_stays_visible_and_never_acks_however_long_it_waits():
     """Review m2: the policy is pinned: MAX_PENDING_FRAMES bounds faint latches, not a burial; it waits for the save."""
     lead, dead = mon(), mon(species=19, dvs=0x7AAA)
