@@ -6,6 +6,7 @@ import hashlib
 import json
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -191,6 +192,49 @@ def test_identity_drift_names_exactly_the_moved_records():
     assert [d.split(":")[0] for d in drift] == ["gen2", "pure"]
     assert sr.identity_drift(before, after, ("rb",)) == []                    # families that were not stamped are not judged
     assert sr.identity_drift(before, {**before, "companion_pins:rr": "0" * 40}, ("gen3",))[0].startswith("companion_pins:rr")
+
+
+@pytest.mark.parametrize("family,key", [
+    ("rb", "companion_pins:rb-red"),
+    ("pure", "pure:pokered"),
+    ("gen2", "gen2:pokegold"),
+    ("gen3", "companion_pins:rr"),
+    ("gen3", "gen3:firered:canonical_payload_sha256"),
+])
+def test_new_selected_family_identities_are_drift(family, key):
+    after = {key: "a" * 40}
+    assert sr.identity_drift({}, after, (family,)) == [f"{key}: missing -> {'a' * 12}"]
+    assert sr.identity_drift({}, after, tuple(f for f in sr.FAMILIES if f != family)) == []
+
+
+@pytest.mark.parametrize("accept,code", [(False, 2), (True, 0)])
+def test_added_identity_requires_explicit_acceptance_before_publication(tmp_path, monkeypatch, accept, code):
+    dist = _as_built_repo(tmp_path)
+    monkeypatch.setattr(sr, "ROOT", tmp_path)
+    monkeypatch.setattr(sr, "DIST", dist)
+    monkeypatch.setattr(sr, "VERSION_FILE", dist / "companion_version.json")
+    sr.write_version_file("v0.4.0", ("rb", "pure", "gen3"), as_built=("gen2", "polished"))
+    certificate = sr.VERSION_FILE.read_bytes()
+    snapshots = iter([{}, {"gen3:firered:canonical_payload_sha256": "a" * 64}])
+    published = []
+    monkeypatch.setattr(sr, "identities", lambda: next(snapshots))
+    monkeypatch.setattr(sr, "pinned_md5s", lambda: {})
+    monkeypatch.setattr(sr, "plan", lambda *args, **kwargs: [])
+    monkeypatch.setattr(sr.subprocess, "run", lambda *args, **kwargs: SimpleNamespace(stdout=".git"))
+    monkeypatch.setattr(sr, "update_md5_tables", lambda *args: published.append("tables"))
+
+    def write_version(version, families, *, as_built):
+        assert (version, families, as_built) == ("dev", ("rb", "pure", "gen3"), ("gen2", "polished"))
+        published.append("version")
+        return {"files": {}}
+
+    monkeypatch.setattr(sr, "write_version_file", write_version)
+    monkeypatch.setattr(sys, "argv", ["stamp_release", "--version", "dev", "--only", "rb,pure,gen3",
+                                    "--as-built", "gen2,polished"]
+                        + (["--accept-new-identity"] if accept else []))
+    assert sr.main() == code
+    assert published == (["tables", "version"] if accept else [])
+    assert sr.VERSION_FILE.read_bytes() == certificate
 
 
 def test_md5_tables_follow_the_new_pins(tmp_path, monkeypatch):

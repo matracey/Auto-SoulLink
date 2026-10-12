@@ -170,11 +170,12 @@ def identities() -> dict[str, str]:
 
 
 def identity_drift(before: dict[str, str], after: dict[str, str], families: tuple[str, ...]) -> list[str]:
-    """Records whose canonical identity changed (or vanished) across a stamp, for the families that were stamped."""
+    """Added, changed or removed canonical identities for the families that were stamped."""
     prefixes = {"rb": ("companion_pins:rb-",), "pure": ("pure:",), "gen2": ("gen2:",), "gen3": ("gen3:", "companion_pins:rr")}
     mine = tuple(p for f in families for p in prefixes[f])
-    return sorted(f"{k}: {before[k][:12]} -> {after.get(k, 'missing')[:12]}" for k in before
-                  if k.startswith(mine) and after.get(k) != before[k])
+    return sorted(f"{k}: {before.get(k, 'missing')[:12]} -> {after.get(k, 'missing')[:12]}"
+                  for k in before.keys() | after.keys()
+                  if k.startswith(mine) and after.get(k) != before.get(k))
 
 
 def update_md5_tables(old: dict[str, str], new: dict[str, str]) -> list[str]:
