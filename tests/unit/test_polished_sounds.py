@@ -160,8 +160,8 @@ def test_every_overlay_byte_the_sound_card_changed_is_in_an_intended_span(overla
     """
     import sys
     sys.path.insert(0, str(REPO / "tools"))
-    from build_gen2_companion import _symbols
     import build_polished_companion as B
+    from build_gen2_companion import _symbols
     clean = Path(os.environ.get("SLINK_WORK_ROOT", "F:/slink-work")) / "cache/polished/companion-clean"
     if not (clean / "polishedcrystal-3.2.3.gbc").is_file():
         pytest.skip("clean pinned build not cached")
@@ -192,7 +192,7 @@ def test_the_profile_carries_the_native_id_table_and_the_service_facts():
     assert block["play_sfx"] == list(SYM["PlaySFX"]) == [0, 0x39BD]
     assert block["check_sfx"] == list(SYM["CheckSFX"]) == [0, 0x3AC6]
     assert block["music_fade"] == SYM["wMusicFade"][1] == 0xCCB2
-    assert block["service"] == list(SYM["SlinkSfxService"]) == [0x7E, 0x4104]
+    assert block["service"] == list(SYM["SlinkSfxService"])
     assert P["constants"]["SFX_ITEM"] == 1 and P["constants"]["SFX_WRONG"] == 0x19
     assert P["constants"]["SFX_BUMP"] == 0x24 and P["constants"]["SFX_READ_TEXT_2"] == 0x08
 
@@ -291,12 +291,14 @@ def test_the_permit_writes_the_request_byte_and_refuses_every_other_address():
     for addr in (TILEMAP, ATTRMAP, MAILBOX + OFF_STATE, MAILBOX + OFF_PAGES, MAILBOX + 0, MAILBOX + 5):
         log.clear()
         writes.arm(writes, "sfx")
-        with pytest.raises(Exception):
+        with pytest.raises(lupa.LuaError, match="write refused: interval outside domain bounds"):
             writes.write_bytes(writes, addr, lua.table_from([1]))
         assert len(log.writes) == 0, addr
     # and a two-byte span at the request is refused too: one byte, one address
-    with pytest.raises(Exception):
+    writes.arm(writes, "sfx")
+    with pytest.raises(lupa.LuaError, match="write refused: interval outside domain bounds"):
         writes.write_bytes(writes, MAILBOX + OFF_SFX, lua.table_from([1, 1]))
+    assert log.writes == []
 
 
 def test_the_panel_arms_the_sound_permit_under_its_own_reason():

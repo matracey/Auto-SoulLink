@@ -131,6 +131,7 @@ class _Server:
 
     def __init__(self, contract, adapter=None):
         from types import SimpleNamespace
+
         from server.server import SLinkServer
         self.adapter = adapter or get_adapter("gen1_rby", rom_type="Red")
         self.state = SimpleNamespace(rom_type="Red", artifact_kind="clean")
@@ -202,6 +203,7 @@ def test_a_generation_that_cannot_fingerprint_is_admitted():
     answer has nothing to check -- it must not be locked out."""
     class _Mute:
         game_id = "mute"
+        rom_contract_by_sha1 = False
 
         def rom_content_fingerprint(self, payload):
             return None
