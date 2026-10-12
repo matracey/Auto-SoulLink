@@ -1,7 +1,8 @@
-"""Build-tool path recovery with synthetic installs; no downloads or executables run."""
+"""Build-tool validation and path recovery without downloads or real executables."""
 
 import io
 import os
+import subprocess
 import sys
 import tarfile
 from pathlib import Path
@@ -130,6 +131,51 @@ def test_overlay_outer_boundary_keeps_the_actual_copied_toolchain_for_provenance
     monkeypatch.setattr(builder, "make", fake_make)
     with pytest.raises(RuntimeError, match="captured outer normalized"):
         builder.build(repo_dir=tmp_path / "source", rgbds_bin=rgbds, w64devkit_bin=devkit, check=True)
+@pytest.mark.parametrize("stdout,stderr,returncode,expected", [
+    ("rgbasm v1.0.1\n", "", 0, True),
+    ("", "rgbasm v1.0.1\r\n", 0, True),
+    ("rgbasm v1.0.1\n", "warning\n", 0, True),
+    ("rgbasm v1.0.10\n", "", 0, False),
+    ("rgbasm v1.0.1-12-gabcdef\n", "", 0, False),
+    ("rgbasm v1.0.1-dirty\n", "", 0, False),
+    ("rgbasm v1.0.1+local\n", "", 0, False),
+    ("rgbasm v1.0.3\n", "", 0, False),
+    ("rgbasm v1.0.1\n", "", 1, False),
+    ("", "expected v1.0.1, unavailable\n", 0, False),
+    ("rgbasm v1.0.", "1\n", 0, False),
+    ("", "", 0, False),
+])
+def test_rgbds_version_requires_an_exact_successful_banner(monkeypatch, stdout, stderr, returncode, expected):
+    def run(args, **kwargs):
+        assert args == ["rgbasm", "--version"]
+        assert kwargs == {"capture_output": True, "text": True, "timeout": 5}
+        return subprocess.CompletedProcess(args, returncode, stdout, stderr)
+
+    monkeypatch.setattr(bootstrap.subprocess, "run", run)
+    assert bootstrap._verify_rgbds_version(Path("rgbasm"), "v1.0.1") is expected
+
+
+@pytest.mark.parametrize("error", [FileNotFoundError(), OSError(), subprocess.TimeoutExpired("rgbasm", 5)])
+def test_rgbds_version_execution_errors_are_rejected(monkeypatch, error):
+    def run(*args, **kwargs):
+        raise error
+
+    monkeypatch.setattr(bootstrap.subprocess, "run", run)
+    assert not bootstrap._verify_rgbds_version(Path("rgbasm"), "v1.0.1")
+
+
+def test_explicit_rgbds_override_still_trusts_the_requested_directory(tmp_path, monkeypatch):
+    for name in bootstrap.REQUIRED_BINARIES:
+        (tmp_path / bootstrap._binary_name(name)).touch()
+    monkeypatch.setenv("SLINK_RGBDS_BIN", str(tmp_path))
+
+    def unexpected_version_check(*args):
+        pytest.fail("explicit override must not trigger version checks")
+
+    monkeypatch.setattr(bootstrap, "_verify_rgbds_version", unexpected_version_check)
+    assert bootstrap.ensure_rgbds() == tmp_path
+
+
 def test_linux_rgbds_install_uses_the_verified_pin_and_extracts_only_tools(tmp_path, monkeypatch):
     archive = tmp_path / "rgbds.tar.xz"
     names = (*bootstrap.REQUIRED_BINARIES, "rgbgfx")

@@ -168,8 +168,10 @@ def _verify_rgbds_version(rgbasm: pathlib.Path, version: str) -> bool:
         )
     except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
         return False
-    output = (result.stdout or "") + (result.stderr or "")
-    return version in output
+    output = "\n".join((result.stdout or "", result.stderr or ""))
+    return result.returncode == 0 and any(
+        line.split() == ["rgbasm", version] for line in output.splitlines()
+    )
 
 
 def _download_and_verify(url: str, expected_sha256: str, expected_size: int) -> pathlib.Path:
