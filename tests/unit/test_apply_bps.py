@@ -31,8 +31,9 @@ def _signed_vlq(delta: int) -> bytes:
     return _vlq((abs(delta) << 1) | (1 if delta < 0 else 0))
 
 
-def _build_bps(source: bytes, target: bytes, body: bytes) -> bytes:
-    header = b"BPS1" + _vlq(len(source)) + _vlq(len(target)) + _vlq(0)
+def _build_bps(source: bytes, target: bytes, body: bytes, *, size=None, header=None) -> bytes:
+    if header is None:
+        header = b"BPS1" + _vlq(len(source)) + _vlq(len(target) if size is None else size) + _vlq(0)
     payload = header + body
     src_tgt_crc = struct.pack(
         "<II", zlib.crc32(source) & 0xFFFFFFFF, zlib.crc32(target) & 0xFFFFFFFF
@@ -138,3 +139,59 @@ def test_target_crc_mismatch():
     tampered[-4:] = struct.pack("<I", zlib.crc32(bytes(tampered[:-4])) & 0xFFFFFFFF)
     with pytest.raises(ValueError, match="target CRC mismatch"):
         apply(source, bytes(tampered))
+
+
+@pytest.mark.parametrize("source,target,body,size", [
+    (b"", b"AB", _action(1, 2) + b"AB", 1),
+    (b"", b"A\0", _action(1, 1) + b"A", 2),
+    (b"A", b"A", _action(0, 2), 2),
+    (b"A", b"A", _action(2, 2) + _signed_vlq(0), 2),
+    (b"ABCD", b"C", _action(2, 1) + _signed_vlq(-2), 1),
+    (b"", b"\0", _action(3, 1) + _signed_vlq(0), 1),
+    (b"", b"A\0", _action(1, 1) + b"A" + _action(3, 1) + _signed_vlq(-1), 2),
+    (b"", b"A\0", _action(1, 1) + b"A" + _action(3, 1) + _signed_vlq(1), 2),
+    (b"", b"\0", _action(1, 1), 1),
+])
+def test_rejects_crc_consistent_invalid_actions(source, target, body, size):
+    patch = _build_bps(source, target, body, size=size)
+    with pytest.raises(ValueError):
+        apply(source, patch)
+
+
+@pytest.mark.parametrize("body", [b"\x00", _action(2, 1), _action(3, 1)])
+def test_action_vlq_cannot_read_crc_trailer(body):
+    with pytest.raises(ValueError, match="truncated"):
+        apply(b"", _build_bps(b"", b"\0", body))
+
+
+@pytest.mark.parametrize("header", [
+    b"BPS1", b"BPS1\x80", b"BPS1\x80\x80",
+    b"BPS1\x80\x80\x00", b"BPS1\x80\x80" + _vlq(99),
+])
+def test_header_and_metadata_cannot_read_crc_trailer(header):
+    with pytest.raises(ValueError):
+        apply(b"", _build_bps(b"", b"", b"", header=header))
+
+
+def test_empty_target_with_metadata():
+    header = b"BPS1" + _vlq(0) + _vlq(0) + _vlq(4) + b"meta"
+    assert apply(b"", _build_bps(b"", b"", b"", header=header)) == b""
+
+
+def test_declared_size_does_not_preallocate_unproduced_bytes():
+    patch = _build_bps(b"", b"", b"", size=2**64 - 1)
+    with pytest.raises(ValueError, match="target size mismatch"):
+        apply(b"", patch)
+
+
+def test_source_copy_can_move_backwards():
+    source, target = b"ABCDE", b"CDABC"
+    body = _action(2, 2) + _signed_vlq(2) + _action(2, 3) + _signed_vlq(-4)
+    assert apply(source, _build_bps(source, target, body)) == target
+
+
+def test_target_copy_can_move_backwards():
+    target = b"ABCBCABC"
+    body = (_action(1, 3) + b"ABC" + _action(3, 2) + _signed_vlq(1)
+            + _action(3, 3) + _signed_vlq(-3))
+    assert apply(b"", _build_bps(b"", target, body)) == target
