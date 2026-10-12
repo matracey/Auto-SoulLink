@@ -260,3 +260,21 @@ def test_link_panel_for_polished_is_compact_and_fits_the_rom_line(tmp_path):
     assert rows[0] == "SOUL LINK" and "PAIRS 1/1" in rows and "BADGES 2/8" in rows and "DEAD ZONES 1" in rows
     assert " Rattata-CROBAT" in rows
     assert all(len(r) <= 16 and "|" not in r for r in rows), rows
+
+
+@pytest.mark.parametrize("species,form,record", [(species, form, record)
+                         for (species, form), record in pc.variant_records().items()],
+                         ids=[str(record) for record in pc.variant_records().values()])
+def test_every_effective_variant_retains_its_own_types(adapter, species, form, record):
+    assert adapter.species_types(record) == adapter.species_types(species, form)
+
+
+@pytest.mark.parametrize("variant,partner,shared_type", [(335, 4, "Fire"), (336, 7, "Water")],
+                         ids=["fire-tauros-charmander", "water-tauros-squirtle"])
+def test_tauros_secondary_type_is_enforced_by_state(tmp_path, variant, partner, shared_type):
+    from server.state import MonInfo, SoulLinkState
+
+    state = SoulLinkState(data_dir=str(tmp_path), type_lock=True,
+                          adapter=Gen2PolishedAdapter(artifact_kind="overlay"))
+    violation = state._check_link_violation(MonInfo("a", species=variant), MonInfo("b", species=partner))
+    assert violation == (f"Type clause: shared {shared_type}", "")

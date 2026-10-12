@@ -242,7 +242,9 @@ def test_expansion_party_layout_matches_facts_json_bitfields():
 @pytest.mark.parametrize("exp_first", [True, False])
 async def test_expansion_refuses_mixed_foundations_without_mutating_run(tmp_path, other, exp_first):
     from server.server import SLinkServer
-    from tests.unit.companion_evidence import companion  # a patched cartridge for each companion title
+    from tests.unit.companion_evidence import (
+        companion,  # a patched cartridge for each companion title
+    )
     from tests.unit.test_mixed_foundations import _hello, _refused, _session, _snapshot
 
     srv = SLinkServer(data_dir=str(tmp_path))
@@ -480,7 +482,8 @@ def test_every_base_contract_method_has_a_decided_expansion_answer():
         "party_blob_size", "supports_abilities", "status_token", "info_panel_width",
         "reports_box_census", "supports_info_panel", "supports_explode_mode", "set_artifact_kind",
         "pairing_kind", "companion_refusal", "supports_randomized", "pairing_kind_for", "native_trade_ui",
-        "supports_trade_recovery", "trade_unavailable_reason", "refused_trade_recovery", "supports_box_mon",
+        "supports_trade_recovery", "trade_unavailable_reason", "refused_trade_recovery",
+        "rom_contract_by_sha1",
         # presentation
         "sprite_html", "ability_name", "ability_description", "trainer_info", "item_name",
         "area_display_name", "to_national_dex", "gender_symbol", "form_sprite_id",
@@ -497,7 +500,7 @@ def test_every_base_contract_method_has_a_decided_expansion_answer():
     assert not a.is_egg_pickup_area("gift_lavaridge_town")   # no extracted static/egg policy
     assert a.supports_abilities() and a.info_panel_width() == 0
     assert not a.reports_box_census()
-    assert a.supports_box_mon()   # the expansion client keeps the default: it composes a box_mon executor
+    assert a.rom_contract_by_sha1 is False   # expansion keeps client-fingerprint admission
     assert not a.supports_randomized(ROM_TYPE)
     assert a.pairing_kind_for("clean", None) == "clean"
     # patch-first (2026-10-02): the expansion's companion does not exist yet, so it is exempt and stays clean

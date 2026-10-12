@@ -11,7 +11,7 @@ Differences from gen2_codec that matter: 6 one-byte EVs (no stat exp), 3 DV byte
 first-named stat, judge_machine.asm:496-546), a personality byte (+20: shiny bit 7, ability slot bits
 5-6, nature bits 0-4) and a form byte (+21: gender bit 7 = female, is-egg bit 6, species bit 8 in bit 5,
 form bits 0-4). The species is 9-bit and an egg keeps its real species (no species-list marker).
-This module imports no pack and no Lua; the adapter validates species/move/item ids against the pack.
+Form identity comes from the required game pack; the adapter validates species/move/item ids.
 """
 from __future__ import annotations
 
@@ -44,20 +44,66 @@ BLOB_SIZE = PARTY_SIZE + NAME_SIZE + NICKNAME_SIZE
 FORMS_INDEX = ROOT / "data" / "games" / "polished_crystal" / "forms_index.json"
 
 
-def _load_variant_records() -> MappingProxyType:
-    """(species_id, form_id) -> BaseData record index, from the generated forms index
-    (tools/gen_polished_forms.py, FORMS-H2). Records 292..337 are the variant forms."""
-    if not FORMS_INDEX.exists():
-        return MappingProxyType({})
+def load_forms_index() -> MappingProxyType:
+    """Load the required, validated identity facts shared by the codec and adapter.
+
+    Stat before the cached read so a removed pack refuses a new adapter construction;
+    replaced files get a new cache key. Never downgrade missing variant facts to plain species.
+    """
     path = FORMS_INDEX
-    data = json.loads(path.read_text(encoding="utf-8"))
-    return MappingProxyType({(int(r["species_id"]), int(r["form_id"])): int(r["record_index"])
-                             for r in data["variant_forms"] if r.get("kind") == "variant"})
+    try:
+        stamp = path.stat()
+    except OSError as exc:
+        raise ValueError(f"required Polished forms index unavailable: {path}") from exc
+    return _read_forms_index(path, stamp.st_mtime_ns, stamp.st_size)
 
 
 @cache
+def _read_forms_index(path, modified_ns, size) -> MappingProxyType:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if data["schema"] != "polished-forms-index-v1":
+            raise ValueError("unsupported schema")
+        rows = data["variant_forms"]
+        counts = data["counts"]
+        if (not isinstance(rows, list) or len(rows) != 46
+                or counts != {"records": 337, "species": 289, "variant_records": 46}):
+            raise ValueError("invalid record census")
+        records, forms, validated = set(), set(), []
+        for row in rows:
+            species, form, record = row["species_id"], row["form_id"], row["record_index"]
+            if (type(species) is not int or not 1 <= species <= 291 or species in (255, 256)
+                    or type(form) is not int or not 1 <= form <= 31
+                    or type(record) is not int or not 292 <= record <= 337
+                    or row["kind"] != "variant" or not isinstance(row["form_constant"], str)):
+                raise ValueError("invalid variant identity")
+            if record in records or (species, form) in forms:
+                raise ValueError("duplicate variant identity")
+            types = row["types"]
+            if (not isinstance(types, list) or len(types) != 2
+                    or not all(type(t) is int and 0 <= t <= 17 for t in types)):
+                raise ValueError("invalid variant types")
+            edges = row["evolves_to"]
+            if not isinstance(edges, list):
+                raise ValueError("invalid variant evolution list")
+            for edge in edges:
+                target = edge["effective_species_id"]
+                if target is not None and (type(target) is not int or not 1 <= target <= 337
+                                            or target in (255, 256)):
+                    raise ValueError("invalid variant evolution target")
+            records.add(record)
+            forms.add((species, form))
+            validated.append(MappingProxyType(dict(row, types=tuple(types),
+                             evolves_to=tuple(MappingProxyType(edge) for edge in edges))))
+        record_map = MappingProxyType({(row["species_id"], row["form_id"]): row["record_index"]
+                                       for row in validated})
+        return MappingProxyType(dict(data, variant_forms=tuple(validated), variant_records=record_map))
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise ValueError(f"invalid Polished forms index {path}: {exc}") from exc
+
+
 def variant_records() -> MappingProxyType:
-    return _load_variant_records()
+    return load_forms_index()["variant_records"]
 
 
 def is_variant_form(species_id: int, form: int) -> bool:
@@ -516,7 +562,7 @@ def variant_base_stats_from_rom(rom: bytes, *, rom_sha1: str) -> MappingProxyTyp
     import hashlib
     _require(isinstance(rom, bytes) and hashlib.sha1(rom).hexdigest() == rom_sha1,
              "variant base stats: the ROM is not the pinned build")
-    forms = json.loads(FORMS_INDEX.read_text(encoding="utf-8"))["variant_forms"]
+    forms = load_forms_index()["variant_forms"]
     return MappingProxyType({int(r["record_index"]): tuple(rom[int(r["rom_offset"]):int(r["rom_offset"]) + 6])
                              for r in forms if r.get("kind") == "variant"})
 

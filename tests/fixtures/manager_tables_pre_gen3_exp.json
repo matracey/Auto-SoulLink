@@ -300,7 +300,7 @@
    "phone_calls": {
     "always": false,
     "ok": false,
-    "why": "The Polished Crystal client is not written yet (its Lua composition stops at admission)."
+    "why": "Polished Crystal has no companion call transport yet; its Pokégear Phone entry opens the SoulLink panel instead of ringing."
    },
    "rival_team_swap": {
     "ok": true,

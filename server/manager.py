@@ -210,7 +210,7 @@ OPTION_SUPPORT = {
                       "gen3_exp": {"ok": False, "why": "Needs a companion patch with a native sound path, and the Emerald Expansion has none."}},
     "phone_calls": {"all": False, "why": "Only Gen 2 has a Pokégear phone for the companion to ring.",
                     "gen2_gsc": {"ok": True},
-                    "gen2_polished": {"ok": False, "why": "The Polished Crystal client is not written yet (its Lua composition stops at admission)."}},
+                    "gen2_polished": {"ok": False, "why": "Polished Crystal has no companion call transport yet; its Pokégear Phone entry opens the SoulLink panel instead of ringing."}},
     "battle_calc": {"all": False, "why": "Radical Red only.",
                     "gen1_rby": {"ok": False, "why": "The calculator is pinned to modern mechanics and would misreport Gen 1 damage."},
                     "gen1_purergb": {"ok": False, "why": "The calculator is pinned to modern mechanics and would misreport pureRGB's retyped/rebalanced damage."},
@@ -339,7 +339,7 @@ def new_run_form() -> dict:
 
 
 def _companion_titles() -> tuple:
-    from server.cartridges import COMPANION_TITLES   # lazy: provisioning pulls the patch tools
+    from server.cartridges import COMPANION_TITLES  # lazy: provisioning pulls the patch tools
     return COMPANION_TITLES
 
 

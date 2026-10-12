@@ -75,6 +75,15 @@ class GameRulesAdapter(ABC):
     """
 
     @property
+    def rom_contract_by_sha1(self) -> bool:
+        """Bind randomized ROM content to the server's contract SHA1 instead of a client fingerprint.
+
+        Default False preserves fingerprint-based admission. Adapters opting in must ingest only
+        the server's SHA1-checked cartridge bytes; client-supplied decoded tables are not authority.
+        """
+        return False
+
+    @property
     @abstractmethod
     def game_id(self) -> str:
         """Unique identifier for this game family (e.g., 'frlg', 'gen1_rby')."""
@@ -305,18 +314,6 @@ class GameRulesAdapter(ABC):
         opts in, and no `game_id` branch appears in shared code.
         """
         return False
-
-    def supports_box_mon(self) -> bool:
-        """Whether this game's Lua client can execute the `box_mon` deposit command.
-
-        Default True: every client that predates this check has a box executor. An adapter whose
-        client composes none (Polished Crystal's DEV composition refuses every write kind) returns
-        False, and the server queues no `box_mon` for it instead of a command that can only come
-        back `box_mon_failed`. Only the two quarantine sites (state.py _handle_capture, hello re-quarantine) and
-        the memorial relocation check it: the partner-sync `box_mon` sites are unguarded because a boxless family
-        only pairs with itself (it never emits party_to_box/box_to_party), so they cannot fire.
-        """
-        return True
 
     def set_artifact_kind(self, kind: str) -> None:
         """Bind the run's committed artifact kind (hello `artifact_kind`; server/state.py).

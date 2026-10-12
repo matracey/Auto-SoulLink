@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import pytest
 
-from server.manager import GAME_LABELS, GAMES, OPTIONS, new_run_form, option_support
+from server.manager import GAMES, OPTIONS, new_run_form, option_support
 
 GEN1 = ["red", "blue"]
 RR = ["firered_rr", "firered_rr"]
@@ -150,6 +150,7 @@ def test_the_new_run_form_seeds_every_default_on_option_checked():
     rendered unchecked while the run was ON, so the box read the opposite of what the run did)."""
     import re
     from pathlib import Path
+
     from server import manager
     html = (Path(__file__).resolve().parents[2] / "server/templates/manager.html").read_text(encoding="utf-8")
     seed = re.search(r"draft: \{ name: '', game: '', opts: \{([^}]*)\}", html)[1]
@@ -164,3 +165,11 @@ def test_polished_battle_options_are_selectable_with_the_companion(key):
     assert support["ok"] is True
     assert "companion" in support["why"].lower()
     assert new_run_form()["support"]["gen2_polished"][key] == support
+
+
+
+def test_polished_phone_refusal_names_the_missing_call_transport():
+    row = option_support("phone_calls", ["polished_crystal"])
+    assert row["ok"] is False
+    assert "call transport" in row["why"]
+    assert "not written" not in row["why"]

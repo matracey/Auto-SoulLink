@@ -757,7 +757,7 @@ class SLinkServer:
         roms/<pid>.<ext> beside rom_contract.json), as bytes, with the pinned sha1 the adapter re-checks. A missing
         file still yields a payload, so ingest fails and the player shows NO tables rather than the shipped ones."""
         if (msg.get("artifact_kind") not in ("rand", "rand_overlay")
-                or getattr(self.adapter, "rom_contract_by_sha1", False) is not True):
+                or self.adapter.rom_contract_by_sha1 is not True):
             return None
         want = (((self._rom_contract or {}).get("players") or {}).get(player_id) or {}).get("rom_sha1")
         roms, rom = os.path.join(self._data_dir or DATA_DIR, "roms"), None
@@ -860,7 +860,7 @@ class SLinkServer:
                 getattr(self, "_player_adapters", {}).pop(player_id, None)
             return {"state": "rejected", "reason": refused}
         if not self._rom_contract:
-            if kind == "rand_overlay" and getattr(self.adapter, "rom_contract_by_sha1", False) is True:
+            if kind == "rand_overlay" and self.adapter.rom_contract_by_sha1 is True:
                 # Bound only by the contract sha1: with no contract nothing vouches for the cartridge.
                 return {"state": "rejected",
                         "reason": "randomized cartridges for this game must be made by the Manager "
@@ -871,7 +871,7 @@ class SLinkServer:
 
         expected = (self._rom_contract.get("players") or {}).get(player_id) or {}
         want = expected.get("fingerprint")
-        if getattr(self.adapter, "rom_contract_by_sha1", False) is True:
+        if self.adapter.rom_contract_by_sha1 is True:
             # A foundation that binds its cartridge by the full-ROM sha1 its client rehashes: the contract's
             # pin for this player, exactly. It applies even when the contract also carries a fingerprint
             # (then the fingerprint checks below follow); it is never the weaker fallback.
@@ -5300,15 +5300,6 @@ class SLinkServer:
                     for _area, players in s.pending_captures.items():
                         cap = players.get(player_id)
                         if cap and cap.key == key:
-                            # this player's cartridge adapter (a mixed pair can differ); a stub keeps the default
-                            _own = self.adapter_for(player_id) if hasattr(self, "adapter_for") else self.adapter
-                            if not getattr(_own, "supports_box_mon", lambda: True)():
-                                # the client composes no box executor: a relocation could only fail
-                                if (player_id, key, "no_box_mon") not in self._warned_memorial_keys:
-                                    self._warned_memorial_keys.add((player_id, key, "no_box_mon"))
-                                    log.warning(f"[{player_id}] Quarantined mon {key[:8]} in memorial box: "
-                                                f"not relocated (this client cannot execute box_mon)")
-                                break
                             log.warning(
                                 f"[{player_id}] Quarantined mon {key[:8]} found in memorial box! "
                                 f"Queueing party_mon + box_mon to relocate."

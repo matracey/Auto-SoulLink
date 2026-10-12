@@ -18,13 +18,13 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
-import pathlib
 import re
 from functools import cache
 from pathlib import Path
 
 from . import polished_codec, polished_rom_scan
 from .base import companion_required_reason
+from .gen2_encounter_presentation import present_encounters
 from .gen2_gsc import _AREA, _STATIC, Gen2GSCAdapter, _display
 
 _ROOT = Path(__file__).resolve().parents[2]
@@ -65,7 +65,6 @@ def _integer(value, low, high):
     return type(value) is int and low <= value <= high
 
 
-FORMS_INDEX = pathlib.Path(__file__).resolve().parents[2] / "data" / "games" / "polished_crystal" / "forms_index.json"
 
 
 def _json(name):
@@ -90,18 +89,17 @@ def _panel_line_max() -> int:
 
 @cache
 def _rom_sha1() -> str:
-    with open(_ROOT / "data" / "polished_sources.lock.json", encoding="utf-8") as fh:
-        return json.load(fh)["outputs"]["polishedcrystal"]["sha1"]
+    return next(pin for pin, kind in polished_rom_scan.pinned_sha1s().items() if kind == "clean")
 
 
 @cache
 def _companion_abi() -> int | None:
-    """The mailbox ABI the companion was BUILT against: abi_version of data/polished/overlay_provenance.json
-    (written by tools/build_polished_companion.py), as Gen 2 pins its profile.json overlay.abi -- an ABI bump
-    without a rebuilt companion then refuses rather than admits. None when unreadable or not a positive
-    integer, which refuses every hello (fail closed)."""
+    """The companion's generated runtime ABI pin from the Polished game pack.
+
+    None when unreadable or not a positive integer, which refuses every hello (fail closed).
+    """
     try:
-        with open(_ROOT / "data" / "polished" / "overlay_provenance.json", encoding="utf-8") as fh:
+        with open(_ROOT / "data" / "games" / "polished_crystal" / "companion_abi.json", encoding="utf-8") as fh:
             abi = json.load(fh)["abi_version"]
     except (OSError, ValueError, KeyError, TypeError):
         return None
@@ -267,19 +265,17 @@ class Gen2PolishedAdapter(Gen2GSCAdapter):
         # BaseData record index -> the same variant row. A variant form's EFFECTIVE species id IS its record
         # index (forms_index.json, tools/gen_polished_forms.py), which is what keeps server/state.py unchanged.
         self._variant_by_record = {}
-        if FORMS_INDEX.exists():
-            forms_index = json.loads(FORMS_INDEX.read_text(encoding="utf-8"))
-            for row in forms_index["variant_forms"]:
-                if row.get("kind") != "variant":
-                    continue
-                base = next((s for s in self._variants.values()
-                             if s["species"] == row["species_id"]), None)
-                merged = dict(base or {})
-                merged.update({"species": row["species_id"], "form": row["form_id"],
-                               "record_index": row["record_index"],
-                               "form_const": row["form_constant"],
-                               "evolves_to": row.get("evolves_to", [])})
-                self._variant_by_record[row["record_index"]] = merged
+        forms_index = polished_codec.load_forms_index()
+        for row in forms_index["variant_forms"]:
+            if row.get("kind") != "variant":
+                continue
+            base = self._variants[(row["species_id"], row["form_id"])]
+            merged = dict(base or {})
+            merged.update({"species": row["species_id"], "form": row["form_id"],
+                           "record_index": row["record_index"],
+                           "form_const": row["form_constant"],
+                           "evolves_to": row.get("evolves_to", [])})
+            self._variant_by_record[row["record_index"]] = merged
         self._types = {}
         for row in [*self._species.values(), *self._variants.values()]:
             _require(isinstance(row.get("name"), str) and _integer(row.get("gender_ratio"), 0, 15),
@@ -700,70 +696,17 @@ class Gen2PolishedAdapter(Gen2GSCAdapter):
             _require(acquisition == "gift", "unqualified acquisition kind; egg pickup is not capture")
         return super().gift_link_area(area_id)
 
+    def _encounter_mon_fields(self, entry):
+        species = entry["species"]
+        form = entry.get("form", 0)
+        if species == 0:
+            return None   # native time-of-day fish slot; this pack has no resolver yet
+        _require(species in self._species, "unresolved encounter species")
+        return {"species_id": species, "form": form, "name": self.species_name(species, form),
+                "effective_species_id": polished_codec.effective_species(species, form)}
+
     def _presentation_tables(self):
-        """Maps, times and slot rows stay distinct; rates are table probabilities (gen2_gsc's shape)."""
-        grouped = {}
-
-        def emit(key, label, slots, weights, **metadata):
-            area = self._areas.get(str(key))
-            _require(area is not None, "encounter refers to a missing map")
-            target = grouped.setdefault((area["area_id"], label, key, metadata.get("source_table")), [])
-            for slot, (entry, weight) in enumerate(zip(slots, weights, strict=True)):
-                species, form = entry["species"], entry.get("form", 0)
-                if species == 0:
-                    continue   # ponytail: engine time-of-day fish pick; the pack has no time_groups to resolve it
-                _require(species in self._species, "unresolved encounter species")
-                level = entry.get("level")
-                target.append({"species_id": species, "form": form, "name": self.species_name(species, form),
-                               "effective_species_id": polished_codec.effective_species(species, form),
-                               "rate": weight, "min_level": entry.get("min_level", level),
-                               "max_level": entry.get("max_level", level), "slot": slot,
-                               "map_group": area["map_group"], "map_number": area["map_number"],
-                               "map_name": area["map_name"], **metadata})
-
-        wild = self._encounters["wild"]
-        for kind in ("grass", "water"):
-            thresholds = [row["threshold"] for row in wild[f"{kind}_probabilities"]]
-            _require(thresholds == sorted(set(thresholds)) and thresholds[-1] == 100, "wild slot probabilities invalid")
-            weights = [high - low for low, high in zip([0, *thresholds[:-1]], thresholds, strict=True)]
-            for row in wild[kind]:
-                label = "Surf" if kind == "water" else {"morning": "Morn", "day": "Day", "night": "Nite"}[row["time"]]
-                emit(row["map_group"] * 256 + row["map_number"], label, row["slots"], weights,
-                     encounter_rate_byte=row["rate"], time=row["time"], source_table=row["table"])
-        tree = self._encounters["tree"]
-        sets = {row["set_id"]: row for row in tree["sets"]}
-        for kind, maps in (("Headbutt", tree["headbutt_maps"]), ("Rock Smash", tree["rock_smash_maps"])):
-            for row in maps:
-                source = sets[row["set_id"]]
-                for rarity in ("common", "rare"):
-                    if slots := source.get(rarity):
-                        emit(row["map_group"] * 256 + row["map_number"],
-                             kind + (f" {rarity.title()}" if kind == "Headbutt" else ""),
-                             slots, [entry["weight"] for entry in slots], set_id=row["set_id"])
-        groups = {row["group_id"]: row for row in self._encounters["fishing"]["groups"]}
-        for key, area in self._areas.items():
-            group = groups.get(area["fishing_group"])
-            if group is None:
-                continue
-            for rod in ("old", "good", "super"):
-                thresholds = [entry["threshold"] for entry in group[rod]]
-                _require(thresholds == sorted(set(thresholds)) and thresholds[-1] == 255, "fish thresholds invalid")
-                weights = [(high - low) * 100 / 256 for low, high in zip([-1, *thresholds[:-1]], thresholds, strict=True)]
-                emit(int(key), f"{rod.title()} Rod", group[rod], weights, fish_group=group["group_id"],
-                     bite_threshold=group["bite_threshold"], map_association="UNQUALIFIED")
-        tables, maps_by_method, tables_by_map = {}, {}, {}
-        for area, label, key, source_table in grouped:
-            maps_by_method.setdefault((area, label), set()).add(key)
-            tables_by_map.setdefault((area, label, key), set()).add(source_table)
-        for (area, label, key, source_table), slots in grouped.items():
-            method = label
-            if source_table is not None and len(tables_by_map[area, method, key]) > 1:
-                label += " (Swarm)" if source_table.startswith("Swarm") else " (Normal)"
-            if len(maps_by_method[area, method]) > 1:
-                label += f" ({self._areas[str(key)]['map_name']})"
-            target = tables.setdefault(area, {})
-            _require(label not in target, "encounter presentation variants collide")
-            target[label] = slots
+        tables = present_encounters(self._areas, self._encounters, self._encounter_mon_fields)
         contest = self._encounters["contest"]
         tables["national_park_contest"] = {"Contest": [
             {"species_id": row["species"], "name": self.species_name(row["species"]), "rate": row["weight"],
@@ -777,13 +720,6 @@ class Gen2PolishedAdapter(Gen2GSCAdapter):
         # bench-faint) after echo fix ea90b9fd3. The Manager rows enable this in the same cut;
         # OPEN-EXPLODE-RIVAL still needs receipt rebind at the freeze.
         return self._artifact_kind in _COMPANION
-
-    def supports_box_mon(self):
-        # Party sync ON (owner 2026-10-08): deposit and withdraw are composed through O.client_boxes
-        # (lua/gen2/entry.lua) and passed the live write driver on overlay cf03f53a, (b) and (d) with an
-        # independently derived changed-byte subset (docs/polished/LIVE_RESULTS.md). The optional
-        # three-outcome box-write contract is parked; this is the legacy two-outcome path vanilla uses.
-        return True
 
     def reports_box_census(self):
         return True              # The composed client reports the newbox/PokeDB census (NEWBOX.md §6.1).
