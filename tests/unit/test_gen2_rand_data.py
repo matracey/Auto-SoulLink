@@ -154,6 +154,7 @@ def test_ingest_takes_only_the_servers_contract_checked_bytes(fault):
 
 
 def test_the_server_reads_the_contracted_file_for_a_sha1_bound_randomized_hello(tmp_path):
+    from server.adapters import get_adapter
     from server.server import SLinkServer
     server = SLinkServer.__new__(SLinkServer)
     server.adapter, server._data_dir = Gen2GSCAdapter("crystal"), str(tmp_path)
@@ -164,7 +165,8 @@ def test_the_server_reads_the_contracted_file_for_a_sha1_bound_randomized_hello(
     assert server._contracted_rom("a", hello) == {"rom": b"cart", "rom_type": "Crystal", "rom_sha1": "ab" * 20}
     assert server._contracted_rom("b", hello)["rom"] is None      # no file: ingest fails, no tables shown
     assert server._contracted_rom("a", {**hello, "artifact_kind": "overlay"}) is None
-    server.adapter = object()                                      # a foundation not bound by sha1
+    server.adapter = get_adapter("gen3_frlge", rom_type="firered")  # declared inert policy
+    assert server.adapter.rom_contract_by_sha1 is False
     assert server._contracted_rom("a", hello) is None
 
 
