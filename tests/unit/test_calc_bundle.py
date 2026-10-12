@@ -55,7 +55,7 @@ vm.runInContext(shim, ctx, {filename: 'shim.js'});
 for (const p of scriptPaths) {
   vm.runInContext(fs.readFileSync(p, 'utf8'), ctx, {filename: p});
 }
-const calc = ctx.calc;
+const calc = ctx.calc || ctx.window.calc;
 
 function keys(obj) { return Object.keys(obj).sort(); }
 
@@ -148,9 +148,9 @@ def _skip_unless_buildable() -> None:
         pytest.skip("calc/dist not built - run `npm run build` in calc/ first")
 
 
-def _run_page_probe(tmp_path) -> dict:
+def _run_page_probe(tmp_path, *, bundled: bool = False) -> dict:
     _skip_unless_buildable()
-    shim, paths = _page_shim_and_script_paths()
+    shim, paths = ("", [_DATA_BUNDLE, _MECH_BUNDLE]) if bundled else _page_shim_and_script_paths()
     missing = [p for p in paths if not os.path.isfile(p)]
     if missing:
         pytest.skip(f"calc/dist not built - missing {missing[0]} - run `npm run build` in calc/")
@@ -162,6 +162,10 @@ def _run_page_probe(tmp_path) -> dict:
     )
     assert result.returncode == 0, result.stderr
     return json.loads(result.stdout.strip().splitlines()[-1])
+
+
+def test_bundled_api_matches_the_page_modules(tmp_path):
+    assert _run_page_probe(tmp_path, bundled=True) == _run_page_probe(tmp_path)
 
 
 def test_vanilla_gen1_damage_range_matches_jest(tmp_path):
@@ -213,7 +217,7 @@ def test_production_bundle_also_loads():
     for path in (_DATA_BUNDLE, _MECH_BUNDLE):
         with open(path, encoding="utf-8") as f:
             text = f.read()
-        assert "require(" not in text, f"{path} still calls require() - a slice offset is wrong"
+        assert "require(" not in text, f"{path} contains an unresolved CommonJS import"
     result = subprocess.run(
         [shutil.which("node"), "-e", (
             "const vm=require('vm'),fs=require('fs');"

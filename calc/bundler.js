@@ -54,6 +54,29 @@ class Bundler {
     bundled = (await terser.minify(bundled)).code;
     fs.writeFileSync(path.join(this.built, output), bundled);
   }
+
+  readModule(f) {
+    const code = babel.transformSync(this.read(f), {
+      ...config,
+      plugins: [
+        ...config.plugins,
+        ({types}) => ({
+          visitor: {
+            CallExpression(p) {
+              if (!p.get('callee').isIdentifier({name: 'require'})) return;
+              const args = p.node.arguments;
+              if (args.length !== 1 || !types.isStringLiteral(args[0]) ||
+                  !args[0].value.startsWith('.')) {
+                throw p.buildCodeFrameError('Only local calculator imports can share exports');
+              }
+              p.replaceWith(types.identifier('exports'));
+            },
+          },
+        }),
+      ],
+    }).code;
+    return `(function(exports) {\n${code}\n})(exports);\n`;
+  }
 }
 
 module.exports = Bundler;
