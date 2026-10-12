@@ -125,8 +125,17 @@ def calc_name_sets(gen: int = 9) -> dict[str, set[str]]:
 
     def strs(t: str) -> set[str]:
         s = {_ts_unquote(a) for a in re.findall(r"^\s+" + _TS_LIT + r",?$", t, re.M)}
-        for args in re.findall(r"\.push\(([^)]*)\)", t):
-            s |= {_ts_unquote(a) for a in re.findall(_TS_LIT, args)}
+        for call in re.finditer(r"\.push\(", t):
+            depth = 1
+            for token in re.finditer(_TS_LIT + r"|[()]", t[call.end():]):
+                if token.group(1) is not None:
+                    s.add(_ts_unquote(token.group(1)))
+                else:
+                    depth += 1 if token.group() == "(" else -1
+                    if depth == 0:
+                        break
+            else:
+                raise ValueError("Unterminated .push() in calculator data")
         return s
 
     if gen == 9:

@@ -8,10 +8,12 @@ import {Generations} from './gen';
 const pkmn = {Generations: new Generations(Dex)};
 
 const gens = [1, 2, 3, 4, 5, 6, 7, 8, 9] as I.GenerationNum[];
+// Slot 9 carries Radical Red data, covered in radical_red.test.ts.
+const retailGens = gens.filter(gen => gen < 9);
 
 describe('Generations', () => {
   test('abilities', () => {
-    for (const gen of gens) {
+    for (const gen of retailGens) {
       const p = Array.from(pkmn.Generations.get(gen).abilities);
       const c = new Map<I.ID, I.Ability>();
       for (const ability of calc.Generations.get(gen).abilities) c.set(ability.id, ability);
@@ -26,7 +28,7 @@ describe('Generations', () => {
   });
 
   test('items', () => {
-    for (const gen of gens) {
+    for (const gen of retailGens) {
       const p = Array.from(pkmn.Generations.get(gen).items);
       const c = new Map<I.ID, I.Item>();
       for (const item of calc.Generations.get(gen).items) c.set(item.id, item);
@@ -41,7 +43,7 @@ describe('Generations', () => {
   });
 
   test('moves', () => {
-    for (const gen of gens) {
+    for (const gen of retailGens) {
       const p = Array.from(pkmn.Generations.get(gen).moves);
       const c = new Map<I.ID, I.Move>();
       for (const move of calc.Generations.get(gen).moves) c.set(move.id, move);
@@ -62,7 +64,7 @@ describe('Generations', () => {
   });
 
   test('species', () => {
-    for (const gen of gens) {
+    for (const gen of retailGens) {
       const p = Array.from(pkmn.Generations.get(gen).species);
       const c = new Map<I.ID, I.Specie>();
       for (const specie of calc.Generations.get(gen).species) c.set(specie.id, specie);

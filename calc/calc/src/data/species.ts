@@ -4297,7 +4297,7 @@ const BW_PATCH: {[name: string]: DeepPartial<SpeciesData>} = {
   },
   Jellicent: {
     types: ['Water', 'Ghost'],
-    bs: {hp: 100, at: 60, df: 80, sa: 75, sd: 105, sp: 60},
+    bs: {hp: 100, at: 60, df: 70, sa: 85, sd: 105, sp: 60},
     weightkg: 135,
     abilities: {0: 'Water Absorb'},
   },
@@ -6698,7 +6698,6 @@ const SM_PATCH: {[name: string]: DeepPartial<SpeciesData>} = {
     bs: {hp: 46, at: 65, df: 65, sa: 55, sd: 35, sp: 34},
     weightkg: 8,
     gender: 'N',
-    nfe: true,
     abilities: {0: 'Magnet Pull'},
   },
   'Meowth-Alola': {
@@ -7497,14 +7496,14 @@ const SM_PATCH: {[name: string]: DeepPartial<SpeciesData>} = {
 
 const SM: {[name: string]: SpeciesData} = extend(true, {}, XY, SM_PATCH);
 
-/*
-delete SM['Pikachu-Cosplay'];
-delete SM['Pikachu-Rock-Star'];
-delete SM['Pikachu-Belle'];
-delete SM['Pikachu-PhD'];
-delete SM['Pikachu-Pop-Star'];
-delete SM['Pikachu-Libre'];
-*/
+const COSPLAY_SPECIES: {[name: string]: SpeciesData} = {};
+for (const name of [
+  'Pikachu-Cosplay', 'Pikachu-Rock-Star', 'Pikachu-Belle',
+  'Pikachu-PhD', 'Pikachu-Pop-Star', 'Pikachu-Libre',
+]) {
+  COSPLAY_SPECIES[name] = SM[name];
+  delete SM[name];
+}
 
 const SS_PATCH: {[name: string]: DeepPartial<SpeciesData>} = {
   'Aegislash-Blade': {bs: {at: 140, sa: 140}},
@@ -8764,20 +8763,6 @@ const SS: {[name: string]: SpeciesData} = extend(true, {}, SM, SS_PATCH);
 delete SS['Pikachu-Starter'];
 delete SS['Eevee-Starter'];
 
-// remove gmax forms from extra formes
-var gmaxes = ["Alcremie", "Appletun", "Blastoise", "Butterfree", "Centiskorch", "Charizard", "Cinderace", "Coalossal", "Copperajah", "Corviknight", "Drednaw", "Duraludon", "Eevee", "Flapple", "Garbodor", "Gengar", "Grimmsnarl", "Hatterene", "Inteleon", "Kingler", "Lapras", "Machamp", "Melmetal", "Meowth", "Orbeetle", "Pikachu", "Rillaboom", "Sandaconda", "Snorlax", "Toxtricity", "Urshifu", "Venusaur"]
-gmaxes.forEach(function(p) {
-  var i = SS[p].otherFormes?.indexOf(`${p}-Gmax`)
-  if (i != undefined && i != -1) SS[p].otherFormes?.splice(i, 1)
-  delete SS[`${p}-Gmax`]
-})
-var i = SS['Toxtricity'].otherFormes?.indexOf('Toxtricity-Low-Key-Gmax')
-if (i != undefined && i != -1) SS['Toxtricity'].otherFormes?.splice(i, 1)
-delete SS['Toxtricity-Low-Key-Gmax']
-var i = SS['Urshifu'].otherFormes?.indexOf('Urshifu-Rapid-Strike-Gmax')
-if (i != undefined && i != -1) SS['Urshifu'].otherFormes?.splice(i, 1)
-delete SS['Urshifu-Rapid-Strike-Gmax']
-
 const PLA_PATCH: {[name: string]: DeepPartial<SpeciesData>} = {
   Arcanine: {otherFormes: ['Arcanine-Hisui']},
   Avalugg: {otherFormes: ['Avalugg-Hisui']},
@@ -10036,6 +10021,8 @@ const SV_PATCH: {[name: string]: DeepPartial<SpeciesData>} = {
 };
 
 const RR_PATCH: {[name: string]: DeepPartial<SpeciesData>} = {
+  Jellicent: {bs: {df: 80, sa: 75}},
+  Meltan: {nfe: true},
   'Abomasnow-Mega': {bs: {df: 105, sd: 105, sp: 60}},
   'Absol-Mega': {types: ['Dark', 'Fairy'], abilities: {0: 'Blademaster'}},
   'Alcremie': {otherFormes: ['Alcremie-Mega']},
@@ -10654,7 +10641,20 @@ const RR_PATCH: {[name: string]: DeepPartial<SpeciesData>} = {
   },
 };
 
-const SV: {[name: string]: SpeciesData} = extend(true, {}, SS, SV_PATCH, PLA_PATCH, RR_PATCH);
+const SV: {[name: string]: SpeciesData} =
+  extend(true, {}, SS, SV_PATCH, PLA_PATCH, COSPLAY_SPECIES, RR_PATCH);
+
+for (const [name, species] of Object.entries(SV)) {
+  const formes = RR_PATCH[name]?.otherFormes ?? species.otherFormes;
+  if (name.endsWith('-Gmax')) {
+    delete SV[name];
+  } else if (formes) {
+    const otherFormes = formes.filter(
+      (forme): forme is string => typeof forme === 'string' && !forme.endsWith('-Gmax')
+    );
+    SV[name] = {...species, otherFormes: otherFormes.length ? otherFormes : undefined};
+  }
+}
 
 export const SPECIES = [{}, RBY, GSC, ADV, DPP, BW, XY, SM, SS, SV];
 

@@ -1757,7 +1757,7 @@ const XY_PATCH: {[name: string]: DeepPartial<MoveData>} = {
   Lick: {bp: 30},
   'Low Sweep': {bp: 65},
   'Meteor Mash': {bp: 90},
-  'Muddy Water': {bp: 95},
+  'Muddy Water': {bp: 90},
   Octazooka: {isBullet: true},
   Overheat: {bp: 130},
   'Pin Missile': {bp: 25},
@@ -3896,7 +3896,7 @@ const SS_PATCH: {[name: string]: DeepPartial<MoveData>} = {
   'Leaf Blade': {maxPower: 130},
   'Leaf Storm': {maxPower: 140},
   'Leaf Tornado': {maxPower: 120},
-  'Leech Life': {zp: 100, maxPower: 130},
+  'Leech Life': {maxPower: 130},
   'Let\'s Snuggle Forever': {maxPower: 1},
   Lick: {maxPower: 90},
   'Light of Ruin': {maxPower: 140},
@@ -4137,6 +4137,16 @@ const SS_PATCH: {[name: string]: DeepPartial<MoveData>} = {
 };
 
 const SS: {[name: string]: MoveData} = extend(true, {}, SM, SS_PATCH);
+
+const LGPE_MOVES: {[name: string]: MoveData} = {};
+for (const name of [
+  'Baddy Bad', 'Bouncy Bubble', 'Buzzy Buzz', 'Freezy Frost', 'Glitzy Glow',
+  'Sappy Seed', 'Sizzly Slide', 'Sparkly Swirl', 'Zippy Zap', 'Floaty Fall',
+  'Pika Papow', 'Splishy Splash', 'Veevee Volley',
+]) {
+  LGPE_MOVES[name] = SS[name];
+  delete SS[name];
+}
 
 const SV_PATCH: {[name: string]: DeepPartial<MoveData>} = {
   'Aerial Ace': {isSlicing: true},
@@ -4903,6 +4913,8 @@ const SV_PATCH: {[name: string]: DeepPartial<MoveData>} = {
 };
 
 const RR_PATCH: {[name: string]: DeepPartial<MoveData>} = {
+  'Leech Life': {zp: 100},
+  'Muddy Water': {bp: 95},
   'Aerial Ace': {isSlicing: false},
   'Aqua Step': {isKick: true, zp: 140, maxPower: 120},
   'Armor Cannon': {isPulse: true},
@@ -5110,7 +5122,7 @@ const RR_PATCH: {[name: string]: DeepPartial<MoveData>} = {
   },
 }
 
-const SV: {[name: string]: MoveData} = extend(true, {}, SS, SV_PATCH, RR_PATCH);
+const SV: {[name: string]: MoveData} = extend(true, {}, SS, SV_PATCH, LGPE_MOVES, RR_PATCH);
 
 export const MOVES = [{}, RBY, GSC, ADV, DPP, BW, XY, SM, SS, SV];
 

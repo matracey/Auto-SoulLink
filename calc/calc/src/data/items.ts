@@ -59,7 +59,7 @@ const GSC = [
   'Soft Sand',
   'Spell Tag',
   'Sport Ball',
-  // 'Stick',
+  'Stick',
   'Sun Stone',
   'Thick Club',
   'Thunder Stone',
@@ -293,35 +293,46 @@ const BW = DPP.concat([
   'Water Gem',
 ]);
 
+const RR_MEGA_STONES: {[item: string]: string} = {
+  Alcremite: 'Alcremie',
+  Appletunite: 'Appletun',
+  Butterfrite: 'Butterfree',
+  Centiskite: 'Centiskorch',
+  Coalossite: 'Coalossal',
+  Copperajite: 'Copperajah',
+  Drednawite: 'Drednaw',
+  Duraludonite: 'Duraludon',
+  Flapplite: 'Flapple',
+  Garbodorite: 'Garbodor',
+  Kinglerite: 'Kingler',
+  Laprasite: 'Lapras',
+  Machampite: 'Machamp',
+  Orbeetlite: 'Orbeetle',
+  Sandacondite: 'Sandaconda',
+  Snorlaxite: 'Snorlax',
+  Toxtricitite: 'Toxtricity',
+  'Toxtricitite Low Key': 'Toxtricity-Low-Key',
+};
+
 export const MEGA_STONES: {[species: string]: string} = {
   Absolite: 'Absol',
   Abomasite: 'Abomasnow',
   Aerodactylite: 'Aerodactyl',
   Aggronite: 'Aggron',
   Alakazite: 'Alakazam',
-  Alcremite: 'Alcremie',
   Altarianite: 'Altaria',
   Ampharosite: 'Ampharos',
-  Appletunite: 'Appletun',
   Audinite: 'Audino',
   Banettite: 'Banette',
   Beedrillite: 'Beedrill',
   Blastoisinite: 'Blastoise',
   Blazikenite: 'Blaziken',
-  Butterfrite: 'Butterfree',
   Cameruptite: 'Camerupt',
-  Centiskite: 'Centiskorch',
   'Charizardite X': 'Charizard',
   'Charizardite Y': 'Charizard',
-  Coalossite: 'Coalossal',
-  Copperajite: 'Copperajah',
   Crucibellite: 'Crucibelle',
   Diancite: 'Diancie',
-  Drednawite: 'Drednaw',
-  Duraludonite: 'Duraludonite',
-  Flapplite: 'Flapple',
   Galladite: 'Gallade',
-  Garbodorite: 'Garbodor',
   Garchompite: 'Garchomp',
   Gardevoirite: 'Gardevoir',
   Gengarite: 'Gengar',
@@ -330,41 +341,34 @@ export const MEGA_STONES: {[species: string]: string} = {
   Heracronite: 'Heracross',
   Houndoominite: 'Houndoom',
   Kangaskhanite: 'Kangaskhan',
-  Kinglerite: 'Kingler',
-  Laprasite: 'Lapras',
   Latiasite: 'Latias',
   Latiosite: 'Latios',
   Lopunnite: 'Lopunny',
   Lucarionite: 'Lucario',
-  Machampite: 'Machamp',
   Manectite: 'Manectric',
   Mawilite: 'Mawile',
   Medichamite: 'Medicham',
   Metagrossite: 'Metagross',
   'Mewtwonite X': 'Mewtwo',
   'Mewtwonite Y': 'Mewtwo',
-  Orbeetlite: 'Orbeetle',
   Pidgeotite: 'Pidgeot',
   Pinsirite: 'Pinsir',
   Sablenite: 'Sableye',
   Salamencite: 'Salamence',
-  Sandacondite: 'Sandaconda',
   Sceptilite: 'Sceptile',
   Scizorite: 'Scizor',
   Sharpedonite: 'Sharpedo',
   Slowbronite: 'Slowbro',
-  Snorlaxite: 'Snorlax',
   Steelixite: 'Steelix',
   Swampertite: 'Swampert',
-  Toxtricitite: 'Toxtricity',
-  'Toxtricitite Low Key': 'Toxtricity-Low-Key',
   Tyranitarite: 'Tyranitar',
   Venusaurite: 'Venusaur',
+  ...RR_MEGA_STONES,
 };
 
 const XY = BW.concat(
   [
-    ...Object.keys(MEGA_STONES),
+    ...Object.keys(MEGA_STONES).filter(item => !(item in RR_MEGA_STONES)),
     'Assault Vest',
     'Blue Orb',
     'Fairy Gem',
@@ -466,7 +470,6 @@ const SS = SM.concat([
   'Galarica Wreath',
   'Heavy-Duty Boots',
   'Leek',
-  'Leek Stick',
   'Love Sweet',
   'Ribbon Sweet',
   'Room Service',
@@ -489,7 +492,7 @@ SS.push('Utility Umbrella', 'Vile Vial');
 // Because we support National Dex all Past items are added back in
 SS.push(...GSC_ONLY, 'Old Amber');
 
-const SV = SS.concat([
+const SV = SS.filter(item => item !== 'Stick').concat([
   'Adamant Crystal',
   'Auspicious Armor',
   'Ability Shield',
@@ -513,8 +516,7 @@ const SV = SS.concat([
   'Wellspring Mask',
 ]);
 
-// RR
-SV.push('Burnt Seed');
+SV.push(...Object.keys(RR_MEGA_STONES), 'Leek Stick', 'Burnt Seed');
 
 const BERRIES: {[berry: string]: {t: I.TypeName; p: number}} = {
   'Aguav Berry': {t: 'Dragon', p: 80},

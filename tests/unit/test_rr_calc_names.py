@@ -145,6 +145,26 @@ def test_calc_parse_sees_known_names():
         assert name in CALC[kind], (kind, name)
 
 
+@pytest.mark.parametrize("args", [
+    "...Object.keys(EXTRA), 'Leek Stick', 'Burnt Seed'",
+    "...Object.keys(Object.assign({}, EXTRA)), 'Leek Stick', 'Burnt Seed'",
+    "...Object.keys(EXTRA),\n  'Leek Stick',\n  'Burnt Seed'",
+    "'Leek Stick', ...Object.keys(EXTRA), 'Burnt Seed'",
+])
+def test_calc_parse_balances_push_calls(tmp_path, monkeypatch, args):
+    for name in ("species.ts", "moves.ts", "abilities.ts"):
+        (tmp_path / name).write_text("", encoding="utf-8")
+    (tmp_path / "items.ts").write_text(
+        f"SV.push({args}, 'Odd ); Item', 'King\\'s Rock');\n"
+        "unrelated('Not an item');\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr("tools.gen_rr_priority_trainers._CALC_TS_DIR", tmp_path)
+    assert calc_name_sets()["item"] == {
+        "Leek Stick", "Burnt Seed", "Odd ); Item", "King's Rock",
+    }
+
+
 @pytest.mark.parametrize("kind", KINDS)
 def test_every_emitted_rr_name_resolves(kind):
     bad = sorted(n for n in EMITTED[kind]
