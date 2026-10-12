@@ -231,8 +231,16 @@ save assumptions or counter-first timeout. Proposed phases:
    legality and unchanged party count immediately after either consent menu returns.
    The check precedes normalization, is repeated before the full save, and runs again after
    save and before snapshot. Decline also rechecks before publishing. A canceled/replaced
-   visit exits before the next native write or stale consent publication. Changes already
-   made while the preceding checkpoint was valid are not described as rolled back.
+   visit exits before the next SLink trade write (snapshot, consent/APPLY publication or
+   commit) and never publishes a stale consent. Changes already made while the preceding
+   checkpoint was valid are not described as rolled back.
+   **Native save boundary (2026-10-12 review):** once the checkpoint before the full save
+   passes, entering `Link_SaveGame` is an irrevocable, player-confirmed native save of the
+   current pre-trade state. Inside it, the native `AskOverwriteSaveFile` question (shown when
+   the saved and live OT differ) is the game's own prompt; if the visit is canceled while it
+   waits and the player answers YES, the native erase and save complete before the
+   post-save checkpoint, which then exits without any SLink trade write. rc2 (`c98120f61`,
+   overlay `fe8c57e1`) had the same path; no SLink revalidation runs inside the native save.
    `tests/unit/test_polished_responder_safety.py` executes these checks in the shipped
    responder bytes with native menus/save/normalization trapped; it is not SRAM-durability
    or live interrupt-timing proof.
