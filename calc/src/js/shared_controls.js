@@ -1061,6 +1061,7 @@ function createPokemon(pokeInfo) {
 
 		var ability = pokeInfo.find(".ability").val();
 		var item = pokeInfo.find(".item").val();
+		var status = pokeInfo.find(".status").val();
 		var isDynamaxed = pokeInfo.find(".max").prop("checked");
 		var teraType = pokeInfo.find(".teraToggle").is(":checked") ? pokeInfo.find(".teraType").val() : undefined;
 		var opts = {
@@ -1091,7 +1092,7 @@ function createPokemon(pokeInfo) {
 			teraType: teraType,
 			boosts: boosts,
 			curHP: curHP,
-			status: CALC_STATUS[pokeInfo.find(".status").val()],
+			status: CALC_STATUS[status],
 			toxicCounter: status === 'Badly Poisoned' ? ~~pokeInfo.find(".toxic-counter").val() : 0,
 			moves: [
 				getMoveDetails(pokeInfo.find(".move1"), opts),
