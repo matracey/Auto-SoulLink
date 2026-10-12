@@ -37,7 +37,7 @@ DATA = REPO / "data" / "games" / "gen1_purergb"
 PURERGB_TS = REPO / "calc" / "calc" / "src" / "data" / "purergb.ts"
 SETDEX_JS = REPO / "calc" / "src" / "js" / "data" / "sets" / "games" / "PureRGB.js"
 
-_TS_KEY = r'^\s*"((?:[^"\\]|\\.)*)":'
+_TS_KEY = r'^  "((?:[^"\\]|\\.)*)":'
 
 
 def _ts_table_keys(block_label: str) -> set[str]:

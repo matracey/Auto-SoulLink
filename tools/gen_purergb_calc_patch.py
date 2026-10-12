@@ -221,7 +221,7 @@ def build_moves_data(moves: list[dict], calc_names: dict[str, str]) -> tuple[dic
     return out, warnings
 
 
-def ts_value(v) -> str:
+def ts_value(v, indent: int = 0) -> str:
     """A Python value (from build_species_data/build_moves_data/build_type_chart) as a TS object
     literal - just enough of a serializer for the plain dict/list/str/int/float shapes those
     produce (no need for a general-purpose one)."""
@@ -232,16 +232,20 @@ def ts_value(v) -> str:
     if isinstance(v, (int, float)):
         return repr(v)
     if isinstance(v, list):
-        return "[" + ", ".join(ts_value(x) for x in v) + "]"
+        return "[" + ", ".join(ts_value(x, indent) for x in v) + "]"
     if isinstance(v, dict):
         # Always quote keys (never bare identifiers) - needed for "???", not just cosmetic: an
         # unquoted `???:` is a syntax error.
-        return "{" + ", ".join(f"{ts_str(k)}: {ts_value(val)}" for k, val in v.items()) + "}"
+        rows = [
+            " " * (indent + 2) + f"{ts_str(k)}: {ts_value(val, indent + 2)},"
+            for k, val in v.items()
+        ]
+        return "{\n" + "\n".join(rows) + "\n" + " " * indent + "}"
     raise TypeError(f"unhandled value {v!r}")
 
 
 def build_table_ts(table: dict[str, dict]) -> list[str]:
-    return [f"  {ts_str(name)}: {ts_value(data)}," for name, data in table.items()]
+    return [f"  {ts_str(name)}: {ts_value(data, 2)}," for name, data in table.items()]
 
 
 HEADER = """\
@@ -256,9 +260,9 @@ HEADER = """\
 // tables (the same shapes species.ts/moves.ts/types.ts's own hand-written RBY/GSC/... tables use,
 // keyed by display name) so they go through the exact same Specie/Move/Type construction path as
 // every other gen - no separate object-literal-plus-cast path to keep in sync.
-import {MoveData, setGen1Moves} from './moves';
-import {SpeciesData, setGen1Species} from './species';
-import {TypeChart, setGen1TypeChart} from './types';
+import {MoveData, setGen1Moves} from "./moves";
+import {SpeciesData, setGen1Species} from "./species";
+import {TypeChart, setGen1TypeChart} from "./types";
 
 const SPECIES_DATA: {[name: string]: SpeciesData} = {
 """
@@ -289,8 +293,8 @@ FOOTER = """\
  * checks gen.types for pureRGB's Crystal type) rather than a flag here, so mechanics/ - compiled
  * into a separate bundle with no shared module scope - never needs to import this module.
  */
-export function useDex(target: 'vanilla' | 'purergb'): void {
-  const active = target === 'purergb';
+export function useDex(target: "vanilla" | "purergb"): void {
+  const active = target === "purergb";
   setGen1Species(active ? PURERGB_SPECIES : null);
   setGen1Moves(active ? PURERGB_MOVES : null);
   setGen1TypeChart(active ? PURERGB_TYPE_CHART : null);
