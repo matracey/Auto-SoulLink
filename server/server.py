@@ -33,8 +33,8 @@ from collections import deque
 from datetime import datetime
 
 from server import calc_files
-from server.http_safety import allow_hosts, csrf_protection, theme_cache
 from server.health import writable_directory
+from server.http_safety import allow_hosts, csrf_protection, theme_cache
 from server.lua_literals import lua_comment, lua_string
 from server.overlay_catalog import build_index_context as _build_stream_index_context
 from server.ui_capabilities import ui_capabilities
@@ -72,8 +72,8 @@ try:
 except ImportError:
     from server import calc_files
 import aiohttp_jinja2
-from server.admin_auth import setup_admin_auth
 
+from server.admin_auth import setup_admin_auth
 from server.templating import resolve_layout, resolve_theme, setup_templating
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -3146,6 +3146,18 @@ class SLinkServer:
                 }
                 for area, players in s.pending_captures.items()
             },
+            "unpaired_mons": {
+                area: {
+                    pid: {
+                        "key": mon.key, "nickname": mon.nickname,
+                        "species": mon.species, "level": mon.level,
+                        "species_name": self.adapter_for(pid).species_name(mon.species) if mon.species else "",
+                        "sprite_html": self._get_sprite_html(mon.species, 0, pid) if mon.species else "",
+                    }
+                    for pid, mon in players.items()
+                }
+                for area, players in s.unpaired_mons.items()
+            },
             "encounter_locks": {
                 area: {
                     pid: {
@@ -4882,6 +4894,7 @@ class SLinkServer:
             return aiohttp_web.json_response({"ok": False, "error": "invalid JSON"}, status=400)
         area_id = body.get("area_id", "").strip()
         idx = body.get("index", -1)
+        preserve = {pid for pid in body.get("preserve", []) if pid in ("a", "b")}
         if not area_id:
             return aiohttp_web.json_response({"ok": False, "error": "area_id required"}, status=400)
 
@@ -4912,8 +4925,17 @@ class SLinkServer:
         # Remove from links list
         s.links.remove(entry)
 
-        # Reset area state to unseen (unless there are pending captures)
-        if area_id in s.pending_captures:
+        for pid in preserve:
+            mon = entry.a if pid == "a" else entry.b
+            if mon:
+                s.cancel_retirement(pid, mon.key)
+                s.unpaired_mons.setdefault(area_id, {})[pid] = mon
+
+        # A preserved survivor means the encounter was consumed; otherwise reset
+        # the area unless another capture is still pending.
+        if preserve:
+            s.area_states[area_id] = AreaStatus.DEAD_ZONE
+        elif area_id in s.pending_captures:
             remaining = s.pending_captures[area_id]
             if "a" in remaining and "b" not in remaining:
                 s.area_states[area_id] = AreaStatus.PENDING_B
@@ -4932,8 +4954,51 @@ class SLinkServer:
         self._notify_sse()
         return aiohttp_web.json_response({
             "ok": True,
-            "message": f"Unlinked {a_name} <-> {b_name} on {self.adapter.area_display_name(area_id)}. Area reset.",
+            "message": (
+                f"Unlinked {a_name} <-> {b_name} on {self.adapter.area_display_name(area_id)}."
+                + (" Preserved surviving half." if preserve else " Area reset.")
+            ),
         })
+
+    @_requires_loaded_state
+    async def handle_debug_register_unpaired(self, request):
+        """POST /api/debug/register_unpaired — record a surviving half for display only."""
+        try:
+            body = await request.json()
+        except Exception:
+            return aiohttp_web.json_response({"ok": False, "error": "invalid JSON"}, status=400)
+        player_id = body.get("player", "").strip()
+        area_id = body.get("area_id", "").strip()
+        key = body.get("key", "").strip()
+        if player_id not in ("a", "b") or not area_id or not key:
+            return aiohttp_web.json_response(
+                {"ok": False, "error": "player, area_id, and key are required"}, status=400)
+
+        from server.state import AreaStatus, MonInfo
+
+        s = self.state
+        if s.entry_for(player_id, key):
+            return aiohttp_web.json_response(
+                {"ok": False, "error": "That Pokemon is still linked."}, status=409)
+        if self._find_pending_area_for_key(player_id, key):
+            return aiohttp_web.json_response(
+                {"ok": False, "error": "That Pokemon is a pending capture."}, status=409)
+
+        detail = self._lookup_mon_detail(player_id, key)
+        mon = MonInfo(
+            key=key,
+            nickname=body.get("nickname") or detail.get("nickname", ""),
+            species=body.get("species_id") or detail.get("species_id", 0),
+            level=body.get("level") or detail.get("level", 0),
+        )
+        s.unpaired_mons.setdefault(area_id, {})[player_id] = mon
+        if body.get("consume_area", True):
+            s.area_states[area_id] = AreaStatus.DEAD_ZONE
+            s._queue_resolved_areas(player_id)
+        s._save()
+        log.info("[unpaired] Preserved %s:%s on %s", player_id, key[:8], area_id)
+        self._notify_sse()
+        return aiohttp_web.json_response({"ok": True, "message": "Unpaired Pokemon recorded."})
 
     @_requires_loaded_state
     async def handle_debug_resolve_trade(self, request):
@@ -5633,6 +5698,13 @@ class SLinkServer:
         s.links.append(entry)
         s._index_entry(entry)
         s.area_states[area] = AreaStatus.LINKED
+        for pid, key in (("a", a_key), ("b", b_key)):
+            for orphan_area in list(s.unpaired_mons):
+                mon = s.unpaired_mons[orphan_area].get(pid)
+                if mon and mon.key == key:
+                    del s.unpaired_mons[orphan_area][pid]
+                    if not s.unpaired_mons[orphan_area]:
+                        del s.unpaired_mons[orphan_area]
         # A manual link resolves the area just like normal pair formation. Leaving
         # its first-species lock behind renders a contradictory "Seeking ..." row
         # on an already-linked area.
@@ -5795,6 +5867,7 @@ def build_app(srv):
     app.router.add_post("/api/debug/set_area_state",   srv.handle_debug_set_area_state)
     app.router.add_post("/api/debug/clear_pending",    srv.handle_debug_clear_pending)
     app.router.add_post("/api/debug/unlink",            srv.handle_debug_unlink)
+    app.router.add_post("/api/debug/register_unpaired", srv.handle_debug_register_unpaired)
     app.router.add_post("/api/debug/revive",            srv.handle_debug_revive)
     app.router.add_post("/api/debug/resolve_trade",     srv.handle_debug_resolve_trade)
     app.router.add_post("/api/debug/resolve_ambiguous_key", srv.handle_debug_resolve_ambiguous_key)

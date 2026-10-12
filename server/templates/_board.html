@@ -291,11 +291,11 @@
           <h2 class="mk-h2 split">
             <span class="mk-h2-side"><span class="mk-side small">A</span><span>{{ status.players.a.trainer_name or '—' }}</span></span>
             <i></i>
-            <span class="mk-h2-mid"><span>{{ board.section_labels[sect] }}</span><em><span class="num">{{ rows | length }}</span> pair{{ '' if rows | length == 1 else 's' }}</em></span>
+            <span class="mk-h2-mid"><span>{{ board.section_labels[sect] }}</span><em><span class="num">{{ rows | length }}</span> {% if sect == 'unpaired' %}mon{{ '' if rows | length == 1 else 's' }}{% else %}pair{{ '' if rows | length == 1 else 's' }}{% endif %}</em></span>
             <i></i>
             <span class="mk-h2-side b"><span>{{ status.players.b.trainer_name or '—' }}</span><span class="mk-side small">B</span></span>
           </h2>
-          <div class="mk-pairs{% if sect in ('boxed', 'pending') %} compact{% endif %}">
+          <div class="mk-pairs{% if sect in ('boxed', 'pending', 'unpaired') %} compact{% endif %}">
             {% for row in rows %}
               <article class="mk-pair {{ row.section }}" id="pair-{{ row.area }}">
                 {{ half(row, 'a', status.players.a, 'b') }}
@@ -306,6 +306,7 @@
                     {% if row.status == 'dead_zone' %}<span>dead zone</span>
                     {% elif row.section == 'fallen' and row.death %}<span>{{ row.death.cause | replace('_', ' ') }}{% if row.death.killer %} · {{ row.death.killer.trainer_name or row.death.killer.species_name }}{% endif %}</span>
                     {% elif row.status == 'retry' %}<span>retrying first species</span>
+                    {% elif row.status == 'unpaired' %}<span>partner lost</span>
                     {% elif row.section == 'pending' %}<span>waiting</span>
                     {% elif row.section == 'boxed' %}<span>boxed together</span>
                     {% elif row.section == 'split' %}<span>split</span>

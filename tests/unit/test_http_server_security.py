@@ -298,6 +298,7 @@ async def test_debug_revive_clears_game_over_and_allows_it_to_be_requeued(srv, c
 @pytest.mark.asyncio
 @pytest.mark.parametrize("path", ["/api/attempts", "/api/debug/inject_event", "/api/debug/queue_command",
     "/api/debug/set_pokeballs", "/api/debug/set_area_state", "/api/debug/clear_pending", "/api/debug/unlink",
+    "/api/debug/register_unpaired",
     "/api/debug/resolve_trade", "/api/debug/resolve_ambiguous_key", "/api/debug/revive", "/api/inject_link", "/api/inject_link_by_slot"])
 async def test_load_failure_refuses_http_state_writers_without_touching_disk(srv, client, path):
     from pathlib import Path

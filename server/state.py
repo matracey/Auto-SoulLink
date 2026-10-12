@@ -4510,6 +4510,14 @@ class SoulLinkState:
             if half:
                 self._unindex(pid, half.key, entry)
 
+    def cancel_retirement(self, player_id: str, key: str) -> None:
+        """Discard undelivered retirement for one player's restored mon."""
+        self.pending_memorials[player_id].discard(key)
+        self.queued_commands[player_id] = [
+            cmd for cmd in self.queued_commands[player_id]
+            if not (cmd.get("key") == key and cmd.get("cmd") in (*DEATH_COMMANDS, "memorialize"))
+        ]
+
     def _queue_memorialize(self, player_id: str, key: str):
         """
         Queue a memorialize command for player_id's key.

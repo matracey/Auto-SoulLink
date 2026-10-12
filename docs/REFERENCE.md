@@ -451,6 +451,7 @@ The OBS event names above are a separate set derived on the server, even where a
 | `/api/debug/set_area_state` | POST | `{area_id, state}` with `unseen`, `pending_a`, `pending_b`, `pending_both`, `linked` or `dead_zone`. |
 | `/api/debug/clear_pending` | POST | `{area_id?}`: clear pending captures, all or one area. |
 | `/api/debug/unlink` | POST | `{area_id, index?}`: remove a link and reset the area. |
+| `/api/debug/register_unpaired` | POST | Administrator repair using `{player,area_id,key,nickname?,species_id?,level?,consume_area?}`. Records an unpaired survivor for display; consumes the area by default. |
 | `/api/debug/revive` | POST | `{area_id, index?}`: mark a dead pair alive. The Pokémon must be restored in-game by hand. |
 | `/api/debug/resolve_trade` | POST | `{token, action, sides?}` with `action` `commit`, `rollback` or `adopt`: settle an in-game trade the server could not. Check both parties first. |
 | `/api/debug/resolve_ambiguous_key` | POST | `{player, key}`: clear an ambiguous-key hold after checking the cartridge. |

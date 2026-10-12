@@ -26,13 +26,14 @@ _COMPANION_REFUSAL = re.compile(re.escape(companion_required_reason("{title}")).
 SECTION_LABELS = {
     "party": "In party",
     "pending": "Pending link",
+    "unpaired": "Unpaired",
     "split": "Split — one half boxed",
     "boxed": "Boxed",
     "linked": "Linked",        # a stopped run: the bond is known, where each half sits is not
     "fallen": "Fallen",
 }
 # The team first; what is waiting on it second. Then the shelf, then the graveyard.
-SECTION_ORDER = ("party", "pending", "split", "boxed", "linked", "fallen")
+SECTION_ORDER = ("party", "pending", "unpaired", "split", "boxed", "linked", "fallen")
 
 PIDS = ("a", "b")
 
@@ -56,7 +57,7 @@ def area_name(area_id: str) -> str:
 
 
 def bond_glyph(status: str) -> str:
-    return "<>" if status == "alive" else "<·" if status == "pending" else "><"
+    return "<>" if status == "alive" else "<·" if status == "pending" else "·" if status == "unpaired" else "><"
 
 
 def badge_count(mask: int) -> int:
@@ -174,9 +175,43 @@ def pending_rows(status: dict) -> list[dict]:
     return out
 
 
+def unpaired_rows(status: dict) -> list[dict]:
+    """Surviving halves explicitly detached from a lost partner."""
+    out = []
+    for area, sides in sorted((status.get("unpaired_mons") or {}).items()):
+        halves = {}
+        for pid in PIDS:
+            mon = sides.get(pid)
+            if not mon:
+                halves[pid] = None
+                continue
+            live = locate(status["players"][pid], mon["key"])
+            in_party = bool(live and live["where"] == "party")
+            halves[pid] = {
+                **mon,
+                "sprite": mon.get("sprite_html") or "",
+                "hp": live.get("hp") if in_party else None,
+                "maxHP": live.get("maxHP") if in_party else None,
+                "where": live["where"] if live else None,
+                "active": active_key(status["players"][pid]) == mon["key"],
+                "ability": (live or {}).get("ability_name") or "",
+                "item": (live or {}).get("item_name") or "",
+            }
+        out.append({
+            "area": area,
+            "area_name": area_name(area),
+            "section": "unpaired",
+            "status": "unpaired",
+            "a": halves["a"],
+            "b": halves["b"],
+            "death": None,
+        })
+    return out
+
+
 def sections(status: dict, rows: list[dict] | None = None) -> list[tuple[str, list[dict]]]:
     if rows is None:
-        rows = pending_rows(status) + pairs(status)
+        rows = pending_rows(status) + unpaired_rows(status) + pairs(status)
     out = []
     for key in SECTION_ORDER:
         group = [r for r in rows if r["section"] == key]
@@ -190,7 +225,7 @@ def build_board(status: dict) -> dict:
     players = status.get("players") or {}
     rows = pairs(status)   # built once: sections() would otherwise build every pair again
     return {
-        "sections": sections(status, pending_rows(status) + rows),
+        "sections": sections(status, pending_rows(status) + unpaired_rows(status) + rows),
         "section_labels": SECTION_LABELS,
         "counts": {
             "alive": sum(1 for r in rows if r["section"] != "fallen"),
