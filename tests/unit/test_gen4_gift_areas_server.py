@@ -149,6 +149,30 @@ def test_a_malformed_block_exempts_nothing_and_says_so(monkeypatch, tmp_path, ca
     assert any("no HGSS area is exempt" in r.getMessage() for r in caplog.records), caplog.records
 
 
+@pytest.mark.parametrize("wild", [
+    None, False, 0, 1, "", "route_34", [], ["route_34"],
+    {"252": []}, {"252": {}}, {"252": None}, {"252": 1}, {"252": ""},
+])
+def test_malformed_wild_area_mapping_exempts_nothing(monkeypatch, tmp_path, caplog, wild):
+    body = {"gift_areas": {"ids": ["goldenrod_city"], "on_wild_area": wild}}
+    (tmp_path / "area_map.json").write_text(json.dumps(body), encoding="utf-8")
+    monkeypatch.setattr(gen4, "_HGSS_PACK_DIR", str(tmp_path))
+    with caplog.at_level(logging.ERROR):
+        assert gen4._load_hgss_gift_areas() == frozenset()
+    assert ".gift_areas.on_wild_area" in caplog.text
+    assert "no HGSS area is exempt" in caplog.text
+
+
+@pytest.mark.parametrize("block", [
+    {"ids": ["goldenrod_city"]},
+    {"ids": ["goldenrod_city"], "on_wild_area": {}},
+])
+def test_missing_or_empty_wild_area_mapping_preserves_gift_ids(monkeypatch, tmp_path, block):
+    (tmp_path / "area_map.json").write_text(json.dumps({"gift_areas": block}), encoding="utf-8")
+    monkeypatch.setattr(gen4, "_HGSS_PACK_DIR", str(tmp_path))
+    assert gen4._load_hgss_gift_areas() == frozenset({"goldenrod_city"})
+
+
 def test_unreadable_json_exempts_nothing_and_says_so(monkeypatch, tmp_path, caplog):
     (tmp_path / "area_map.json").write_text("{not json", encoding="utf-8")
     monkeypatch.setattr(gen4, "_HGSS_PACK_DIR", str(tmp_path))

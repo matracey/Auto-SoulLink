@@ -94,7 +94,14 @@ def _load_hgss_gift_areas() -> frozenset[str]:
     # on_wild_area is the pack's own record of the candidates the generator removed BECAUSE the area
     # owns a wild-encounter map; it refuses to emit such a pack (check_gift_ids), so a hit is a
     # contradiction between two halves of one file and the id is dropped rather than trusted.
-    wild = set((block.get("on_wild_area") or {}).values())
+    on_wild_area = block.get("on_wild_area", {})
+    if not isinstance(on_wild_area, dict) or not all(
+        isinstance(area, str) and area for area in on_wild_area.values()
+    ):
+        log.error("Gen 4: %s .gift_areas.on_wild_area is not a mapping of non-empty strings - "
+                  "refused; no HGSS area is exempt from no_catch", path)
+        return frozenset()
+    wild = set(on_wild_area.values())
     contradiction = sorted(set(ids) & wild)
     if contradiction:
         log.error("Gen 4: %s .gift_areas.ids covers wild-encounter areas %s — exempting one would "
