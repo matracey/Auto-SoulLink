@@ -1,4 +1,4 @@
-import {Generations, Move, Pokemon} from '../index';
+import {calculate, Generations, Move, Pokemon} from '../index';
 import {toID} from '../util';
 
 describe('Radical Red data isolation', () => {
@@ -8,6 +8,27 @@ describe('Radical Red data isolation', () => {
       expect(rr.abilities.get(toID(name))?.name).toBe(name);
       expect(Generations.get(8).abilities.get(toID(name))).toBeUndefined();
     }
+  });
+
+  describe('Radical Red Barb Barrage', () => {
+    test.each(['', 'brn', 'par', 'psn', 'tox', 'slp', 'frz'] as const)(
+      'doubles power for any nonempty status (%s)',
+      status => {
+        const move = new Move(9, 'Barb Barrage');
+        const result = calculate(
+          9, new Pokemon(9, 'Qwilfish'), new Pokemon(9, 'Mew', {status}), move
+        );
+        expect(result.rawDesc.moveBP).toBe(move.bp * (status ? 2 : 1));
+      }
+    );
+
+    test('doubles power against Comatose without a status', () => {
+      const move = new Move(9, 'Barb Barrage');
+      const result = calculate(
+        9, new Pokemon(9, 'Qwilfish'), new Pokemon(9, 'Komala', {ability: 'Comatose'}), move
+      );
+      expect(result.rawDesc.moveBP).toBe(move.bp * 2);
+    });
   });
 
   test.each([
