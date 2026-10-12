@@ -1239,7 +1239,12 @@ def replay_extra(item, row, bound, root, snap):
             primary["server_rows"] == result["server_rows"], "host summary/actual rows disagree"
         )
     elif rid == "LIVE-TITLE-SPLASH":
-        from tools.polished_live.title_check import CLEAN_SHA1, expand_version, judge_boot
+        from tools.polished_live.title_check import (
+            CLEAN_SHA1,
+            expand_version,
+            judge_boot,
+            sym_offset,
+        )
 
         overlay, clean = role("overlay"), role("clean")
         require(
@@ -1256,7 +1261,9 @@ def replay_extra(item, row, bound, root, snap):
             .splitlines()
             if line.strip().startswith("db ")
         ]
-        field, ngrams = overlay[0x1F8170:0x1F817C], {}
+        start_v, end_v = sym_offset("SlinkVersionText.text"), sym_offset("SlinkVersionText.end")
+        require(overlay[end_v - 1] == 0x53, "title version terminator")
+        field, ngrams = overlay[start_v : end_v - 1], {}
         for char in set(field):
             if 0x0A <= char < 0x52:
                 entry = 0x3BCE + char - 0x0A
