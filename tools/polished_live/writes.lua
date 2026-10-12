@@ -85,6 +85,20 @@ L.log(fmt("[writes] parts: pack %s kind %s sha1 %s; overworld writer=%s boxes=%s
           tostring(P.pack), tostring(P.artifact_kind), tostring(P.runtime_rom_sha1),
           tostring(P.overworld ~= nil and P.overworld.writes ~= nil),
           tostring(P.overworld ~= nil and P.overworld.boxes ~= nil)))
+-- Raw composition evidence in trace.json; absent module metadata stays null.
+local writer = P.overworld and P.overworld.writes
+local boxes = P.overworld and P.overworld.boxes
+local function module_field(module, name)
+    if type(module) == "table" and module[name] ~= nil then return module[name] end
+    return J.null
+end
+trace.composition = {
+    writer_present = P.overworld ~= nil and P.overworld.writes ~= nil,
+    boxes_present = P.overworld ~= nil and P.overworld.boxes ~= nil,
+    writer_name = module_field(writer, "name"), writer_version = module_field(writer, "version"),
+    boxes_name = module_field(boxes, "name"), boxes_version = module_field(boxes, "version"),
+    frame = emu.framecount(),
+}
 -- every event the client sends after the build (net = the connector module, looked up per send): (e)/(f) judge
 -- memorialize_done / memorialize_failed on the wire the server sees, not on an executor return.
 local sent_events = {}
