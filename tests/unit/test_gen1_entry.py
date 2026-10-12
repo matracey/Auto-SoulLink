@@ -337,12 +337,57 @@ def test_an_earlier_stamp_of_the_pure_overlay_is_admitted_as_that_overlay(entry)
     module = lua.eval(f'dofile("{_ENTRY_PATH}")')
     codec = lua.eval(f'dofile("{_REPO.replace(chr(92), "/")}/lua/json_codec.lua")')
     table = module.admission_table(_REPO.replace("\\", "/"), codec)
-    rows = json.load(open(os.path.join(_REPO, "data", "games", "gen1_purergb", "admission_overlay.json"), encoding="utf-8"))
+    with open(os.path.join(_REPO, "data", "games", "gen1_purergb", "admission_overlay.json"), encoding="utf-8") as stream:
+        rows = json.load(stream)
     checked = 0
-    for sha1, row in rows.items():
+    for row in rows.values():
         for old in row.get("equivalent_sha1s") or []:
             hit = table[old]
             assert hit is not None, old
             assert (hit.pack, hit.title, hit.kind) == ("gen1_purergb", row["title"], "overlay"), old
             checked += 1
     assert checked >= 3, "PureRed, PureBlue and PureGreen each list the build v0.3.0 replaced"
+
+
+@pytest.mark.parametrize("title", ["purered", "pureblue", "puregreen"])
+@pytest.mark.parametrize("randomized", [False, True])
+def test_runtime_admission_recognizes_equivalent_overlay_bytes(title, randomized):
+    lua = lupa.LuaRuntime(unpack_returned_tuples=True)
+    module = lua.eval(f'dofile("{_ENTRY_PATH}")')
+    header = f"POKEMON {title[4:].upper()}"
+    image = _header_image(header) + b"earlier-release-stamp"
+    old_digest = hashlib.sha1(image).hexdigest()
+    if randomized:
+        image += b"changed-game-data"
+    files = module.PACK_FILES.gen1_purergb
+    module.PACKS = lua.table(gen1_purergb=lua.table(
+        rom_type=lua.table_from({title: f"Pure{title[4:].capitalize()}"}),
+    ))
+    module.PACK_FILES = lua.table(gen1_purergb=lua.table(
+        admission=files.admission_overlay,
+        sites_overlay=files.sites_overlay,
+        checkpoint_overlay=files.checkpoint_overlay,
+    ))
+    catalog = lua.table_from({"a" * 40: lua.table(
+        title=title, kind="overlay", header_title=header,
+        equivalent_sha1s=lua.table(old_digest.upper()),
+    )})
+    sites = lua.table(titles=lua.table_from({title: lua.table(sites=lua.table(
+        witness=lua.table(rom_offset=0, expected_hex="00"),
+    ))}))
+    checkpoint = lua.table_from({title: lua.table(
+        write_safe=lua.table(expected_hex=lua.table()),
+    )})
+    documents = iter([catalog, sites, checkpoint])
+    args = lua.table(
+        root=_REPO.replace("\\", "/"),
+        json=lua.table(decode=lambda _text: next(documents)),
+        rom_sha1=old_digest, header=header, rom_size=len(image),
+        read_rom_u8=lambda index: image[int(index)],
+    )
+    admitted = module.admit(args)
+    assert not isinstance(admitted, tuple), admitted
+    assert (admitted.pack, admitted.title) == ("gen1_purergb", title)
+    assert admitted.kind == ("rand_overlay" if randomized else "overlay")
+    assert admitted.admitted_by == ("anchors" if randomized else "sha1")
+    assert admitted.rom_sha1 == hashlib.sha1(image).hexdigest()

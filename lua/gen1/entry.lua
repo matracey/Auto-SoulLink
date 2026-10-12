@@ -226,6 +226,9 @@ local function admission_candidates(root, json)
                 if files[key] then
                     for sha, row in pairs(load_json(json, root .. "/" .. files[key])) do
                         add(pack, row.title, row.kind or "clean", sha, row.header_title)
+                        for _, equivalent in ipairs(row.equivalent_sha1s or {}) do
+                            add(pack, row.title, row.kind or "clean", equivalent)
+                        end
                     end
                 end
             end
