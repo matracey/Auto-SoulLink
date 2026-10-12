@@ -174,6 +174,65 @@ def test_work_root_honours_env_creates_lazily_and_rejects_unknown(tmp_path, monk
 
 # ---------------------------------------------------------------- worktree rules
 
+@pytest.mark.parametrize("branch", ["main", "master"])
+def test_primary_branch_supports_renamed_and_legacy_repositories(W, branch):
+    if branch != "master":
+        _git(W.repo, "branch", "-m", "master", branch)
+    assert ss.primary_branch(W.repo) == branch
+
+
+def test_origin_head_resolves_ambiguous_local_primary_names(W):
+    _git(W.repo, "branch", "main")
+    with pytest.raises(RuntimeError, match="cannot resolve primary branch"):
+        ss.primary_branch(W.repo)
+    _git(W.repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    _git(W.repo, "symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main")
+    assert ss.primary_branch(W.repo) == "main"
+
+
+def test_unavailable_remote_primary_does_not_fall_back_to_another_branch(W):
+    _git(W.repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    _git(W.repo, "symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main")
+    with pytest.raises(RuntimeError, match="main is not available locally"):
+        ss.primary_branch(W.repo)
+
+
+def test_unknown_primary_refuses_worktree_cleanup(W):
+    path = add_wt(W, "done")
+    _git(W.repo, "branch", "-m", "master", "trunk")
+    it = item(plan(W), path)
+    assert it["status"] == "refuse" and "primary branch" in it["reason"]
+    with pytest.raises(RuntimeError, match="primary branch"):
+        ss._remove_worktree(W.repo, _remove_action(path))
+    assert path.exists()
+
+
+def test_main_branch_preserves_primary_checkout_and_removes_merged_work(W):
+    done = add_wt(W, "done", commits=1, merge=True)
+    _git(W.repo, "branch", "-m", "master", "main")
+    _git(W.repo, "checkout", "--detach")
+    primary = W.c / "slink-wt" / "primary"
+    _git(W.repo, "worktree", "add", str(primary), "main")
+    _age(primary)
+    pl = plan(W)
+    assert item(pl, done)["status"] == "stale"
+    assert item(pl, primary)["status"] == "keep"
+    with pytest.raises(RuntimeError, match="primary branch main"):
+        ss._remove_worktree(W.repo, _remove_action(primary))
+    apply(W, pl)
+    assert primary.exists() and "main" in branches(W)
+    assert not done.exists() and "done" not in branches(W)
+
+
+def test_cleanup_refuses_a_changed_worktree_branch(W):
+    path = add_wt(W, "done")
+    action = {**_remove_action(path), "branch": "done"}
+    _git(path, "checkout", "-b", "replacement")
+    with pytest.raises(RuntimeError, match="worktree branch changed"):
+        ss._remove_worktree(W.repo, action)
+    assert path.exists() and {"done", "replacement"} <= set(branches(W))
+
+
 def test_merged_clean_old_worktree_is_stale(W):
     p = add_wt(W, "done", commits=1, merge=True)
     it = item(plan(W), p)

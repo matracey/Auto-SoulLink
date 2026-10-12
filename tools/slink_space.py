@@ -408,6 +408,27 @@ def main_checkout(start) -> Path:
     return Path(common).parent
 
 
+def primary_branch(repo) -> str:
+    """Resolve the local primary branch without guessing between main and master."""
+    remote = git_rc(repo, "symbolic-ref", "--quiet", "refs/remotes/origin/HEAD")
+    if remote.returncode == 0:
+        ref = remote.stdout.strip()
+        prefix = "refs/remotes/origin/"
+        if not ref.startswith(prefix):
+            raise RuntimeError(f"cannot resolve primary branch from {ref}")
+        branch = ref.removeprefix(prefix)
+        if git_rc(repo, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}^{{commit}}").returncode:
+            raise RuntimeError(f"primary branch {branch} is not available locally")
+        return branch
+    candidates = [
+        name for name in ("main", "master")
+        if git_rc(repo, "rev-parse", "--verify", "--quiet", f"refs/heads/{name}^{{commit}}").returncode == 0
+    ]
+    if len(candidates) != 1:
+        raise RuntimeError("cannot resolve primary branch: set origin/HEAD or keep one of main/master")
+    return candidates[0]
+
+
 def list_worktrees(repo) -> list[dict]:
     wts, cur = [], None
     for line in git(repo, "worktree", "list", "--porcelain").splitlines():
@@ -483,10 +504,17 @@ def _worktree_item(repo, w, scanned, now, lane_age) -> dict:
         item["lock_alive"] = bool(m) and pid_alive(int(m.group(1)))
     if "prunable" in w or not os.path.isdir(path):
         return {**item, "status": "keep", "reason": "missing checkout; see orphan admin rows"}
+    try:
+        primary = primary_branch(repo)
+    except RuntimeError as exc:
+        return {**item, "status": "refuse", "reason": str(exc)}
+    if item["branch"] == primary:
+        return {**item, "status": "keep", "reason": f"primary branch {primary}"}
     head = item["head"]
-    item["merged"] = git_rc(repo, "merge-base", "--is-ancestor", head, "master").returncode == 0
+    primary_ref = f"refs/heads/{primary}"
+    item["merged"] = git_rc(repo, "merge-base", "--is-ancestor", head, primary_ref).returncode == 0
     behind, ahead = git(repo, "rev-list", "--left-right", "--count",
-                        f"master...{head}").split()
+                        f"{primary_ref}...{head}").split()
     item["ahead"], item["behind"] = int(ahead), int(behind)
     status = _status(path)
     lines = status.splitlines()
@@ -507,7 +535,7 @@ def _worktree_item(repo, w, scanned, now, lane_age) -> dict:
                 f"dirty: {item['tracked']} tracked, {item['untracked']} untracked"}
     if not item["merged"]:
         return {**item, "status": "refuse",
-                "reason": f"not merged into master (ahead {item['ahead']})"}
+                "reason": f"not merged into {primary} (ahead {item['ahead']})"}
     pids = users_of(path)
     if pids:
         return {**item, "status": "refuse", "reason": f"in use by pid {pids[:5]}"}
@@ -518,7 +546,7 @@ def _worktree_item(repo, w, scanned, now, lane_age) -> dict:
     if prob:
         return {**item, "status": "refuse", "reason": prob}
     lock_note = f"; stale lock (pid {item['lock_pid']} dead)" if item["lock"] else ""
-    return {**item, "status": "stale", "reason": f"merged into master and clean{lock_note}"}
+    return {**item, "status": "stale", "reason": f"merged into {primary} and clean{lock_note}"}
 
 
 def _path_item(p, label, rule, movable, now, lane_age, tmp_age) -> dict:
@@ -951,6 +979,11 @@ def _remove_worktree(repo, a):
     entry = _registration(repo, path)
     if entry is None or "prunable" in entry:
         raise RuntimeError(f"{path}: no longer a registered worktree; refusing to delete it")
+    primary = primary_branch(repo)
+    if entry.get("branch") == f"refs/heads/{primary}":
+        raise RuntimeError(f"{path}: primary branch {primary}; refusing to delete it")
+    if a["branch"] and entry.get("branch") != f"refs/heads/{a['branch']}":
+        raise RuntimeError(f"{path}: worktree branch changed; re-run plan/apply")
     if entry.get("locked") and not a["unlock"]:
         raise RuntimeError(f"{path}: locked ({entry['locked']}); refusing")
     why = _checkout_unclean(path)
@@ -979,7 +1012,7 @@ def _remove_worktree(repo, a):
     # Not `git worktree prune`: that is global and would also drop refused admin dirs.
     if a.get("admin") and os.path.isdir(a["admin"]):
         _rmtree(a["admin"])
-    if a["branch"] and a["branch"] != "master":
+    if a["branch"] and a["branch"] != primary:
         git(repo, "branch", "-d", a["branch"])  # -d only: git re-checks the merge itself
 
 
