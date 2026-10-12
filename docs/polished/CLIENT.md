@@ -445,6 +445,8 @@ is still null, so the hold is the live predicate set (HELLO_GATE §1), and `part
   whose key is still in `party_keys` (`state.py:617-643`), so both mons would sit boxed with no retry. The flag flips
   when `withdraw()` is composed.
 
+2026-10-11: supports_box_mon retired by the review fixes; box_mon is always queued.
+
 ### U4 — `AREA_BATTLE_TYPES = {0,4,8}` does **NOT** match Polished. **Real bug.** SETTLED.
 `BATTLETYPE_*` are bare `const`s, so their values are their ordinal within the `const_def` block.
 **Vanilla pokecrystal** (`E:/Google Drive/SLink/.cache/pret/pokecrystal/constants/battle_constants.asm:90-102`):
