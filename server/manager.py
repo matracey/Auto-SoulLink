@@ -1567,6 +1567,7 @@ class RunManager:
         # two go through the SAME builder the allowlist is computed from, so a file made here
         # is by construction one the pipeline admits. A pure pair gets every code-patching
         # tweak turned off (the fork offers only lower-case names, a data write).
+        blob = None
         if randomize and not settings:
             try:
                 if spec is not None:
@@ -1578,10 +1579,6 @@ class RunManager:
                     blob = build_categories(set(map(str, categories)), fastest_text=fastest, family=family)
             except UprSettingsError as exc:
                 return web.json_response({"ok": False, "error": str(exc)}, status=400)
-            settings = os.path.join(MANAGER_DIR, run_id, "settings.rnqs")
-            os.makedirs(os.path.dirname(settings), exist_ok=True)
-            with open(settings, "wb") as f:
-                f.write(blob)
 
         run_dir = os.path.join(MANAGER_DIR, run_id)
         # Under the run's lock (start/stop/archive/delete take it too), and the registry is re-read after
@@ -1589,6 +1586,11 @@ class RunManager:
         # started meanwhile (an unkillable server) or brought back a run deleted meanwhile.
         async with self._run_lock(run_id):
             try:
+                if blob is not None:
+                    settings = os.path.join(run_dir, "settings.rnqs")
+                    os.makedirs(run_dir, exist_ok=True)
+                    with open(settings, "wb") as f:
+                        f.write(blob)
                 result = await asyncio.to_thread(
                     cartridges.provision, run_dir, {"a": rom_a, "b": rom_b}, companion=companion,
                     randomize={"settings_path": settings} if randomize else None, jar=jar)

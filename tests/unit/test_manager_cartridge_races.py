@@ -6,6 +6,7 @@ run could switch its pairing kind under the set-once admission lock.
 """
 from __future__ import annotations
 
+import asyncio
 import json
 
 import pytest
@@ -67,6 +68,46 @@ async def test_a_run_deleted_while_cartridges_are_made_stays_deleted(manager_dir
     status, _body = await _post(_BODY)
     assert status == 404
     assert mgr._find_run(mgr._load_registry(), "run_test") is None
+
+
+@pytest.mark.asyncio
+async def test_concurrent_cartridges_keep_their_own_settings(manager_dir, monkeypatch):
+    from server import upr_settings
+
+    m = mgr.RunManager.__new__(mgr.RunManager)
+    m.bind_host, m.manager_port, m._run_locks = "127.0.0.1", 0, {}
+    started, second_built, release = asyncio.Event(), asyncio.Event(), asyncio.Event()
+    seen = []
+
+    def build(spec, **_):
+        if spec["marker"] == "second":
+            second_built.set()
+        return spec["marker"].encode()
+
+    async def worker(fn, *args, **kwargs):
+        assert fn is cartridges.provision
+        if not seen:
+            started.set()
+            await asyncio.wait_for(release.wait(), timeout=5)
+        with open(kwargs["randomize"]["settings_path"], "rb") as f:
+            seen.append(f.read())
+        return dict(_RESULT)
+
+    monkeypatch.setattr(upr_settings, "family_spec", lambda spec, family: spec)
+    monkeypatch.setattr(upr_settings, "build_spec", build)
+    monkeypatch.setattr(mgr.asyncio, "to_thread", worker)
+    tasks = []
+    try:
+        for marker in ("first", "second"):
+            body = {**_BODY, "randomize": True, "jar": "test.jar", "spec": {"marker": marker}}
+            tasks.append(asyncio.create_task(m.handle_cartridges(_Request("run_test", body))))
+            await asyncio.wait_for((started if marker == "first" else second_built).wait(), timeout=5)
+    finally:
+        release.set()
+        responses = await asyncio.gather(*tasks)
+    assert all(response.status == 200 for response in responses)
+    assert seen == [b"first", b"second"]
+    assert not m._run_locks
 
 
 @pytest.mark.asyncio
