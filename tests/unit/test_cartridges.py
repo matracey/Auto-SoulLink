@@ -248,7 +248,7 @@ def test_gen2_companion_follows_admission(tmp_path):
     for sources, names in ((_gen2(), ("gold", "silver")), ({"a": str(crystal), "b": str(crystal)}, ("crystal", "crystal"))):
         result = cartridges.provision(str(tmp_path / names[0]), sources, companion=True, randomize=None)
         assert result["family"] == cartridges.upr_pipeline.FAMILY_GEN2
-        for pid, dirname in zip(("a", "b"), names):
+        for pid, dirname in zip(("a", "b"), names, strict=True):
             player = result["players"][pid]
             assert Path(player["output"]).suffix == ".gbc"
             assert player["kind"] == "companion" and player["rom_sha1"] == _overlay_sha1(dirname)
@@ -395,6 +395,100 @@ def test_pipeline_refusal_preserves_existing_outputs_and_contract(tmp_path, monk
                   randomize={"settings_path": "s.rnqs"}, jar="fake.jar")
     assert (tmp_path / "rom_contract.json").read_text() == "old contract"
     assert all((tmp_path / "roms" / name).read_bytes() == b"old cartridge" for name in ("a.gb", "b.gb"))
+
+
+@pytest.fixture
+def publication_inputs(tmp_path, monkeypatch):
+    sources = {p: str(tmp_path / f"source-{p}.gbc") for p in ("a", "b")}
+    for player, source in sources.items():
+        Path(source).write_bytes(f"new-{player}".encode())
+    monkeypatch.setattr(upr_pipeline, "describe_rom", lambda *a, **kw: {
+        "clean": True, "variant": "Yellow", "title": "Pokemon Yellow"})
+    monkeypatch.setattr(upr_pipeline, "family_of", lambda _: "gen1_rby")
+    monkeypatch.setattr(upr_pipeline, "fingerprint_any", lambda rom: hashlib.sha1(rom).hexdigest())
+    monkeypatch.setattr(upr_pipeline, "prepare_pair", lambda *a: {
+        "upr_version": "test", "settings_sha256": "test", "categories": [],
+        "players": {p: {"output": source, "seed": 1} for p, source in sources.items()}})
+    return sources
+
+
+@pytest.mark.parametrize("existing", [False, True])
+@pytest.mark.parametrize("randomize", [False, True])
+@pytest.mark.parametrize("failure", ["stage", "second", "contract"])
+def test_publication_failure_preserves_entire_previous_set(
+        tmp_path, monkeypatch, publication_inputs, existing, randomize, failure):
+    from server.cartridges import CartridgeError, provision
+
+    run = tmp_path / "run"
+    (run / "roms").mkdir(parents=True)
+    paths = [run / "roms" / "a.gbc", run / "roms" / "b.gbc", run / "rom_contract.json"]
+    previous = {path: f"old-{path.name}".encode() for path in paths} if existing else {}
+    for path, content in previous.items():
+        path.write_bytes(content)
+    write, replace, unlink = Path.write_bytes, Path.replace, Path.unlink
+
+    def write_checked(path, content):
+        if failure == "stage" and path.name in ("b.gbc", "new-b.gbc"):
+            raise OSError("injected publication failure")
+        return write(path, content)
+
+    def replace_checked(path, destination):
+        target = paths[1] if failure == "second" else paths[2]
+        if failure in ("second", "contract") and destination == target and not path.name.startswith("old-"):
+            raise OSError("injected publication failure")
+        return replace(path, destination)
+
+    def unlink_checked(path, **kwargs):
+        if failure == "contract" and path == paths[2]:
+            raise OSError("injected publication failure")
+        return unlink(path, **kwargs)
+
+    monkeypatch.setattr(Path, "write_bytes", write_checked)
+    monkeypatch.setattr(Path, "replace", replace_checked)
+    monkeypatch.setattr(Path, "unlink", unlink_checked)
+    with pytest.raises(CartridgeError, match="injected publication failure"):
+        provision(str(run), publication_inputs, companion=False,
+                  randomize={"settings_path": "test"} if randomize else None, jar="test.jar")
+    assert {path: path.read_bytes() for path in paths if path.exists()} == previous
+    assert not list(run.glob(".cartridges-*"))
+
+
+def test_failed_publication_rollback_keeps_recovery_files(tmp_path, monkeypatch, publication_inputs):
+    from server.cartridges import CartridgeError, provision
+
+    run = tmp_path / "run"
+    (run / "roms").mkdir(parents=True)
+    (run / "roms" / "a.gbc").write_bytes(b"previous-a")
+    replace = Path.replace
+
+    def fail(path, destination):
+        if path.name in ("new-b.gbc", "old-a.gbc"):
+            raise OSError("injected failure")
+        return replace(path, destination)
+
+    monkeypatch.setattr(Path, "replace", fail)
+    with pytest.raises(CartridgeError, match="rollback incomplete, recovery files retained"):
+        provision(str(run), publication_inputs, companion=False, randomize=None)
+    staging, = run.glob(".cartridges-*")
+    assert (staging / "old-a.gbc").read_bytes() == b"previous-a"
+
+
+@pytest.mark.parametrize("randomize", [False, True])
+def test_successful_publication_replaces_pair_and_contract(tmp_path, publication_inputs, randomize):
+    from server.cartridges import provision
+
+    run = tmp_path / "run"
+    run.mkdir()
+    (run / "rom_contract.json").write_text("old contract")
+    result = provision(str(run), publication_inputs, companion=False,
+                       randomize={"settings_path": "test"} if randomize else None, jar="test.jar")
+    for player in ("a", "b"):
+        assert Path(result["players"][player]["output"]).read_bytes() == f"new-{player}".encode()
+    assert (run / "rom_contract.json").exists() is randomize
+    if randomize:
+        contract = json.loads((run / "rom_contract.json").read_text())
+        assert contract["players"]["a"]["rom_sha1"] == result["players"]["a"]["rom_sha1"]
+    assert not list(run.glob(".cartridges-*"))
 
 
 def test_nonrandomized_reprovision_drops_previous_contract(tmp_path):

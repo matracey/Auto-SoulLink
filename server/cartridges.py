@@ -7,6 +7,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
+import shutil
+import tempfile
 from pathlib import Path
 
 from patch.gen1.tools import inject
@@ -16,9 +19,56 @@ from server.adapters.gen1_rom_scan import RomScanError, identify
 from server.upr_settings import FAMILY_EMERALD, FAMILY_PURE, FAMILY_VANILLA, GEN3_FAMILIES
 from tools.gen1_playthrough import REPO, _overlay_admission_row
 
+log = logging.getLogger(__name__)
+
 
 class CartridgeError(Exception):
     """The selected cartridges could not be provisioned; the message is the refusal."""
+
+
+def _publish(directory: Path, changes: dict[Path, bytes | None]) -> None:
+    """Stage the whole publication and roll back completed replacements on I/O failure."""
+    staging = Path(tempfile.mkdtemp(prefix=".cartridges-", dir=directory))
+    backups, published = {}, []
+    retain = False
+    try:
+        for destination, content in changes.items():
+            backup = staging / f"old-{destination.name}"
+            if destination.exists() or destination.is_symlink():
+                shutil.copy2(destination, backup, follow_symlinks=False)
+                backups[destination] = backup
+            else:
+                backups[destination] = None
+            if content is not None:
+                (staging / f"new-{destination.name}").write_bytes(content)
+        try:
+            for destination, content in changes.items():
+                if content is None:
+                    destination.unlink(missing_ok=True)
+                else:
+                    (staging / f"new-{destination.name}").replace(destination)
+                published.append(destination)
+        except OSError as exc:
+            for destination in reversed(published):
+                try:
+                    backup = backups[destination]
+                    if backup is None:
+                        destination.unlink(missing_ok=True)
+                    else:
+                        backup.replace(destination)
+                except OSError:
+                    retain = True
+                    log.exception("Could not restore cartridge publication file %s", destination)
+            if retain:
+                raise CartridgeError(
+                    f"{exc}; rollback incomplete, recovery files retained in {staging}") from exc
+            raise
+    finally:
+        if not retain:
+            try:
+                shutil.rmtree(staging)
+            except OSError:
+                log.warning("Could not remove cartridge staging directory %s", staging, exc_info=True)
 
 
 # Patch-first (owner 2026-10-01, REQUIRED 2026-10-02): the titles whose SLink companion the
@@ -206,9 +256,7 @@ def _provision(run_dir, sources, *, companion, randomize, jar):
         players[pid] = {"source": sources[pid], "source_title": infos[pid]["title"],
                         "output": str(outputs[pid]), "rom_sha1": hashlib.sha1(rom).hexdigest(),
                         "fingerprint": fingerprint, "kind": kind}
-    # Finish both transforms and scans before publishing either final cartridge.
-    for pid, rom in data.items():
-        outputs[pid].write_bytes(rom)
+    changes: dict[Path, bytes | None] = {outputs[pid]: rom for pid, rom in data.items()}
     contract_path = directory / "rom_contract.json"
     if randomized is not None:
         contract = {k: randomized[k] for k in ("upr_version", "settings_sha256", "categories")}
@@ -216,13 +264,12 @@ def _provision(run_dir, sources, *, companion, randomize, jar):
             pid: {"fingerprint": player["fingerprint"], "rom_sha1": player["rom_sha1"],
                   "seed": str(randomized["players"][pid]["seed"])}
             for pid, player in players.items()}
-        temporary = directory / "rom_contract.json.tmp"
-        temporary.write_text(json.dumps(contract, indent=2) + "\n", encoding="utf-8")
-        temporary.replace(contract_path)
+        changes[contract_path] = (json.dumps(contract, indent=2) + "\n").encode("utf-8")
         randomized = {**randomized, "players": {
             pid: {k: v for k, v in row.items() if k != "output"}
             for pid, row in randomized["players"].items()}}
     else:
         # Re-provisioning without randomization must not retain an earlier admission pin.
-        contract_path.unlink(missing_ok=True)
+        changes[contract_path] = None
+    _publish(directory, changes)
     return {"family": family, "companion": any(want.values()), "randomizer": randomized, "players": players}
