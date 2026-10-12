@@ -161,3 +161,42 @@ def test_import_header_resolves_one_species(calc_page, header, species, set_name
         assert value[set_name]["item"] == "Leftovers"
         assert value[set_name]["level"] == 50
     assert messages == ["Successfully imported 1 set(s)"]
+
+
+@pytest.mark.parametrize("separator", ["\n\n", "\n \n", "\n"])
+def test_import_metadata_stays_with_its_set(calc_page, separator):
+    first = "Pikachu\nLevel: 50\nAbility: Static\nTimid Nature\nEVs: 252 SpA\nIVs: 0 Atk\n- Thunderbolt"
+    second = "Eevee\nLevel: 5\nAbility: Adaptability\nAdamant Nature\nEVs: 252 Atk\nIVs: 0 Spe\n- Tackle"
+    result = calc_page.evaluate("""text => {
+        localStorage.removeItem('customsets');
+        addSets(text, 'separate sets');
+        return JSON.parse(localStorage.customsets);
+    }""", first + separator + second)
+    pikachu = result["Pikachu"]["separate sets"]
+    eevee = result["Eevee"]["separate sets"]
+    assert (pikachu["level"], pikachu["ability"], pikachu["nature"]) == (50, "Static", "Timid")
+    assert (eevee["level"], eevee["ability"], eevee["nature"]) == (5, "Adaptability", "Adamant")
+    assert (pikachu["evs"], pikachu["ivs"], pikachu["moves"]) == ({"sa": 252}, {"at": 0}, ["Thunderbolt"])
+    assert (eevee["evs"], eevee["ivs"], eevee["moves"]) == ({"at": 252}, {"sp": 0}, ["Tackle"])
+
+
+@pytest.mark.parametrize("text", [
+    "Pikachu",
+    "Pikachu\n",
+    "Pikachu\n\nEevee\nLevel: 5\n- Tackle",
+    "Pikachu\nEevee\nLevel: 5\n- Tackle",
+    "Pikachu\n" + "Shiny: Yes\n" * 12 + "- Thunderbolt",
+])
+def test_minimal_or_long_sets_keep_their_own_defaults(calc_page, text):
+    result = calc_page.evaluate("""text => {
+        localStorage.removeItem('customsets');
+        addSets(text, 'minimal set');
+        return JSON.parse(localStorage.customsets);
+    }""", text)
+    pikachu = result["Pikachu"]["minimal set"]
+    assert pikachu["level"] == 100
+    assert pikachu["nature"] == "Serious"
+    assert pikachu["moves"] == (["Thunderbolt"] if "Thunderbolt" in text else [])
+    if "Eevee" in text:
+        assert result["Eevee"]["minimal set"]["level"] == 5
+        assert result["Eevee"]["minimal set"]["moves"] == ["Tackle"]

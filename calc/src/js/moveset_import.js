@@ -118,7 +118,7 @@ function getStats(currentPoke, rows, offset) {
 	var currentTeraType;
 	var currentNature;
 	currentPoke.level = 100;
-	for (var x = offset; x < offset + 9; x++) {
+	for (var x = offset; x < rows.length; x++) {
 		var currentRow = rows[x] ? rows[x].split(/[/:]/) : '';
 		var evs = {};
 		var ivs = {};
@@ -177,7 +177,7 @@ function getItem(currentRow, j) {
 function getMoves(currentPoke, rows, offset) {
 	var movesFound = false;
 	var moves = [];
-	for (var x = offset; x < offset + 12; x++) {
+	for (var x = offset; x < rows.length; x++) {
 		if (rows[x]) {
 			if (rows[x][0] == "-") {
 				movesFound = true;
@@ -275,6 +275,12 @@ function updateDex(customsets) {
 	localStorage.customsets = JSON.stringify(customsets);
 }
 
+function importSpeciesIndex(row, parts) {
+	var index = /^[^@]*\(/.test(row) &&
+		calc.SPECIES[9][checkExeptions(parts[1].trim())] !== undefined ? 1 : 0;
+	return calc.SPECIES[9][checkExeptions(parts[index].trim())] !== undefined ? index : -1;
+}
+
 function addSets(pokes, name) {
 	var rows = pokes.split("\n");
 	var currentRow;
@@ -282,10 +288,14 @@ function addSets(pokes, name) {
 	var addedpokes = 0;
 	for (var i = 0; i < rows.length; i++) {
 		currentRow = rows[i].split(/[()@]/);
-		var j = /^[^@]*\(/.test(rows[i]) &&
-			calc.SPECIES[9][checkExeptions(currentRow[1].trim())] !== undefined ? 1 : 0;
+		var j = importSpeciesIndex(rows[i], currentRow);
+		if (j === -1) continue;
 		currentRow[j] = checkExeptions(currentRow[j].trim());
 		if (calc.SPECIES[9][currentRow[j]] !== undefined) {
+			var end = i + 1;
+			while (end < rows.length && rows[end].trim() &&
+				importSpeciesIndex(rows[end], rows[end].split(/[()@]/)) === -1) end++;
+			var block = rows.slice(i + 1, end);
 			currentPoke = {};
 			currentPoke.name = currentRow[j];
 			currentPoke.item = getItem(currentRow, j + 1);
@@ -295,12 +305,14 @@ function addSets(pokes, name) {
 				currentPoke.nameProp = name;
 			}
 			currentPoke.isCustomSet = true;
-			currentPoke.ability = getAbility(rows[i + 1].split(":"));
-			currentPoke.teraType = getTeraType(rows[i + 1].split(":"));
-			currentPoke = getStats(currentPoke, rows, i + 1);
-			currentPoke = getMoves(currentPoke, rows, i);
+			var firstMetadata = (block[0] || "").split(":");
+			currentPoke.ability = getAbility(firstMetadata);
+			currentPoke.teraType = getTeraType(firstMetadata);
+			currentPoke = getStats(currentPoke, block, 0);
+			currentPoke = getMoves(currentPoke, block, 0);
 			addToDex(currentPoke);
 			addedpokes++;
+			i = end - 1;
 		}
 	}
 	if (addedpokes > 0) {
