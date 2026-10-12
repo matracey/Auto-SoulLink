@@ -14,6 +14,9 @@ AddTempMonToParty, and patch/polished/src/trade_commit.asm .CheckAppend. Eggs ke
 their happiness. Trade evolution can change species/item/stats/default nickname;
 this gate's deliberately non-evolving exchanged fixture does not certify those
 paths, and cannot waive bytes for them. Missing raw/native evidence fails closed.
+Launch JSON records the prepared argv, effective launch environment and input
+bytes immediately before Popen. Its source inventory and requested selection
+are prelaunch observations, not proof of the eventual Lua branch or a verdict.
 Shipped composition never falls back to the isolated development binder.
 """
 from __future__ import annotations
@@ -297,11 +300,88 @@ def stage_root(enabled):
     return root, syms, prov["output"]["sha1"]
 
 
+def launch_trade_side(config, run_dir, env_extra, *, config_path=None, popen=None, write_config=None):
+    """Record each actual side/generation at the prepared process boundary."""
+    from tools.polished_live import runtime
+
+    def observed_file(path):
+        path = Path(path)
+        try:
+            data = path.read_bytes()
+        except FileNotFoundError:
+            return {"path": path.as_posix(), "status": "absent", "sha256": None}, None
+        return {"path": path.as_posix(), "status": "present", "sha256": sha(data)}, data
+
+    def recording_popen(command, *, cwd, env):
+        def actual_path(value):
+            path = Path(value)
+            return path if path.is_absolute() else Path(cwd) / path
+
+        rom_path = actual_path(command[-1])
+        driver = actual_path(next(arg.removeprefix("--lua=") for arg in command if arg.startswith("--lua=")))
+        cfg = actual_path(next(arg.removeprefix("--config=") for arg in command if arg.startswith("--config=")))
+        root, driver_root = actual_path(env["SLINK_ROOT"]), actual_path(env["POL_DRIVER_ROOT"])
+        paths = {
+            "rom": rom_path, "saveram": actual_path(config.sram / config.save_name),
+            "configuration": cfg, "base_configuration": actual_path(config.base_config),
+            "symbols": actual_path(config.sym), "generated_symbols": actual_path(env["POL_SYMS"]),
+            "executed_lua_driver": driver, "normal_lua_slink": root / "lua/slink.lua",
+            "driver_helper": driver_root / "tools/polished_live/pol_lib.lua",
+            "trade_sites": run_dir / "trade-sites.json",
+            "producer_python": Path(__file__), "runtime_python": Path(runtime.__file__),
+            "duo_python": Path(duo.__file__),
+            "configuration_writer_python": Path(runtime.__file__).parents[1] / "gen1_playthrough.py",
+        }
+        inputs, contents = {}, {}
+        for name, path in paths.items():
+            inputs[name], contents[name] = observed_file(path)
+        rom = contents["rom"]
+        gate = {"symbol": "SlinkTradeCommitEnabled", "symbols_path": paths["symbols"].as_posix(),
+                "bank": None, "addr": None, "rom_offset": None, "value": None}
+        if contents["symbols"] is not None:
+            selected = runtime.parse_symbols(contents["symbols"].decode("utf-8")).get(gate["symbol"])
+            if selected is not None:
+                bank, addr = selected
+                offset = bank * 0x4000 + addr - 0x4000 if bank else addr
+                gate.update(bank=bank, addr=addr, rom_offset=offset,
+                            value=rom[offset] if rom is not None and 0 <= offset < len(rom) else None)
+        # Snapshot a conservative source/pack inventory, including transitive
+        # helpers. This binds files available to the selected root; it does not
+        # claim that Lua has already loaded them (the child does not exist yet).
+        source_paths = set(paths.values())
+        for directory, pattern in ((root / "lua", "*.lua"),
+                                   (root / "data/games/polished_crystal", "*"),
+                                   (root / "data/polished", "*")):
+            if directory.is_dir():
+                source_paths.update(path for path in directory.rglob(pattern) if path.is_file())
+            else:
+                source_paths.add(directory)
+        source_rows = {row["path"]: row for row in inputs.values()}
+        sources = [source_rows[path.as_posix()] if path.as_posix() in source_rows else observed_file(path)[0]
+                   for path in sorted(source_paths)]
+        record = {
+            "schema": "polished-trade-launch-v1", "phase": "pre_popen",
+            "launcher": {"name": driver.as_posix(),
+                         "normal_entrypoint": paths["normal_lua_slink"].as_posix(),
+                         "selection": {key: env.get(key) for key in ("POL_TRADE_DEV", "POL_COLD", "SLINK_PLAYER")}},
+            "argv": list(command), "cwd": cwd,
+            "environment": {key: value for key, value in sorted(env.items()) if key.startswith(("SLINK_", "POL_"))},
+            "rom_sha1": hashlib.sha1(rom).hexdigest() if rom is not None else None,
+            "gate": gate, "inputs": inputs, "source_inputs": sources,
+            "source_scope": "prelaunch input inventory; not observed Lua loads",
+        }
+        (run_dir / "launch.json").write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+        return (subprocess.Popen if popen is None else popen)(command, cwd=cwd, env=env)
+
+    return runtime.start_owned(config, "tools/polished_live/trade_duo_live.lua", run_dir, env_extra,
+                               config_path=config_path, popen=recording_popen, write_config=write_config)
+
+
 def run(args):
     from dataclasses import replace
 
     from tools.polished_live import harness
-    from tools.polished_live.runtime import pinned_rom_bytes, read_symbols, start_owned
+    from tools.polished_live.runtime import pinned_rom_bytes, read_symbols
     if args.test_build:
         enabled = LANE/"enabled"
         rom = (enabled/"cache/polished/companion-overlay/polishedcrystal-3.2.3.gbc").read_bytes()
@@ -347,8 +427,7 @@ def run(args):
                    POL_TRADE_DEV="1" if args.test_build else "0")
         side_config = replace(config, rom=Path(p["rom"]), sram=Path(p["sram_dir"]),
                               save_name=Path(p["saveram"]).name)
-        proc = start_owned(side_config, "tools/polished_live/trade_duo_live.lua", Path(p["run"]),
-                           env, config_path=p["config"])
+        proc = launch_trade_side(side_config, Path(p["run"]), env, config_path=p["config"])
         processes[role] = proc
         Path(p["run"], "pid.txt").write_text(str(proc.pid))
     with (run_dir/"server.log").open("w") as log:
