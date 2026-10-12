@@ -30,7 +30,8 @@ do
         fh:write(string.format("=== SLink Lua boot %s ===\n", os.date()))
         fh:flush()
         _G.__slink_log_fh = fh
-        local orig_log = console.log
+        _G.__slink_original_log = _G.__slink_original_log or console.log
+        local orig_log = _G.__slink_original_log
         console.log = function(...)
             local h = _G.__slink_log_fh
             if h then
