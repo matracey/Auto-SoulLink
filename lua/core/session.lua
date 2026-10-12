@@ -347,7 +347,8 @@ function Session.new(p)
 
     -- ── hello / tick ───────────────────────────────────────────────────────────────
     function self:send_hello()
-        local f = game.hello_fields() or {}
+        local f = game.hello_fields()
+        if not f then return end
         if f.writes_enabled == nil then f.writes_enabled = self.writes_enabled end
         self.hello_sent = transmit("hello", f)
         if not self.hello_sent then return end

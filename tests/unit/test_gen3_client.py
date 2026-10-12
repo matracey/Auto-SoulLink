@@ -38,6 +38,16 @@ def live(pack="gen3_frlg", title="firered", kind=None, pids=(A, B), frames=60):
     return w
 
 
+def test_tick_publishes_occupied_slots_despite_stale_pc_party_count():
+    w = live("gen3_rr", "radical_red", pids=(A, B, C))
+    w.set_party(party(A))
+    w.poke_int(w.ram["PARTY_COUNT_ADDR"], 3, 1)
+    w.step(30)
+    snapshot = w.events("tick")[-1]["party"]
+    assert [m["key"] for m in snapshot] == [KA]
+    assert [m["slot"] for m in snapshot] == [0]
+
+
 def write_reasons(w):
     return [str(r.reason) for r in lua_to_py_list(w.parts.writes.log)]
 

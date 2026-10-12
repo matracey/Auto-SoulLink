@@ -1302,7 +1302,11 @@ function Client.new(p)
         if not trade_connected and p.net.connected() then
             trade_epoch, trade_connected = trade_epoch + 1, true
         end
-        local party = party_read() or {}
+        local party = party_read(true)
+        if not party then
+            log("hello held: party census unavailable")
+            return nil
+        end
         update_frozen(party)
         rescan_boxes()
         -- a borrowed party is never published nor learned as ours (docs/protocol.md §9 item 11):
@@ -1359,7 +1363,7 @@ function Client.new(p)
     end
 
     function drv.tick_fields()
-        local party = party_read()
+        local party = party_read(true)
         if not party then return nil end
         update_frozen(party)
         if not st.frozen and not recovery_hidden() then observe_hp(party) end
