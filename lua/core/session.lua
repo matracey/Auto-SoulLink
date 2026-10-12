@@ -135,8 +135,20 @@ function Session.new(p)
         return send(a, b)
     end
 
+    local function signals_ok()
+        self.signal_failure = self.signal_failure or (self.signals and self.signals.failure)
+        if not self.signal_failure then return true end
+        self.writes_enabled, self.gate_revoked = false, true
+        if not self.signal_failure_shown then
+            self.signal_failure_shown = true
+            log("ENGINE SIGNALS STOPPED: " .. tostring(self.signal_failure))
+            hud.show("SLINK STOPPED - SEE LOG", 255, 60, 60, 1800)
+        end
+        return false, "engine signals stopped"
+    end
+
     function self:eligible()
-        return self.writes_enabled == true and self.hello_sent == true and net.connected() == true
+        return signals_ok() and self.writes_enabled == true and self.hello_sent == true and net.connected() == true
             and self.recovery_ready
             and (not outbox or (outbox.accepted and outbox:ready()))
     end
@@ -150,6 +162,8 @@ function Session.new(p)
 
     -- ── the writes gate: pause, never drop ─────────────────────────────────────────
     function self:validate()
+        local healthy, failure = signals_ok()
+        if not healthy then return false, failure end
         local ok, why = game.game_is_live()
         if ok then
             self.invalid_streak = 0
@@ -475,6 +489,7 @@ function Session.new(p)
 
     function self:frame_end()
         self.frame = game.frame()
+        signals_ok()
         if outbox and outbox.failure then
             self.writes_enabled=false
             if not self.report_failure_shown then
@@ -509,11 +524,7 @@ function Session.new(p)
             log("hook handler error: " .. tostring(sigs.handler_error))
             sigs.handler_error = nil
         end
-        if sigs and sigs.failure and not self.signal_failure_shown then
-            self.signal_failure_shown = true
-            log("ENGINE SIGNALS STOPPED: " .. tostring(sigs.failure))
-            hud.show("SLINK STOPPED - SEE LOG", 255, 60, 60, 1800)
-        end
+        signals_ok()
         for _, fn in ipairs(game.frame_hooks or {}) do fn() end
         if identity:active() then
             local party = game.read_party()
@@ -581,6 +592,8 @@ function Session.new(p)
 
     function self:run_deferred()
         return deferred:run(function()
+            local healthy, failure = signals_ok()
+            if not healthy then return false, failure end
             if not self.writes_enabled then
                 return false, self.gate_revoked and "writes paused" or "writes not enabled yet"
             end

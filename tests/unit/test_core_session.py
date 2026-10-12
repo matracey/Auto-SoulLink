@@ -588,6 +588,60 @@ def test_signals_are_drained_under_a_per_signal_pcall_and_a_failure_banners_once
     assert len([h for h in w.hud if h[0] == "show" and h[1] == "SLINK STOPPED - SEE LOG"]) == 1
 
 
+@pytest.mark.parametrize("entrypoint", ["frame_end", "eligible", "validate"])
+def test_terminal_signal_failure_holds_commands_before_services(entrypoint):
+    w = World()
+    w.step_to(60)
+    w.st.checkpoint, w.st.in_battle, w.st.battle_result = False, True, "hold"
+    w.command(cmd="force_faint", key=A)
+    w.command(cmd="box_mon", key=B)
+    w.step()
+    assert w.s.battle_pending_count(w.s) == 1 and w.q.size(w.q) == 1
+    w.driver.pre_pump = lambda: w.timeline.append(("native_service", w.s.eligible(w.s)))
+    w.driver.after_receive = lambda: w.timeline.append(("after_receive",))
+    w.st.checkpoint, w.st.battle_result = True, "done"
+    w.timeline.clear()
+    w.signals.failure = "site mismatch"
+
+    w.s[entrypoint](w.s)
+    w.step()
+
+    assert w.s.writes_enabled is False and w.s.eligible(w.s) is False
+    assert w.called("native_service") and all(not call[1] for call in w.called("native_service"))
+    assert not w.called("deposit") and not w.battle_writes()
+    assert w.s.battle_pending_count(w.s) == 1 and w.q.size(w.q) == 1
+    w.signals.failure = None
+    w.s.validate(w.s)
+    w.s.run_deferred(w.s)
+    w.step_to(120)
+    assert w.s.writes_enabled is False and w.s.eligible(w.s) is False
+    assert all(not call[1] for call in w.called("native_service")) and not w.battle_writes()
+    assert not w.called("deposit") and w.q.size(w.q) == 1
+    assert len([line for line in w.logs if "ENGINE SIGNALS STOPPED" in line]) == 1
+
+
+def test_signal_failure_during_drain_revokes_remaining_frame_writes():
+    w = World()
+    w.step_to(60)
+    w.st.checkpoint = False
+    w.command(cmd="box_mon", key=A)
+    w.step()
+    w.st.checkpoint = True
+    w.timeline.clear()
+
+    def drain(_):
+        w.signals.failure = "signal buffer overflow"
+        return w.lua.table()
+
+    w.signals.drain = drain
+    w.driver.after_receive = lambda: w.timeline.append(("after_receive", w.s.eligible(w.s)))
+    w.step()
+    assert w.s.writes_enabled is False
+    assert w.called("after_receive") == [("after_receive", False)]
+    assert not w.called("deposit")
+    assert w.q.size(w.q) == 1
+
+
 def test_safe_is_sent_once_after_a_battle_once_out_of_battle():
     w = World()
     w.step()
