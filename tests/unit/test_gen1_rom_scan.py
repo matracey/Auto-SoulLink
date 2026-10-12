@@ -28,6 +28,7 @@ import pytest
 from server.adapters.gen1_rom_scan import (
     BASE_STATS_RECORD,
     RomScanError,
+    build_encounter_tables,
     evolution_graph,
     identify,
     profile_hash,
@@ -93,6 +94,38 @@ def _need_pret(title: str) -> str:
     if not os.path.isdir(d):
         pytest.skip(f"{d} not present — cannot build the independent oracle")
     return d
+
+
+@pytest.mark.parametrize("count", [2, 3, 4])
+def test_super_rod_entries_have_equal_probability(count):
+    slots = [{"species_index": i + 1, "level": 10 + i} for i in range(count)]
+    content = {"wild": {}, "fishing": {"super_rod": {1: slots}}}
+    tables = build_encounter_tables(content, {1: "route"}, {i: i for i in range(1, count + 1)}, str, {})
+    entries = tables["route"]["Super Rod"]
+    assert [entry["species_id"] for entry in entries] == list(range(1, count + 1))
+    assert [entry["rate"] for entry in entries] == pytest.approx([100 / count] * count)
+    assert sum(entry["rate"] for entry in entries) == pytest.approx(100)
+
+
+def test_super_rod_combines_repeated_species_and_level_ranges():
+    slots = [{"species_index": 1, "level": 10}, {"species_index": 2, "level": 20},
+             {"species_index": 1, "level": 30}, {"species_index": 3, "level": 40}]
+    content = {"wild": {}, "fishing": {"super_rod": {1: slots, 2: []}}}
+    tables = build_encounter_tables(content, {1: "route", 2: "empty"}, {1: 1, 2: 2, 3: 3}, str, {})
+    assert tables["route"]["Super Rod"] == [
+        {"species_id": 1, "name": "1", "rate": 50, "min_level": 10, "max_level": 30},
+        {"species_id": 2, "name": "2", "rate": 25, "min_level": 20, "max_level": 20},
+        {"species_id": 3, "name": "3", "rate": 25, "min_level": 40, "max_level": 40},
+    ]
+    assert tables["empty"] == {}
+
+
+def test_grass_and_water_keep_their_weighted_slot_probabilities():
+    slots = [{"species_index": i + 1, "level": 10} for i in range(10)]
+    content = {"wild": {1: {"grass": {"slots": slots}, "water": {"slots": slots}}}}
+    tables = build_encounter_tables(content, {1: "route"}, {i: i for i in range(1, 11)}, str, {})
+    for method in ("Grass", "Water"):
+        assert [entry["rate"] for entry in tables["route"][method]] == [20, 20, 15, 10, 10, 10, 5, 5, 4, 1]
 
 
 # ── an independent reading of pret ───────────────────────────────────────────────────────
