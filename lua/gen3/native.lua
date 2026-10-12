@@ -2,7 +2,7 @@
 -- ABI offsets/statuses: patch/src/ADDRESSES.md:366ff; handlers.c Mailbox/ack.
 -- Absolute addresses/opcodes come only from the full pack's profile.native.
 -- N.new(pack, {io, writes, reads, send(event, fields), in_battle,
---             artifact_kind, panel_closed(),
+--             artifact_kind, panel_closed(), panel_stage_safe(),
 --             array(table)?, timeout_frames?, initial_seq?}).
 -- The rival swap needs no gBattleMons refresh: OP_RIVAL_SWAP lands before the engine's selection.
 -- panel_closed returns (closed, result) for the start-menu-driven panel. Its
@@ -1120,6 +1120,11 @@ function N.new(profile, deps)
     end
 
     local function panel_job(open)
+        local function ready()
+            if not deps.panel_stage_safe then return true end
+            local ok, safe = pcall(deps.panel_stage_safe)
+            return ok and safe == true
+        end
         if v2 then
             local c=v2.constants
             local pages=math.min(255,math.max(1,math.ceil(#panel_rows/c.SLINK_INFO_MAX_LINES)))
@@ -1137,7 +1142,7 @@ function N.new(profile, deps)
             local epoch,bytes=session_epoch,{}
             for i=0,3 do bytes[i+1]=(epoch>>(8*i))&255 end
             local request=(io.read_u16(p.INFO+c.SLINK_INFO_REQUEST_FIELD)%65535)+1
-            return {op=open and p.OP_SHOW_INFO or nil,args={},stages={
+            return {op=open and p.OP_SHOW_INFO or nil,args={},ready=ready,stages={
                 {p.INFO+c.SLINK_INFO_TEXT_FIELD,text},
                 {p.INFO+c.SLINK_INFO_LINES_FIELD,{lines,panel_page,pages,1}},
                 {p.INFO+c.SLINK_INFO_EPOCH_FIELD,bytes},
@@ -1161,7 +1166,8 @@ function N.new(profile, deps)
         stages[#stages + 1] = {p.INFO + 4, {panel_page, pages}}
         stages[#stages + 1] = {p.INFO + 3, {#rows}} -- publish lines after all strings
         stages[#stages + 1] = {p.INFO + 6, {(io.read_u8(p.INFO + 6) + 1) % 256}}
-        return {op=open and assert(p.OP_SHOW_INFO) or nil, args={panel_page}, stages=stages, panel=true,
+        return {op=open and assert(p.OP_SHOW_INFO) or nil, args={panel_page}, ready=ready,
+            stages=stages, panel=true,
             done=function(why, result)
                 if open and not why and result == 0 and pages > 1 then
                     panel_page = (panel_page + 1) % pages
@@ -1181,6 +1187,12 @@ function N.new(profile, deps)
             return true
         end
         panel_rows, panel_page = clone(cmd.rows or {}), 0
+        for i, job in ipairs(queue) do
+            if job.panel and not job.op then
+                queue[i] = panel_job(false)
+                return true
+            end
+        end
         return enqueue(panel_job(false))
     end
     function self:config(cmd)

@@ -40,6 +40,7 @@ class World:
         self.safe = True
         self.check_native_idle = False
         self.battle = True
+        self.panel_stage_safe = True
         self.panel_result = 127
         if present:
             self.put(self.n["BASE"], self.n["SIG"], 4)
@@ -72,7 +73,8 @@ class World:
             timeout_frames=5, send=lambda event, fields: self.events.append((event, fields)),
             log=self.logs.append,
             in_battle=lambda: self.battle,
-            panel_closed=lambda: (True, self.panel_result)))
+            panel_closed=lambda: (True, self.panel_result),
+            panel_stage_safe=lambda: self.panel_stage_safe))
         if scene_capability_model:
             # Queue/receipt MODEL only; this does not qualify a shipped v2 binding.
             self.native.trade_capable = lambda *_: True
@@ -1047,14 +1049,36 @@ def test_link_panel_publishes_rows_before_line_count_and_does_not_dispatch_text(
     assert w.read(w.n["BASE"] + 6, 2) == 0
 
 
-def test_two_queued_panel_snapshots_each_advance_generation_at_dispatch():
+def test_link_panel_waits_for_qualified_overworld_before_staging():
     w = World()
-    for text in ("FIRST", "SECOND"):
-        w.native.link_panel(w.native, w.lua.table(rows=w.lua.table(text)))
+    w.panel_stage_safe = False
+    w.native.link_panel(w.native, w.lua.table(rows=w.lua.table("A|B")))
+
+    w.service()
+
+    assert w.output == []
+    assert w.read(w.n["INFO"] + 3, 1) == 0
+
+    w.panel_stage_safe = True
+    w.service()
+
+    assert w.output
+    assert w.read(w.n["INFO"] + 3, 1) == 1
+
+
+def test_held_panel_snapshots_coalesce_without_losing_the_latest():
+    w = World()
+    w.panel_stage_safe = False
+    for i in range(100):
+        assert w.native.link_panel(w.native, w.lua.table(rows=w.lua.table(f"SNAP{i}")))
+        w.service()
+    assert w.output == []
+    w.panel_stage_safe = True
     w.service()
     assert w.read(w.n["INFO"] + 6, 1) == 1
+    assert w.raw(w.n["INFO"] + 8, 6) == bytes(int(w.reads.charmap.codes[c]) for c in "SNAP99")
     w.service()
-    assert w.read(w.n["INFO"] + 6, 1) == 2
+    assert w.read(w.n["INFO"] + 6, 1) == 1
 
 
 def test_panel_advance_uses_info_opcode_and_close_resets_first_page_once():

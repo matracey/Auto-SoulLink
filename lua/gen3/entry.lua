@@ -443,6 +443,11 @@ local function build_production(deps, c)
             trade_capability_changed = function()
                 if session then session.hello_sent = false end
             end,
+            panel_stage_safe = function()
+                if not session or not session:eligible() or session.driver.in_battle() then return false end
+                local ok = safety:check(nil, "overworld")
+                return ok == true
+            end,
             title = c.title, player = deps.player, production = c.production,
             artifact_kind = c.artifact_kind, log = log,
             panel_closed = panel_closed,
