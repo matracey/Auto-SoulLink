@@ -4380,7 +4380,6 @@ class SoulLinkState:
 
         reason = msg.get("reason", "nature_change")
         log.info(f"[{player_id}] key_change ({reason}): {old_key[:8]} → {new_key[:8]}")
-        side = player_id
         entry = self.entry_for(player_id, old_key)
         pt = self.pending_trade
         if (entry is None and pt and pt.get("phase") in ("applying", "uncertain", "conflict")
@@ -4467,7 +4466,11 @@ class SoulLinkState:
                 self._propagate_faint(player_id, entry, cause="identity_lost")
             return
 
-        # ── accepted: migrate ────────────────────────────────────────────────────────
+        self._migrate_key(player_id, msg, entry)
+
+    def _migrate_key(self, player_id: str, msg: dict, entry: LinkEntry | None) -> None:
+        old_key, new_key = msg["old_key"], msg["new_key"]
+        side, reason = player_id, msg.get("reason", "nature_change")
         # 1. Links + key index
         if entry is not None:
             # this player's half; mid-trade the half it holds is the partner's (unswapped) one
@@ -4571,7 +4574,11 @@ class SoulLinkState:
                     pt["new"][pid] = (new_key, msg.get("new_species") or n[1])
 
         self.key_migration_ledger[player_id].append({"old_key": old_key, "new_key": new_key})
-        _ack(True)
+        msg["_key_change_status"] = "migrated"
+        self.queued_commands[player_id].append(
+            {"cmd": "key_change_ack", "old_key": old_key, "new_key": new_key, "migrated": True})
+        if reason != "recovery" and old_key in self.recovery.limbo[player_id]:
+            self.recovery.finish(player_id, old_key, "rebind", new_key)
 
         # Owner ruling 35: the NPC exchange already happened. Keep its real identity,
         # then retire THIS pair if the resulting pair violates an enabled clause.

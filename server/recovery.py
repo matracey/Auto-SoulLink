@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections import Counter
 from copy import deepcopy
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from datetime import UTC, datetime
 from time import monotonic
 from typing import TYPE_CHECKING
@@ -230,3 +230,124 @@ class Recovery:
             for row in changes:
                 log.info("[%s] recovery %s: %s", player, row["action"], row["key"])
             state._save()
+
+    def _cancel(self, state: SoulLinkState, owners: dict[str, set[str]]) -> None:
+        self.control_revision += 1
+        for player, keys in owners.items():
+            for key in keys:
+                self.cancellations[player][key] = self.control_revision
+                state.cancel_sync(player, key, reason="recovery resolution")
+                state.death_inflight[player].pop(key, None)
+            state.queued_commands[player] = [
+                row for row in state.queued_commands[player]
+                if row.get("key") not in keys or row.get("cmd") not in MUTATIONS]
+
+    def resolve(self, state: SoulLinkState, player: str, key: str, revision: str,
+                action: str, target: str = "") -> dict:
+        """Commit an administrator's decision and its command cancellations together."""
+        from server.state import AreaStatus, LinkEntry, LinkStatus, MonInfo
+
+        incident = self.incident(player, key, revision)
+        if action not in {"rebind", "retire", "detach"}:
+            raise RecoveryConflict("Unknown recovery action.")
+        if state.load_failed or state.pending_trade or any(state.report_backlog.values()):
+            raise RecoveryConflict("Wait for run recovery and queued gameplay reports to finish.")
+        entry = state.entry_for(player, key)
+        if entry and entry.status != LinkStatus.ALIVE and action != "retire":
+            raise RecoveryConflict("A confirmed death can only be retired.")
+        area = incident["area_id"]
+        owners = {pid: set() for pid in PLAYERS}
+        owners[player].add(key)
+        if entry:
+            for pid in PLAYERS:
+                if mon := getattr(entry, pid):
+                    owners[pid].add(mon.key)
+            partner = "b" if player == "a" else "a"
+            survivor = getattr(entry, partner)
+            previous = state.unpaired_mons.get(area, {}).get(partner)
+            if action == "detach" and previous and survivor and previous.key != survivor.key:
+                raise RecoveryConflict("An unpaired encounter already occupies the surviving side.")
+        candidate = None
+        if action == "rebind":
+            candidate = self.candidate(player, target)
+            if target in self.claimed(state, player):
+                raise RecoveryConflict("The selected Pokémon already belongs to another encounter.")
+            if state._key_refs(target, player) - {"party_keys", "partner_blobs"}:
+                raise RecoveryConflict("The selected Pokémon is involved in another operation.")
+            if entry and entry.a and entry.b:
+                proposed = replace(entry, **{player: MonInfo(
+                    key=target, species=candidate.get("species_id", candidate.get("species", 0)),
+                    nickname=candidate.get("nickname", ""), level=candidate.get("level", 0))})
+                if violation := state._check_link_violation(proposed.a, proposed.b, existing_entry=entry):
+                    raise RecoveryConflict(violation[0])
+        before = deepcopy({k: v for k, v in state.__dict__.items()
+                           if k != "adapter" and not callable(v)})
+        try:
+            state._report_transaction = True
+            self._cancel(state, owners)
+            if action == "rebind":
+                stats = deepcopy(state.mon_stats[player].get(target, {}))
+                state._migrate_key(player, {
+                    "old_key": key, "new_key": target, "reason": "recovery",
+                    "new_species": candidate.get("species_id", candidate.get("species", 0)),
+                    "new_nickname": candidate.get("nickname", ""),
+                }, entry)
+                state.mon_stats[player][target] = stats
+                owners[player].add(target)
+                self.candidates[player] = [row for row in self.candidates[player] if row["key"] != target]
+            else:
+                for collection in (state.pending_captures, state.unpaired_mons):
+                    players = collection.get(area, {})
+                    if players.get(player) and players[player].key == key:
+                        players.pop(player)
+                    if not players:
+                        collection.pop(area, None)
+                state.bonus_keys[player].discard(key)
+                partner = "b" if player == "a" else "a"
+                state.pending_bonus[partner] = type(state.pending_bonus[partner])(
+                    value for value in state.pending_bonus[partner] if value != key)
+                if action == "detach":
+                    if entry:
+                        if survivor := getattr(entry, partner):
+                            state.unpaired_mons.setdefault(area, {})[partner] = replace(survivor)
+                        for pid in PLAYERS:
+                            if mon := getattr(entry, pid):
+                                state._unindex(pid, mon.key, entry)
+                        state.links.remove(entry)
+                else:
+                    if entry is None:
+                        mon = MonInfo(key=key, species=incident.get("species", 0),
+                                      nickname=incident.get("nickname", ""), level=incident.get("level", 0))
+                        entry = LinkEntry(area, mon if player == "a" else None,
+                                          mon if player == "b" else None, LinkStatus.ALIVE)
+                        state.links.append(entry)
+                        state._index_entry(entry)
+                    if entry.status == LinkStatus.ALIVE:
+                        state._propagate_faint(player, entry, cause="recovery_retirement")
+                    elif survivor := getattr(entry, partner):
+                        state.queued_commands[partner].append({"cmd": "force_faint", "key": survivor.key})
+                        if survivor.key in state.pending_memorials[partner]:
+                            state._queue_memorialize(partner, survivor.key)
+                    state.pending_memorials[player].discard(key)
+                    state.queued_commands[player] = [
+                        row for row in state.queued_commands[player]
+                        if row.get("key") != key or row.get("cmd") not in MUTATIONS]
+                state.party_keys[player].discard(key)
+                state.encounter_locks.pop(area, None)
+                state._set_area_state(area, AreaStatus.DEAD_ZONE, player=player, reason="recovery_" + action)
+                for pid in PLAYERS:
+                    state._queue_resolved_areas(pid)
+            record = self.finish(player, key, action, target if action == "rebind" else "")
+            for pid, keys in owners.items():
+                for owned in keys:
+                    state.resume_sync(pid, owned)
+            state._report_transaction = False
+            state._save()
+            if state.save_failed:
+                raise OSError(state.save_failed)
+            log.info("[%s] recovery %s: %s", player, action, key)
+            return record
+        except Exception:
+            state.__dict__.update(before)
+            log.exception("[%s] recovery resolution not committed: %s", player, key)
+            raise
