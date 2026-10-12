@@ -143,6 +143,8 @@ def parse_rr_battle_moves(text: str) -> dict[int, dict]:
     for idx, name in enumerate(move_order):
         if name in results:
             id_results[idx] = results[name]
+            if name == "NONE":
+                id_results[idx].update(power=0, accuracy=0, pp=0, split=2)
 
     return id_results
 

@@ -1015,7 +1015,7 @@ MOVE_NAMES: dict[int, str] = {
 
 
 MOVE_DATA: dict[int, dict] = {
-    0: {'type': 9, 'power': 40, 'accuracy': 100, 'pp': 35, 'split': 0},
+    0: {'type': 9, 'power': 0, 'accuracy': 0, 'pp': 0, 'split': 2},
     1: {'type': 0, 'power': 40, 'accuracy': 100, 'pp': 35, 'split': 0},
     2: {'type': 1, 'power': 50, 'accuracy': 100, 'pp': 25, 'split': 0},
     3: {'type': 0, 'power': 15, 'accuracy': 100, 'pp': 10, 'split': 0},

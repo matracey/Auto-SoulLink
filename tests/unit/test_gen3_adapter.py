@@ -433,13 +433,11 @@ class TestMoveData:
         required = {"name", "type_id", "type_name", "power", "accuracy", "pp", "split"}
         assert required.issubset(set(md.keys()))
 
-    def test_move_zero_returns_none(self):
-        """Move ID 0 (MOVE_NONE) should return None or empty."""
+    def test_move_zero_is_non_damaging(self):
         adapter = Gen3Adapter(is_rr=True)
-        # Move 0 exists in the data but has no meaningful name
-        name = adapter.move_name(0)
-        # Either empty or some placeholder is fine
-        assert isinstance(name, str)
+        assert adapter.move_name(0) == "-"
+        data = adapter.move_data(0)
+        assert (data["power"], data["accuracy"], data["pp"], data["split"]) == (0, 0, 0, 2)
 
     def test_base_adapter_stubs(self):
         """Adapters with their own move table return real data; the base-class
