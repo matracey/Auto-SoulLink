@@ -278,6 +278,7 @@ function M.disconnect()
     -- half-read one would corrupt the first message of the next session.
     _send_offset = 0
     _recv_buf = ""
+    _line_queue = {}
     _drop_until_newline = false
     _connect_wait = 0
     -- An event queued the frame the socket died must not outlive the connection: every

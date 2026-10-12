@@ -114,6 +114,17 @@ def _connect(connector, mock):
     return connector.connected()
 
 
+def test_complete_responses_do_not_survive_a_disconnect():
+    _, connector, mock, _ = _lua_env(chunk=4096)
+    assert _connect(connector, mock)
+    mock.inbox = '{"commands":[{"cmd":"memorialize","key":"OLD"}]}\n'
+    connector.pump()
+    connector.disconnect()
+    assert connector.receive() is None
+    connector.init("127.0.0.1", 2)
+    assert connector.receive() is None
+
+
 # ── send ─────────────────────────────────────────────────────────────────────────────────
 def test_a_long_line_is_sent_exactly_once_across_many_frames():
     """The bytes the peer receives must concatenate to the line, with nothing repeated."""
