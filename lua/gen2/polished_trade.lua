@@ -500,7 +500,10 @@ function PT.compose(spec)
                 end
                 return gen,a,b
             end
-            local ready,a,b=apply_ready(command,slot,visit)
+            -- Preflight is read-only: a thrown read cannot publish APPLY. The caller may use
+            -- the ordinary token cancellation; only the emitting scope below can poison.
+            local ok,ready,a,b=pcall(apply_ready,command,slot,visit)
+            if not ok then return nil,'NOT_PUBLISHED','preflight read failed: '..tostring(ready) end
             if not ready then return nil,a,b end
             local gen,a,b=scoped(raw.arm,raw,command,slot,clone(visit),clone(payload))
             if gen then attempted=true; phase='apply'; disposition=nil; reason=nil; return gen end
