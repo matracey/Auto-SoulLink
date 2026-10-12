@@ -19,7 +19,7 @@ function M.run()
     local K=config.contract
     assert(K.schema=="polished-explode-live-v1")
     local trace,write_log,ids={}, {}, {}
-    local parts,c,target,queued,recorded,finished
+    local parts,c,target,queued,recorded,finished,command_row
     local errors,cap,last_write=0,2048,0
     local copy_seen=false
     local function add(kind,fields)
@@ -61,6 +61,67 @@ function M.run()
         end
         return true
     end
+    -- Identity is decoded from the requested party record, never from the active
+    -- battler's hooks. The status/padding/HP image is an actual synchronous read.
+    local function bench_image()
+        local g=K.geometry
+        local delta=target.slot*48+g.status
+        local n=g.hp+2-g.status
+        local bytes={}
+        for i=0,n-1 do bytes[#bytes+1]=read("wPartyMons",delta+i) end
+        local mon=assert(parts.reads.read_party().mons[target.slot+1],"bench record absent")
+        local h=g.hp-g.status+1
+        return {slot=target.slot,key=mon.key,addr=K.symbols.wPartyMons[2]+delta,
+            bank=K.symbols.wPartyMons[1],domain="System Bus",n=n,bytes=L.json.array(bytes),
+            hp=bytes[h]*256+bytes[h+1],status_byte=bytes[1],frame=emu.framecount()}
+    end
+    -- Same proxy boundary as live.lua's write_audit: tap the real API call, not
+    -- the requested client plan, and read each touched byte on both sides.
+    local raw_memory=memory
+    local function byte_image(addr,domain)
+        local ok,v=pcall(raw_memory.read_u8,addr,domain)
+        if not ok then return L.json.null,tostring(v) end
+        if type(v)~="number" or v%1~=0 or v<0 or v>255 then
+            return L.json.null,"read_u8 returned a non-byte"
+        end
+        return string.format("%02x",v),L.json.null
+    end
+    local function physical(addr,domain)
+        if domain=="WRAM" then return addr,math.floor(addr/0x1000) end
+        if domain=="System Bus" and addr>=0xc000 and addr<0xd000 then return addr-0xc000,0 end
+        if domain=="System Bus" and addr>=0xd000 and addr<0xe000 then
+            local b=raw_memory.read_u8(0xff70,"System Bus")%8
+            b=b==0 and 1 or b
+            return b*0x1000+addr-0xd000,b
+        end
+    end
+    memory=setmetatable({}, {__index=function(_,api)
+        local fn=raw_memory[api]
+        if type(api)~="string" or not api:match("^write")
+            or (type(fn)~="function" and type(fn)~="userdata") then return fn end
+        return function(...)
+            local addr,value,domain=...
+            if domain==nil and raw_memory.getcurrentmemorydomain then domain=raw_memory.getcurrentmemorydomain() end
+            local at,bank=physical(addr,domain)
+            local row=K.symbols.wPartyMons
+            local base=row[2]<0xd000 and row[2]-0xc000 or row[1]*0x1000+row[2]-0xd000
+            local slot=at and at>=base and at<base+6*48 and math.floor((at-base)/48) or nil
+            local mon=slot and parts and parts.reads.read_party().mons[slot+1]
+            local op={sequence=#write_log+1,api=api,addr=addr,value=value,domain=domain or L.json.null,
+                bank=bank or L.json.null,frame=emu.framecount(),n=api=="write_u8" and 1 or L.json.null,
+                party_slot=slot or L.json.null,party_key=mon and mon.key or L.json.null}
+            if api=="write_u8" then op.pre_hex,op.pre_read_error=byte_image(addr,domain)
+            else op.pre_hex,op.pre_read_error=L.json.null,"unsupported image API: "..api end
+            write_log[#write_log+1]=op
+            local result=table.pack(pcall(fn,...))
+            if api=="write_u8" then op.post_hex,op.post_read_error=byte_image(addr,domain)
+            else op.post_hex,op.post_read_error=L.json.null,"unsupported image API: "..api end
+            op.frame_after=emu.framecount()
+            op.status,op.error=result[1] and "returned" or "raised",result[1] and L.json.null or tostring(result[2])
+            if not result[1] then error(result[2],0) end
+            return table.unpack(result,2,result.n)
+        end
+    end})
     local function scoped(context,fn,self,...)
         if not queued or recorded then return fn(self,...) end
         if not mapped() then return fn(self,...) end
@@ -69,11 +130,13 @@ function M.run()
         if context=='overworld' and s.mode~=0 then return fn(self,...) end
         local scope=add('scope_begin',{context=context,key=target.key})
         local before=snapshot();local start=#write_log
+        local bench_before=config.case=="bench-faint" and context=="overworld" and bench_image() or nil
         local out=table.pack(fn(self,...));local after=snapshot()
         s.scope_ord=scope.ord
         local writes={};for i=start+1,#write_log do writes[#writes+1]=write_log[i] end
         if #writes>0 then
             s.context,s.key,s.before,s.after,s.writes=context,target.key,before,after,writes
+            if bench_before then s.bench_before,s.bench_after=bench_before,bench_image() end
             if c.faint_settle then
                 for _,ob in ipairs(c.faint_settle.owed) do
                     local a=ob.attempts[#ob.attempts]
@@ -103,7 +166,7 @@ function M.run()
     end}
     local io_={cart_ram_linear=true,read_u8=function(a,d) return memory.read_u8(a,d or "System Bus") end,
         read_range=function(a,n,d) local b={} for i=0,n-1 do b[#b+1]=memory.read_u8(a+i,d or "System Bus") end return b end,
-        write_u8=function(a,v,d) write_log[#write_log+1]={addr=a,value=v,domain=d or "System Bus"} return memory.write_u8(a,v,d or "System Bus") end,
+        write_u8=function(a,v,d) return memory.write_u8(a,v,d or "System Bus") end,
         bank_valid=function(b,a,n) return M.bank_valid(b,a,n,memory.read_u8,K.symbols.hROMBank[2]) end,
         stack_valid=function(sp,n) return sp>=0xc000 and sp+n<0xd000 end,
         -- BizHawk API members are userdata, not Lua functions; the client asserts type()=="function".
@@ -119,7 +182,20 @@ function M.run()
         if not ok then errors=errors+1;add("driver_error",{reason=tostring(why)}) end
         if c then c:stop() end
         for _,id in ipairs(ids) do event.unregisterbyid(id) end
-        add("final",{completed=ok and errors==0,driver_errors=errors,post_operation_writes=recorded and #write_log-last_write or -1})
+        local window
+        if config.case=="bench-faint" and command_row then
+            window={from_ord=command_row.ord,to_ord=#trace,from_frame=command_row.frame,to_frame=emu.framecount(),
+                file="bench_wire_window.jsonl"}
+            local wf=assert(io.open(L.RUN.."/"..window.file,"wb"))
+            for _,e in ipairs(trace) do
+                if e.kind=="wire" and e.ord>=window.from_ord and e.ord<=window.to_ord then
+                    wf:write(assert(L.json.encode(e)),"\n")
+                end
+            end
+            wf:close()
+        end
+        add("final",{completed=ok and errors==0,driver_errors=errors,post_operation_writes=recorded and #write_log-last_write or -1,
+            write_ops=L.json.array(write_log),bench_wire_window=window})
         local file=assert(io.open(L.RUN.."/trace.json","wb"));file:write(assert(L.json.encode(trace)));file:close()
         L.check("explode-live recording complete",ok,why)
         L.finish("explode-live "..config.case)
@@ -178,7 +254,7 @@ function M.run()
                     local mon=assert(party.mons[slot+1]);assert(mon.key==config.target.key and mon.hp>0,"target differs from linked SYNTH fixture")
                     target={key=mon.key,slot=slot};queued=true
                     local command=config.case=="explode" and "force_explode" or "force_faint"
-                    add("command",{cmd=command,key=mon.key,slot=slot,mode=1})
+                    command_row=add("command",{cmd=command,key=mon.key,slot=slot,mode=1})
                     c:handle_command({cmd=command,key=mon.key,nickname="QUAL_TARGET"})
                 end
                 assert(emu.framecount()<config.frame_cap,"frame cap")
