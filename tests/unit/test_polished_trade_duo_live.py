@@ -192,9 +192,24 @@ def strict_evidence():
                    {"dir": "c2s", "msg": {"event": "trade_done", "token": "t1", "new_key": mons[-1]["key"]}}]
         names = ["SlinkTradeApplyCommit", "SlinkTradeCommit", "ForceGameSave", "SlinkTradeCommit.CheckSave",
                  "SlinkTradePublishDone", "SlinkTradeExit" if r == "a" else "SlinkTradeResponderExit"]
-        milestones[r] = [{"kind": "native", "frame": 10 + i, "detail": name, "qualified": True,
-                          "pc": 0x5300 + i, "bank": 126, "expected_hex": "abcd"}
-                         for i, name in enumerate(names)]
+        native_rows = [{"kind": "native", "frame": 12 + i, "detail": name, "qualified": True,
+                        "pc": 0x5300 + i, "bank": 126, "expected_hex": "abcd"}
+                       for i, name in enumerate(names)]
+        save = dict(native_rows[2], frame=7 if r == "a" else 8)
+        if r == "a":
+            prompt = [save, {"kind": "send", "frame": 8, "detail": {"event": "trade_query"}},
+                      {"kind": "send", "frame": 9, "detail": {"event": "trade_offer"}},
+                      {"kind": "receive", "frame": 10, "detail": {"cmd": "trade_offer_ack", "token": "t1"}}]
+        else:
+            prompt = [{"kind": "receive", "frame": 7, "detail": {"cmd": "show_menu", "token": "t1"}},
+                      save, dict(native_rows[4], frame=9),
+                      {"kind": "send", "frame": 10,
+                       "detail": {"event": "menu_result", "token": "t1", "choice": 1}}]
+        milestones[r] = [
+            *prompt, {"kind": "receive", "frame": 11, "detail": {"cmd": "apply_trade", "token": "t1"}},
+            *native_rows[:5], {"kind": "send", "frame": 17, "detail": {"event": "trade_done", "token": "t1"}},
+            native_rows[5],
+        ]
         durable[r] = {"copies": {c: copy.deepcopy(cold[r]) for c in ("main", "backup")},
                       "integrity": {c: {"valid": True, "markers_valid": True} for c in ("main", "backup")}}
         link[r] = {"key": mons[-1]["key"]}
@@ -223,9 +238,9 @@ def test_f9_trade_rejects_native_or_durable_record_defects(fault):
                 "missing-exit": "SlinkTradeResponderExit"}[fault]
         milestones["b"] = [m for m in milestones["b"] if m["detail"] != name]
     elif fault == "wrong-order":
-        milestones["a"][1]["frame"] = 100
+        next(row for row in milestones["a"] if row["detail"] == "SlinkTradeCommit")["frame"] = 100
     elif fault == "unqualified":
-        milestones["b"][0]["qualified"] = False
+        next(row for row in milestones["b"] if row["detail"] == "SlinkTradeApplyCommit")["qualified"] = False
     elif fault.startswith("cold-") and fault[5:] in ("id", "name"):
         cold["a"]["ot_id" if fault == "cold-id" else "trainer_name"] = 0
     elif fault.startswith("save-") and fault[5:] in ("id", "name"):
@@ -267,8 +282,10 @@ def retained_model(run_dir):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data if isinstance(data, bytes) else json.dumps(data).encode())
         paths.add(path.resolve())
-    sites = {row["detail"]: {k: row[k] for k in ("pc", "bank", "expected_hex")}
-             for rows in milestones.values() for row in rows}
+    sites = {
+        row["detail"]: {k: row[k] for k in ("pc", "bank", "expected_hex")}
+        for rows in milestones.values() for row in rows if row["kind"] == "native"
+    }
     put("manifest.json", {"test_build": False, "rom_sha1": t.overlay_sha1(), "native_sites": sites})
     put("state-after-trade.json", state)
     ds = t.duo._derive_save()
