@@ -609,6 +609,312 @@ def test_round2_covered_checks_require_named_successful_replay(packet, mode):
         assert targets(root) == before
 
 
+def round3_map(packet, observed=None, expected=None, pattern=None, text=None, assertions=None):
+    root, path, tmp = packet
+    mapping, row, item = remap_single(packet, "LIVE-HELLO-GATE-FRAME")
+    facts = Path(row["checks"][0]["assertions"][0]["artifact"])
+    values = {str(i): {"count": i + 1} for i in range(len(item["expect_checks"]))}
+    values["observation"] = observed
+    put(facts, values)
+    for record in row["secondary_evidence"]:
+        if Path(record["path"]) == facts:
+            record["sha256"] = sha(facts)
+    row["checks"] = [
+        {
+            "name": name,
+            "assertions": [
+                {"artifact": str(facts), "op": "eq", "pointer": f"/{i}/count", "expected": i + 1}
+            ],
+        }
+        for i, name in enumerate(item["expect_checks"])
+    ]
+    raw = put(facts.parent / "round3.txt", (text or "raw count 17\n").encode())
+    row["secondary_evidence"].append(
+        {"path": str(raw), "sha256": sha(raw), "run_witness": row["primary"]["run_witness"].copy()}
+    )
+    if assertions is not None:
+        row["checks"][0]["assertions"] = assertions(str(raw), str(facts))
+    elif pattern is not None:
+        row["checks"][0]["assertions"] = [
+            {"artifact": str(raw), "op": "regex_count", "pattern": pattern, "expected": 1}
+        ]
+    else:
+        row["checks"][0]["assertions"] = [
+            {"artifact": str(facts), "op": "eq", "pointer": "/observation", "expected": expected}
+        ]
+    put(path, mapping)
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        *[
+            ({key: True}, {key: True})
+            for key in ("passed", "success", "done", "all_pass", "outcome", "summary", "complete")
+        ],
+        ({"failures": []}, {"failures": []}),
+        ({"packet": {"armed": True}}, {"packet": {"armed": True}}),
+        ({"events": [[]]}, {"events": [[]]}),
+        ([1], [True]),
+    ],
+)
+def test_round3_item1_containers_refuse(packet, value, expected):
+    root, path, tmp = packet
+    round3_map(packet, value, expected)
+    before = targets(root)
+    report = b.run(root, path, tmp / "r3-container", install=True)
+    assert not report["ok"], report
+    assert targets(root) == before
+
+
+@pytest.mark.parametrize(
+    "value", ["RESULT: PASS #0", ["RESULT: PASS #0"], {"lines": ["RESULT: PASS #0"]}]
+)
+def test_round3_item2_string_summaries_refuse(packet, value):
+    root, path, tmp = packet
+    round3_map(packet, value, value)
+    before = targets(root)
+    report = b.run(root, path, tmp / "r3-string", install=True)
+    assert not report["ok"], report
+    assert targets(root) == before
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "check: passed",
+        "check: PASSED",
+        "check-OK",
+        "check ok",
+        "check=Success",
+        "check: SUCCEEDED",
+        "check done",
+        "check ALL GOOD",
+        "check: ✓",
+        "check: ✔",
+        "check: successful",
+        "check: complete",
+        "check: completed",
+        "check: true",
+        "STATUS captured 12",
+        "RESULT captured 12",
+    ],
+)
+def test_round3_item3_verdict_lines_refuse(packet, line):
+    root, path, tmp = packet
+    round3_map(packet, pattern=r"^.+$", text=line + "\n")
+    before = targets(root)
+    report = b.run(root, path, tmp / "r3-verdict", install=True)
+    assert not report["ok"], report
+    assert targets(root) == before
+
+
+@pytest.mark.parametrize(
+    "pattern,text",
+    [
+        (r"^raw 17(?=\nRESULT: P[A]SS)", "raw 17\nRESULT: PASS\n"),
+        (r"^raw 17(?!\nRESULT: FAIL)", "raw 17\nRESULT: PASS\n"),
+        (r"(?<=RESULT: PASS\n)raw 17", "RESULT: PASS\nraw 17\n"),
+        (r"(?<!FAIL\n)raw 17", "RESULT: PASS\nraw 17\n"),
+        (r"(?=(raw 17))\1", "raw 17\n"),
+        (r"(?=(?P<raw>raw 17))(?P=raw)", "raw 17\n"),
+    ],
+)
+def test_round3_item4_lookaround_refuses(packet, pattern, text):
+    root, path, tmp = packet
+    round3_map(packet, pattern=pattern, text=text)
+    before = targets(root)
+    report = b.run(root, path, tmp / "r3-lookaround", install=True)
+    assert not report["ok"], report
+    assert targets(root) == before
+
+
+@pytest.mark.parametrize(
+    "explicit,positive,accepted",
+    [(False, False, False), (False, True, False), (True, False, False), (True, True, True)],
+)
+def test_round3_item5_absence_needs_positive_observation(packet, explicit, positive, accepted):
+    root, path, tmp = packet
+
+    def checks(raw, facts):
+        absence = {"artifact": raw, "op": "regex_count", "pattern": "never-seen", "expected": 0}
+        if explicit:
+            absence["absence"] = True
+        return [absence] + (
+            [{"artifact": facts, "op": "eq", "pointer": "/0/count", "expected": 1}]
+            if positive
+            else []
+        )
+
+    round3_map(packet, assertions=checks)
+    before = targets(root)
+    report = b.run(root, path, tmp / "r3-absence", install=True)
+    assert report["ok"] is accepted, report
+    if not accepted:
+        assert targets(root) == before
+
+
+@pytest.mark.parametrize("error", [KeyboardInterrupt, SystemExit, BaseException])
+@pytest.mark.parametrize("after", [True, False])
+def test_round3_item6_interrupt_does_not_lose_ownership(packet, monkeypatch, error, after):
+    root, path, tmp = packet
+    original = b.os.replace
+    fired = False
+
+    def interrupt(source, target):
+        nonlocal fired
+        if not fired:
+            fired = True
+            if after:
+                original(source, target)
+            raise error("MODEL interrupted replace")
+        return original(source, target)
+
+    monkeypatch.setattr(b.os, "replace", interrupt)
+    before = targets(root)
+    report = b.run(root, path, tmp / "r3-interrupt", install=True)
+    assert not report["ok"], report
+    assert targets(root) == before, report
+    assert report["rollback_complete"] and not report["unrecovered"], report
+
+
+@pytest.mark.parametrize("value", [True, False, {"coordinates": [12, 31]}])
+def test_round3_scalar_boolean_and_numeric_container_remain_valid(packet, value):
+    root, path, tmp = packet
+    round3_map(packet, value, value)
+    report = b.run(root, path, tmp / "r3-positive", install=True)
+    assert report["ok"], report
+
+
+def test_round3_absence_fingerprint_keeps_pattern_identity(packet):
+    root, path, tmp = packet
+
+    def checks(raw, facts):
+        return [
+            {
+                "artifact": raw,
+                "op": "regex_count",
+                "pattern": "missing-one",
+                "expected": 0,
+                "absence": True,
+            },
+            {"artifact": facts, "op": "eq", "pointer": "/0/count", "expected": 1},
+        ]
+
+    round3_map(packet, assertions=checks)
+    mapping = json.loads(path.read_text())
+    row = next(iter(mapping["items"].values()))
+    row["checks"][1]["assertions"] = copy.deepcopy(row["checks"][0]["assertions"])
+    row["checks"][1]["assertions"][0]["pattern"] = "missing-two"
+    put(path, mapping)
+    report = b.run(root, path, tmp / "r3-absence-identities", install=True)
+    assert report["ok"], report
+
+
+@pytest.mark.parametrize("mode", ["valid", "alone", "unproven-sibling", "fail-line", "non-verdict"])
+def test_round3_producer_completion_needs_proved_siblings(packet, mode):
+    root, path, tmp = packet
+    round3_map(packet, 17, 17)
+    mapping = json.loads(path.read_text())
+    row = next(iter(mapping["items"].values()))
+    index = 1 if mode == "non-verdict" else 0
+    row["checks"][index] = {
+        "name": row["checks"][index]["name"],
+        "covered_by": "producer_completion",
+    }
+    if mode == "unproven-sibling":
+        row["checks"][1]["assertions"][0]["expected"] = 999
+    elif mode == "fail-line":
+        primary = Path(row["primary"]["path"])
+        primary.write_bytes(primary.read_bytes() + b"  [FAIL] a producer check failed\n")
+        row["primary"]["sha256"] = sha(primary)
+    elif mode == "alone":
+        row["checks"] = row["checks"][:1]
+        manifest_path = root / v.MANIFEST
+        manifest = json.loads(manifest_path.read_text())
+        next(i for i in manifest["items"] if i["id"] == "LIVE-HELLO-GATE-FRAME")[
+            "expect_checks"
+        ] = ["run verdict"]
+        put(manifest_path, manifest)
+        mapping["manifest_sha256"] = sha(manifest_path)
+        launch = Path(row["launches"][0]["path"])
+        doc = json.loads(launch.read_text())
+        doc["requirement_manifest_sha256"] = sha(manifest_path)
+        put(launch, doc)
+        end = launch.with_name("job.exit.json")
+        doc = json.loads(end.read_text())
+        doc["launch_sha256"] = sha(launch)
+        put(end, doc)
+        for record in row["secondary_evidence"]:
+            if Path(record["path"]) in (launch, end):
+                record["sha256"] = sha(Path(record["path"]))
+    put(path, mapping)
+    before = targets(root)
+    report = b.run(root, path, tmp / "completion", install=True)
+    assert report["ok"] is (mode == "valid"), report
+    if mode != "valid":
+        assert targets(root) == before
+
+
+@pytest.mark.parametrize("mode", ["valid", "failed-leg", "same-leg", "fail-echo"])
+def test_round3_producer_completion_binds_each_r2_leg(packet, mode):
+    root, path, tmp = packet
+    mapping, row, item = remap_single(packet, "LIVE-R2-RANDOMIZED-BOOT")
+    home = Path(row["primary"]["path"]).parent
+
+    def record(p):
+        return {
+            "path": str(p),
+            "sha256": sha(p),
+            "run_witness": row["primary"]["run_witness"].copy(),
+        }
+
+    facts = put(home / "r2-facts.json", {str(i): i + 10 for i in range(len(item["expect_checks"]))})
+    row["secondary_evidence"].append(record(facts))
+    row["checks"] = [
+        {"name": name, "covered_by": "producer_completion"}
+        if i < 2
+        else {
+            "name": name,
+            "assertions": [
+                {"artifact": str(facts), "pointer": f"/{i}", "op": "eq", "expected": i + 10}
+            ],
+        }
+        for i, name in enumerate(item["expect_checks"])
+    ]
+    b_text = b"RESULT: FAIL\n" if mode == "failed-leg" else b"RESULT: PASS\n"
+    if mode == "fail-echo":
+        b_text += b"[FAIL] missed required observation\n"
+    leg_b = put(home / "r2b.txt", b_text)
+    row["secondary_evidence"].append(record(leg_b))
+    row["roles"]["producer_r2a"] = row["primary"]["path"]
+    row["roles"]["producer_r2b"] = str(leg_b) if mode != "same-leg" else row["primary"]["path"]
+    players, bindings = {}, {}
+    for player in ("a", "b"):
+        rom = put(home / (player + ".gbc"), ("MODEL " + player).encode())
+        h = hashlib.sha1(rom.read_bytes()).hexdigest()
+        observation = put(home / (player + ".json"), {"rom_sha1": h})
+        players[player] = {"rom_sha1": h}
+        bindings[player] = {
+            "rom": str(rom),
+            "observation": str(observation),
+            "sha1_pointer": "/rom_sha1",
+        }
+        row["secondary_evidence"] += [record(rom), record(observation)]
+    contract = put(home / "contract.json", {"players": players})
+    row["secondary_evidence"].append(record(contract))
+    for binding in bindings.values():
+        binding["contract"] = str(contract)
+    row["rom_bindings"] = bindings
+    row["rom_sha1_executed"] = players["a"]["rom_sha1"]
+    put(path, mapping)
+    before = targets(root)
+    report = b.run(root, path, tmp / "r2-completion", install=True)
+    assert report["ok"] is (mode == "valid"), report
+    if mode != "valid":
+        assert targets(root) == before
+
+
 def test_valid_five_families_stage_then_install(packet):
     root, path, tmp = packet
     before = targets(root)

@@ -207,7 +207,22 @@ def pointer(value, path):
     return value
 
 
-SUMMARY_KEYS = {"ok", "verdict", "result", "status", "pass", "checks"}
+SUMMARY_KEYS = {
+    "ok",
+    "verdict",
+    "result",
+    "status",
+    "pass",
+    "checks",
+    "passed",
+    "success",
+    "done",
+    "all_pass",
+    "outcome",
+    "summary",
+    "complete",
+    "failures",
+}
 
 # Reviewed per-criterion coverage, not scenario-wide permission. In particular,
 # judge_pages does NOT prove the manifest's compound rendering/glyph criterion.
@@ -258,16 +273,84 @@ VERIFIER_REPLAYS = {
     "trade/shipped-native-commit-cold-continue",
 }
 
+# Necessary completion signals only; none may stand in for sibling criteria.
+# R2 labels are deliberately tied to separate, explicitly bound leg outputs.
+PRODUCER_COMPLETION = {
+    "run verdict": (None, None, None),
+    "R2a run verdict": (
+        "LIVE-R2-RANDOMIZED-BOOT",
+        "r2/randomized-boot-adopt-form-key",
+        "producer_r2a",
+    ),
+    "R2b run verdict": (
+        "LIVE-R2-RANDOMIZED-BOOT",
+        "r2/randomized-boot-adopt-form-key",
+        "producer_r2b",
+    ),
+    "overlay run verdict": ("LIVE-TITLE-SPLASH", "title/wordmark-vs-clean-control", None),
+}
 
-def has_summary(value):
+
+def producer_completion(item, row, bound, snap):
+    requested = [c["name"] for c in row["checks"] if c.get("covered_by") == "producer_completion"]
+    if not requested:
+        return set()
+    require(
+        any(c["name"] not in PRODUCER_COMPLETION for c in row["checks"]),
+        "producer completion alone cannot support a receipt",
+    )
+
+    def passed(path):
+        require(path in bound, "unbound producer completion artifact")
+        raw = snap.raw(path)
+        errors = verifier._producer_errors(item, raw)
+        require(not errors, f"producer completion refused: {errors}")
+        failures = re.findall(
+            r"\[\s*FAIL\s*\]|^\s*(?:FAIL\b|RESULT\s*:\s*FAIL\b)", raw.decode("utf-8"), re.I | re.M
+        )
+        require(not failures, "producer completion contains FAIL check lines")
+
+    passed(exact_path(row["primary"]["path"]))
+    proven = set()
+    for name in requested:
+        require(name in PRODUCER_COMPLETION, "non-verdict check cannot use producer_completion")
+        rid, scenario, role = PRODUCER_COMPLETION[name]
+        require(
+            rid is None or (item["id"], item["expect_scenario"]) == (rid, scenario),
+            "producer completion label belongs to a different scenario",
+        )
+        if role:
+            a, b = (exact_path(row["roles"][key]) for key in ("producer_r2a", "producer_r2b"))
+            require(a != b, "R2 producer completions require distinct leg outputs")
+            passed(exact_path(row["roles"][role]))
+        proven.add(("producer_completion", name))
+    return proven
+
+
+def has_summary(value, *, in_container=False):
+    if isinstance(value, bool):
+        return in_container
+    if isinstance(value, str):
+        return summary_text(value)
     if isinstance(value, dict):
-        return any(str(k).casefold() in SUMMARY_KEYS or has_summary(v) for k, v in value.items())
-    return isinstance(value, list) and any(has_summary(v) for v in value)
+        return any(
+            str(k).casefold() in SUMMARY_KEYS or has_summary(v, in_container=True)
+            for k, v in value.items()
+        )
+    return isinstance(value, list) and (
+        not value or any(has_summary(v, in_container=True) for v in value)
+    )
 
 
 def summary_text(text):
     return (
-        re.search(r"\bRESULT\s*:|\b(?:PASS|FAIL|verdict)\b|\[\s*(?:ok|FAIL)\s*\]", text, re.I)
+        re.search(
+            r"\bRESULT\s*:|\b(?:PASS|FAIL|verdict)\b|\[\s*(?:ok|FAIL)\s*\]"
+            r"|^\s*(?:RESULT|VERDICT|STATUS)\b"
+            r"|(?:^|[:=\-\s])(?:pass(?:ed)?|ok|success(?:ful)?|succeeded|done|complete(?:d)?|good|all\s+good|✓|✔|true)\s*$",
+            text,
+            re.I | re.M,
+        )
         is not None
     )
 
@@ -281,11 +364,14 @@ def assertions(checks, expected, bound, snap, *, item, proven):
     for check in checks:
         if "covered_by" in check:
             engine = check["covered_by"]
-            approved = COVERAGE.get((item["id"], item["expect_scenario"]), {}).get(engine, {})
+            if engine == "producer_completion":
+                approved = dict.fromkeys(PRODUCER_COMPLETION, "verifier._producer_errors + zero FAIL checks; final check_live required")
+                passed = (engine, check["name"]) in proven
+            else:
+                approved = COVERAGE.get((item["id"], item["expect_scenario"]), {}).get(engine, {})
+                passed = engine in proven
             require(
-                set(check) == {"name", "covered_by"}
-                and check["name"] in approved
-                and engine in proven,
+                set(check) == {"name", "covered_by"} and check["name"] in approved and passed,
                 "covered_by check not approved or replay did not pass",
             )
             result.append(
@@ -300,7 +386,7 @@ def assertions(checks, expected, bound, snap, *, item, proven):
             set(check) == {"name", "assertions"} and check["assertions"],
             "reviewed raw assertions required",
         )
-        facts, observations = [], set()
+        facts, observations, positive = [], set(), False
         for a in check["assertions"]:
             path = exact_path(a["artifact"])
             require(path in bound, f"unbound raw observation: {path}")
@@ -318,7 +404,10 @@ def assertions(checks, expected, bound, snap, *, item, proven):
                     "generic completion is not raw proof",
                 )
                 observed = pointer(snap.read(path), a["pointer"])
-                require(not has_summary(observed), "completion container is not raw proof")
+                require(
+                    not has_summary(observed) and not has_summary(a["expected"]),
+                    "completion/container summary is not raw proof",
+                )
                 require(
                     type(observed) is type(a["expected"]) and observed == a["expected"],
                     f"raw check mismatch: {check['name']} {a['pointer']}",
@@ -332,11 +421,22 @@ def assertions(checks, expected, bound, snap, *, item, proven):
                         ),
                     )
                 )
+                positive = True
             elif op == "regex_count":
-                require(set(a) == {"artifact", "pattern", "op", "expected"}, "unknown regex fields")
+                fields = {"artifact", "pattern", "op", "expected"}
+                absence = a["expected"] == 0
+                require(
+                    set(a) == (fields | {"absence"} if absence else fields)
+                    and (not absence or a["absence"] is True),
+                    "zero regex count needs explicit absence:true",
+                )
                 require(
                     type(a["expected"]) is int and a["expected"] >= 0 and len(a["pattern"]) > 3,
                     "explicit count/pattern required",
+                )
+                require(
+                    not any(token in a["pattern"] for token in ("(?=", "(?!", "(?<=", "(?<!")),
+                    "lookaround and its backreferences cannot be raw proof",
                 )
                 text = snap.raw(path).decode()
                 matches = list(re.finditer(a["pattern"], text, re.MULTILINE))
@@ -349,9 +449,14 @@ def assertions(checks, expected, bound, snap, *, item, proven):
                         "matched producer completion/summary is not raw proof",
                     )
                 spans = sorted({m.span() for m in matches})
-                observations.add((str(path), "spans", json.dumps(spans)))
+                observations.add(
+                    (str(path), "absence", a["pattern"])
+                    if absence
+                    else (str(path), "spans", json.dumps(spans))
+                )
                 observed = len(matches)
                 require(observed == a["expected"], f"raw count mismatch: {check['name']}")
+                positive = positive or observed > 0
             else:
                 raise ValueError(f"unknown raw assertion operation: {op}")
             facts.append(
@@ -362,6 +467,7 @@ def assertions(checks, expected, bound, snap, *, item, proven):
                     "observed": observed,
                 }
             )
+        require(positive, "each raw check requires a positive observation")
         fingerprint = tuple(sorted(observations))
         require(fingerprint not in fingerprints, "blanket check replacement forbidden")
         fingerprints.add(fingerprint)
@@ -919,19 +1025,20 @@ def install_all(candidates):
                 digest(staged.read_bytes()) == judged,
                 f"judged candidate changed before replace: {staged}",
             )
-            os.replace(staged, target)
             installed.append((target, expected, judged))
+            os.replace(staged, target)
     except BaseException as error:
         for target, expected, judged in reversed(installed):
             try:
                 require(
-                    digest(target.read_bytes()) == judged,
+                    digest(target.read_bytes()) in {expected, judged},
                     f"foreign edit prevents rollback: {target}",
                 )
                 require(
                     digest(recovery[target].read_bytes()) == expected, f"recovery changed: {target}"
                 )
-                os.replace(recovery[target], target)
+                if digest(target.read_bytes()) != expected:
+                    os.replace(recovery[target], target)
                 require(
                     digest(target.read_bytes()) == expected,
                     f"rollback verification failed: {target}",
@@ -1026,6 +1133,7 @@ def run(root, map_path, stage_dir, *, install=False):
                 snap.recheck()
                 require(not errors, f"verifier replay refused: {errors}")
                 proven.add("verifier_replay")
+            proven.update(producer_completion(item, row, bound, snap))
             checks = assertions(
                 row["checks"], item["expect_checks"], bound, snap, item=item, proven=proven
             )
