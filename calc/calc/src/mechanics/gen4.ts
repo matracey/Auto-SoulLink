@@ -354,7 +354,7 @@ export function calculateBasePowerDPP(
     desc.moveBP = basePower;
     break;
   case 'Gyro Ball':
-    basePower = Math.min(150, Math.floor((25 * defender.stats.spe) / attacker.stats.spe));
+    basePower = Math.min(150, Math.floor((25 * defender.stats.spe) / attacker.stats.spe) + 1);
     desc.moveBP = basePower;
     break;
   case 'Payback':

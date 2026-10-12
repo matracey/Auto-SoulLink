@@ -5,6 +5,27 @@ import {inGen, inGens, tests} from './helper';
 
 describe('calc', () => {
   describe('Multi-Gen', () => {
+    inGen(4, ({calculate, Pokemon, Move}) => {
+      test.each([
+        {attacker: 'Mew', defender: 'Mew', level: 100, power: 26},
+        {attacker: 'Mew', defender: 'Snorlax', level: 100, power: 11},
+        {attacker: 'Deoxys-Speed', defender: 'Shuckle', level: 1, power: 1},
+        {attacker: 'Shuckle', defender: 'Deoxys-Speed', level: 100, power: 150},
+      ])('Gyro Ball uses $power BP for $attacker vs level $level $defender (gen 4)',
+        ({attacker, defender, level, power}) => {
+          const result = calculate(
+            Pokemon(attacker), Pokemon(defender, {level}), Move('Gyro Ball')
+          );
+          const reference = calculate(
+            Pokemon(attacker), Pokemon(defender, {level}),
+            Move('Metal Claw', {overrides: {basePower: power}})
+          );
+          expect(result.rawDesc.moveBP).toBe(power);
+          expect(result.range()).toEqual(reference.range());
+          expect(result.range()[0]).toBeGreaterThan(0);
+        });
+    });
+
     inGens(8, 9, ({gen, calculate, Pokemon, Move}) => {
       test.each([
         ...['TR24', 'TR28', 'TR34', 'TR39', 'TR53', 'TR55', 'TR64', 'TR66', 'TR72', 'TR73']
