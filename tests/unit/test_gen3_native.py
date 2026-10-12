@@ -1036,6 +1036,39 @@ def test_config_is_queued_and_npc_counter_is_latched_on_reset():
     assert len(w.events) == 1
 
 
+@pytest.mark.parametrize("before,after,expected", [
+    (254, 255, True), (255, 0, True), (255, 1, False), (7, 0, False), (5, 7, False),
+])
+def test_abi1_interaction_requires_one_modulo_step(before, after, expected):
+    w = World()
+    w.put(w.n["PI_COUNT"], before)
+    w.native.config(w.native, w.lua.table(pc_trade_npc=True))
+    w.service()
+    w.put(w.n["PI_COUNT"], after)
+    w.service()
+    assert [event for event, _ in w.events] == (["trade_request"] if expected else [])
+
+
+@pytest.mark.parametrize("reset", ["frame", "beacon"])
+def test_abi1_reset_relatches_wrapped_interaction_counter(reset):
+    w = World()
+    w.put(w.n["PI_COUNT"], 255)
+    w.native.config(w.native, w.lua.table(pc_trade_npc=True))
+    w.service()
+    if reset == "frame":
+        w.frame = 1
+    else:
+        w.put(w.n["BASE"], 0, 4)
+        w.service()
+        w.put(w.n["BASE"], w.n["SIG"], 4)
+    w.put(w.n["PI_COUNT"], 0)
+    w.service()
+    assert w.events == []
+    w.put(w.n["PI_COUNT"], 1)
+    w.service()
+    assert [event for event, _ in w.events] == ["trade_request"]
+
+
 def test_link_panel_publishes_rows_before_line_count_and_does_not_dispatch_text():
     w = World()
     w.native.link_panel(w.native, w.lua.table(rows=w.lua.table("A|B", "NEXT")))

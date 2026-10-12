@@ -1287,10 +1287,10 @@ function N.new(profile, deps)
         end
         if not v2 then -- v1 NPC/panel offsets are never inherited by a v2 mailbox
             local counter = io.read_u8(p.PI_COUNT)
-            if npc_count ~= nil and counter > npc_count and npc_enabled and not pending then
+            if npc_count ~= nil and (counter - npc_count) % 256 == 1 and npc_enabled and not pending then
                 send("trade_request", {})
             end
-            npc_count = counter -- backwards counters re-latch; never synthesize an interaction
+            npc_count = counter -- discontinuities re-latch without inventing an interaction
             local drawn = io.read_u8(p.INFO + 2)
             if panel_drawn ~= nil and drawn ~= panel_drawn and not owned_panel then
                 panel_showing = true
