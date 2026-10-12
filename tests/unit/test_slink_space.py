@@ -883,8 +883,12 @@ def test_rmtree_refuses_a_tree_holding_an_unknown_reparse_dir(W, cloud_names):
     assert (d / "a" / "first.txt").exists() and (d / "clouddir" / "inside.bin").exists()
 
 
-def test_clear_readonly_does_not_enter_unknown_reparse_dirs(W, cloud_names):
+def test_clear_readonly_does_not_enter_unknown_reparse_dirs(W, cloud_names, monkeypatch):
     import stat as st_
+
+    access = os.access
+    monkeypatch.setattr(os, "access", lambda path, mode: (
+        bool(Path(path).stat().st_mode & st_.S_IWRITE) if mode == os.W_OK else access(path, mode)))
     d = W.tmp / "wt-ro"
     (d / "clouddir").mkdir(parents=True)
     inside, outside = d / "clouddir" / "in.txt", d / "out.txt"
@@ -893,8 +897,8 @@ def test_clear_readonly_does_not_enter_unknown_reparse_dirs(W, cloud_names):
         os.chmod(f, st_.S_IREAD)
     try:
         ss._clear_readonly(d)
-        assert os.access(outside, os.W_OK)
-        assert not os.access(inside, os.W_OK)
+        assert outside.stat().st_mode & st_.S_IWRITE
+        assert not inside.stat().st_mode & st_.S_IWRITE
     finally:
         os.chmod(inside, st_.S_IWRITE | st_.S_IREAD)
 

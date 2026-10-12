@@ -50,5 +50,5 @@ slink_lua.log
 slink_gen3_session.*
 
 # Gen 3 durable trade journal (lua/gen3/run.lua), written beside the install root at runtime
-slink_gen3_trade.log
-slink_gen3_trade.guard
+/slink_gen3_trade.log
+/slink_gen3_trade.guard
