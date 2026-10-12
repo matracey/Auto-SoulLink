@@ -586,6 +586,8 @@ def test_apply_faults_follow_the_generation_publication_boundary(fault):
         assert p.binder.disposition(p.binder)[0] == "NOT_PERFORMED"
     else:
         assert len(done) == 1 and done[0]["uncertain"] is True and "new_key" not in done[0]
+        # A closed lease alone is not proof of a native result-2 hold. The arm
+        # publication fault and actual result 2 have separate reset-only regressions.
         assert done[0].get("after_reset", False) == (fault == "reset")
 
 

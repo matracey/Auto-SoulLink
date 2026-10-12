@@ -1224,7 +1224,7 @@ function Client.new(p)
                 end
                 local disposition, reason = call("disposition")
                 if disposition == "UNCERTAIN" or disposition == nil then
-                    finish_poison(reason or "binder unavailable"); return
+                    finish(reason or "binder unavailable", v.attempted); v.retired = true; return
                 end
                 if call("closed") == true or (not v.attempted and self.frame > v.deadline) then
                     finish("visit closed or expired", v.attempted); return
