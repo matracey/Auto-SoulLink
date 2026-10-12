@@ -2539,6 +2539,23 @@ def test_gender_lock_ignores_mixed_genderless(tmp_path, monkeypatch):
     assert state.area_states["route_10"] == AreaStatus.LINKED
 
 
+@pytest.mark.parametrize("treads_player", ["a", "b"])
+def test_rr_gender_lock_allows_iron_treads_with_female(treads_player, tmp_path):
+    state = SoulLinkState(
+        data_dir=str(tmp_path), gender_lock=True, adapter=Gen3Adapter(is_rr=True),
+    )
+    state.pokeballs_obtained = {"a": True, "b": True}
+    for player, key in [("a", "00000000:12345678"), ("b", "00000100:87654321")]:
+        cmds = state.handle_event(player, {
+            "event": "capture", "key": key, "area_id": "route_1", "level": 15,
+            "species_id": 1258 if player == treads_player else 113,
+        })
+        assert not has_cmd(cmds, "force_faint")
+        assert not has_cmd(cmds, "memorialize")
+    assert state.area_states["route_1"] == AreaStatus.LINKED
+    assert len(state.links) == 1 and state.links[0].status == LinkStatus.ALIVE
+
+
 # ── type lock ──────────────────────────────────────────────────────────────────
 
 

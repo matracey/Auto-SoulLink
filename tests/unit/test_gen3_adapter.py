@@ -120,6 +120,10 @@ class TestFRLGRules:
         # Magnemite (81) has threshold=255 (genderless)
         assert adapter.gender_from_key("000000FF:12345678", 81) == "genderless"
 
+    def test_rr_iron_treads_is_genderless_for_every_gender_byte(self, rr_adapter):
+        for gender_byte in range(256):
+            assert rr_adapter.gender_from_key(f"{gender_byte:08X}:12345678", 1258) == "genderless"
+
     def test_gender_empty_key(self, adapter):
         assert adapter.gender_from_key("", 1) == ""
 
