@@ -8,6 +8,10 @@
 -- capture_contract.json owns the check label shared with the release verifier.
 -- A client bootstrap refusal writes client_writes.json (an explicit array) and
 -- refusal.json before the fatal exit; reason is its verbatim console message or null.
+-- Raw emission contracts: prepare_audit.json records no_client and lua_writes;
+-- write_audit.json pairs ordered write_ops with synchronous byte touched_spans.
+-- capture_negative.json retains run_executed, wrong_bank_events, battle_windows
+-- and throws. panel_attempts.json is the original panel permit log as an array.
 local Oracle = {}
 function Oracle.evaluate_failed_throws(throws)
     local count, hits, clean = 0, 0, true
@@ -33,6 +37,10 @@ if POL_ORACLE_ONLY then return Oracle end
 local L = dofile(os.getenv("SLINK_ROOT") .. "/tools/polished_live/pol_lib.lua")
 local fmt = string.format
 local J = L.json
+local function write_json(name, value)
+    local fh = assert(io.open(L.RUN .. "/" .. name, "w"))
+    fh:write(assert(J.encode(value))) fh:close()
+end
 -- POL_PREPARE_FULL=1: native catch + SAVE only, no client; creates a private full-party fixture.
 local PREPARE = os.getenv("POL_PREPARE_FULL") == "1"
 local STAGES = os.getenv("POL_STAGES") or "1234"
@@ -55,8 +63,14 @@ local cap = sites.titles.polished_crystal.sites.capture_party
 L.log(fmt("[live] capture_party site from the pack: %02X:%04X flat 0x%X expected %s", cap.bank, cap.addr,
           cap.rom_offset, cap.expected_hex))
 local cap_hits, cap_other_bank = {}, 0
+local cap_wrong_bank, battle_windows = {}, {}
 L.hook_at("capture_site", cap.bank, cap.addr, function(right_bank)
-    if not right_bank then cap_other_bank = cap_other_bank + 1 return end
+    if not right_bank then
+        cap_other_bank = cap_other_bank + 1
+        cap_wrong_bank[#cap_wrong_bank + 1] = {frame = emu.framecount(), bank = L.rombank(),
+            pc = emu.getregister("PC"), sp = emu.getregister("SP")}
+        return
+    end
     cap_hits[#cap_hits + 1] = {frame = emu.framecount(), bank = L.rombank(), pc = emu.getregister("PC"),
         sp = emu.getregister("SP"), party_count = L.rw("wPartyCount"),
         last_species = L.rw("wPartyMons", (math.max(L.rw("wPartyCount"), 1) - 1) * 48),
@@ -103,11 +117,69 @@ SLINK_HOST, SLINK_PORT, SLINK_PLAYER = os.getenv("SLINK_HOST"), tonumber(os.gete
 -- write tap: every Lua-originated memory write (the client's io.write_u8 is memory.write_u8) is counted and logged;
 -- this driver itself writes nothing in the live run, so any count here is the client's
 local lua_writes = {}
+local write_ops, touched_spans, raw_memory = {}, {}, memory
+-- The Gen 2 production sink uses write_u8. Images are synchronous reads around
+-- each exact one-byte span, not the requested value or a reconstructed end state.
+local function byte_image(addr, domain)
+    if type(raw_memory.read_u8) ~= "function" and type(raw_memory.read_u8) ~= "userdata" then
+        return J.null, "read_u8 unavailable"
+    end
+    local ok, value = pcall(raw_memory.read_u8, addr, domain)
+    if not ok then return J.null, tostring(value) end
+    if type(value) ~= "number" or value % 1 ~= 0 or value < 0 or value > 255 then
+        return J.null, "read_u8 returned a non-byte"
+    end
+    return fmt("%02x", value), J.null
+end
+local function physical_bank(addr, domain)
+    if type(addr) ~= "number" then return J.null end
+    if domain == "WRAM" then return math.floor(addr / 0x1000) end
+    if domain == "CartRAM" then return math.floor(addr / 0x2000) end
+    if domain == "System Bus" and addr >= 0xC000 and addr < 0xD000 then return 0 end
+    if domain == "System Bus" and addr >= 0xD000 and addr < 0xE000 then
+        local hex = byte_image(0xFF70, "System Bus")
+        if hex ~= J.null then local bank = tonumber(hex, 16) % 8 return bank == 0 and 1 or bank end
+    end
+    return J.null
+end
 local G = dofile(L.ROOT .. "/tools/polished_live/recording_guard.lua")
 memory = G.observe_memory(memory, function(k, ...)
     local a = {...}
     lua_writes[#lua_writes + 1] = fmt("%s(%s) frame %d", k, table.concat({tostring(a[1]), tostring(a[2]), tostring(a[3])}, ","), emu.framecount())
 end)
+local observed_memory = memory
+memory = setmetatable({}, {__index = function(_, api)
+    local fn = observed_memory[api]
+    if type(api) ~= "string" or not api:match("^write")
+       or (type(fn) ~= "function" and type(fn) ~= "userdata") then return fn end
+    return function(...)
+        local addr, value, domain = ...
+        local effective_domain = domain
+        if effective_domain == nil and raw_memory.getcurrentmemorydomain then
+            local ok, current = pcall(raw_memory.getcurrentmemorydomain)
+            if ok then effective_domain = current end
+        end
+        local sequence, bank = #write_ops + 1, physical_bank(addr, effective_domain)
+        local op = {sequence = sequence, api = api, addr = addr, value = value,
+            domain = effective_domain or J.null, bank = bank, frame = emu.framecount(),
+            n = api == "write_u8" and 1 or J.null}
+        local span = {sequence = sequence, domain = op.domain, bank = bank, addr = addr, n = op.n}
+        if api == "write_u8" then span.pre_hex, span.pre_read_error = byte_image(addr, effective_domain)
+        else span.pre_hex, span.pre_read_error = J.null, "unsupported image API: " .. api end
+        write_ops[sequence], touched_spans[sequence] = op, span
+        local result = table.pack(pcall(fn, ...))
+        if api == "write_u8" then span.post_hex, span.post_read_error = byte_image(addr, effective_domain)
+        else span.post_hex, span.post_read_error = J.null, "unsupported image API: " .. api end
+        span.frame_after = emu.framecount()
+        op.status, op.error = result[1] and "returned" or "raised", result[1] and J.null or tostring(result[2])
+        if not result[1] then error(result[2], 0) end
+        return table.unpack(result, 2, result.n)
+    end
+end})
+local function write_audit()
+    write_json("write_audit.json", {schema = "polished-live-write-audit-v1",
+        write_ops = J.array(write_ops), touched_spans = J.array(touched_spans)})
+end
 local P, sent = {}, {hello = {}, capture = {}, other = {}}
 local last_gen, ticks, gen_changes, last_battle_end = nil, 0, {}, nil
 local function append(path, s) local f = io.open(path, "a") if f then f:write(s .. "\n") f:close() end end
@@ -278,6 +350,7 @@ local function battle(action, label)
     local handled, last_act = f_start, f_start
     local throws, prepped, prep_pulses = {}, -1, 0
     local caps0 = #cap_hits
+    local wrong0, runs0 = #cap_wrong_bank, L.hits.BattleMenu_Run or 0
     -- the battle is over once the overworld takes input again (wBattleMode is not a reliable end marker)
     while not L.after("OWPlayerInput", f_start) do
         local f = emu.framecount()
@@ -318,9 +391,20 @@ local function battle(action, label)
     end
     local f_end = emu.framecount()
     last_battle_end = f_end
+    battle_windows[#battle_windows + 1] = {
+        label = label, action = action, frame_start = f_start, frame_end = f_end,
+        capture_first = caps0 + 1, capture_count = #cap_hits - caps0,
+        wrong_bank_first = wrong0 + 1, wrong_bank_count = #cap_wrong_bank - wrong0,
+        run_executed = (L.hits.BattleMenu_Run or 0) - runs0,
+    }
     -- outcome per throw: caught iff PokeBallEffect.caught ran after that throw and before the next
     for i, t in ipairs(throws) do
         local nxt = throws[i + 1] and throws[i + 1].frame or f_end + 1
+        t.frame_end_exclusive, t.wrong_bank_hits = nxt, 0
+        for j = wrong0 + 1, #cap_wrong_bank do
+            local f = cap_wrong_bank[j].frame
+            if f >= t.frame and f < nxt then t.wrong_bank_hits = t.wrong_bank_hits + 1 end
+        end
         local c = L.hit["PokeBallEffect.caught"]
         t.caught = c ~= nil and c >= t.frame and c < nxt
         t.to_pc = L.hit["PokeBallEffect.SendToPC"] ~= nil and L.hit["PokeBallEffect.SendToPC"] >= t.frame
@@ -367,6 +451,7 @@ if want(2) then
     local _, hits = battle("run", "STAGE2-run")
     L.check("STAGE2 escape does not fire the capture site", hits == 0, hits)
     L.check("STAGE2 escape took the Run path", L.hits.BattleMenu_Run > 0, L.hits.BattleMenu_Run)
+    local run_executed = L.hits.BattleMenu_Run
 
     -- catch into the party (5 -> 6), failed shakes on the way are the second negative
     local caught = false
@@ -407,6 +492,10 @@ if want(2) then
     end
     L.check("STAGE2 a wild mon was caught into the party", caught)
     local negative = Oracle.report_failed_throws(observed_throws, L)
+    negative.run_executed = run_executed
+    negative.wrong_bank_events = J.array(cap_wrong_bank)
+    negative.battle_windows = J.array(battle_windows)
+    negative.throws = J.array(observed_throws)
     local nf = assert(io.open(L.RUN .. "/capture_negative.json", "w"))
     nf:write(J.encode(negative)) nf:close()
 end
@@ -415,6 +504,12 @@ if PREPARE then
     L.check("preparation has six party mons", L.rw("wPartyCount") == 6)
     native_save()
     L.check("native preparation has no client or Lua memory writes", SLINK_GEN2_CLIENT == nil and #lua_writes == 0)
+    write_json("client_writes.json", J.array(lua_writes))
+    write_json("prepare_audit.json", {
+        schema = "polished-live-preparation-audit-v1", no_client = SLINK_GEN2_CLIENT == nil,
+        lua_writes = J.array(lua_writes), lua_write_count = #lua_writes, frame = emu.framecount(),
+    })
+    write_audit()
     L.finish("native-full-party-preparation")
 end
 
@@ -511,6 +606,7 @@ end
 -- ── wrap-up ─────────────────────────────────────────────────────────────────────────────────────
 local wf = assert(io.open(L.RUN .. "/client_writes.json", "w"))
 wf:write(J.encode(lua_writes)) wf:close()
+write_audit()
 if not want(2) and not want(3) and not want(6) then
     L.check("no Lua-originated memory write in observation-only stages", #lua_writes == 0, #lua_writes)
 else
@@ -519,6 +615,7 @@ else
     L.log(fmt("[live] acquisition-stage client writes recorded: %d (not a write-path qualification)", #lua_writes))
 end
 local pw = P.panel_writes and P.panel_writes.log or {}
+write_json("panel_attempts.json", J.array(pw))
 L.check("the client's panel write path recorded no write attempt", #pw == 0, #pw)
 local st = SLINK_GEN2_CLIENT.signals and SLINK_GEN2_CLIENT.signals.status and SLINK_GEN2_CLIENT.signals:status()
 if st then L.log("[live] signals status: " .. J.encode(st)) end
