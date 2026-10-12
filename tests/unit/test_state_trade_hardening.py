@@ -165,6 +165,7 @@ def test_admin_commit_swaps_with_the_reported_keys_and_replays_held_events(tmp_p
 @pytest.mark.asyncio
 async def test_the_resolve_endpoint_drives_the_state(tmp_path):
     from unittest.mock import AsyncMock
+
     from server.server import SLinkServer
     srv = SLinkServer(data_dir=str(tmp_path))
     srv.state, _entry, token = _conflicted(tmp_path)
@@ -180,7 +181,8 @@ async def test_the_resolve_endpoint_drives_the_state(tmp_path):
 
 def _hello(state, pid, prepare=True):
     key = {"a": B_GETS, "b": A_GETS}[pid]                                    # each side's own offered mon
-    msg = {"event": "hello", "party": [{"key": key, "species_id": 1, "hp": 10, "maxHP": 10}]}
+    msg = {"event": "hello", "party": [{"key": key, "species_id": 1, "hp": 10, "maxHP": 10,
+                                     "blob_hex": state.pending_trade[f"{pid}_blob_hex"]}]}
     if prepare:
         msg["trade_prepare"] = True
     state.handle_event(pid, msg)
@@ -365,10 +367,7 @@ def test_a_tokenless_trade_done_is_ignored(tmp_path):
 
 # ── asm review 1b33bc31 MINOR-4: vanilla trade sanity is a host-owned invariant ──────────────────
 
-import pytest as _pytest
-
-
-@_pytest.mark.parametrize("broken, why", [
+@pytest.mark.parametrize("broken, why", [
     ({"b": {"hp": 0}}, "A would keep no living mon: its only mon goes, a fainted one comes"),
     ({"b": {"species_id": 0xFF}}, "an invalid incoming species (CheckAnyOtherAliveMonsForTrade/ValidateOTTrademon)"),
     ({"b": {"level": 0}}, "an abnormal incoming level"),

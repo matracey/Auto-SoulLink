@@ -1319,6 +1319,12 @@ class SoulLinkState:
             self._cancel_trade("Trade canceled - a POKeMON is\nno longer available.")
             log.info(f"trade aborted at confirm: pair no longer tradable (token {pt['token']})")
             return True
+        for pid in ("a", "b"):
+            current = [row for row in self.partner_blobs[pid] if row.get("key") == pt[f"{pid}_key"]]
+            if len(current) != 1 or current[0]["blob"].hex() != pt[f"{pid}_blob_hex"]:
+                self._cancel_trade("Trade canceled - a POKeMON changed.\nPlease make a new offer.")
+                log.info("trade %s canceled: player %s's offered record changed", pt["token"], pid)
+                return True
         return False
 
     def _execute_trade(self, pt: dict):
