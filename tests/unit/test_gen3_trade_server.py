@@ -120,14 +120,20 @@ def test_rr_hidden_picker_resumes_exact_choice_without_duplicate_prompt(tmp_path
 def test_rr_hidden_picker_cancels_changed_pair_before_authorization(tmp_path, change):
     srv, entry, _token = _hidden_picker(tmp_path)
     party = [_mon("a")]
-    if change == "key": party[0]["key"] = "different:00000011"
-    if change == "slot": party[0]["slot"] = 1
+    if change == "key":
+        party[0]["key"] = "different:00000011"
+    if change == "slot":
+        party[0]["slot"] = 1
     if change == "partner_slot":
         srv._dispatch("b", {"event": "tick", "party": [_mon("b", slot=1)]})
-    if change == "dead": entry.status = LinkStatus.DEAD
-    if change == "blocked": srv.state.trade_blocked["b"] = True
-    if change == "capability": srv.state.trade_prepare["b"] = False
-    if change == "abnormal": party[0]["level"] = 0
+    if change == "dead":
+        entry.status = LinkStatus.DEAD
+    if change == "blocked":
+        srv.state.trade_blocked["b"] = True
+    if change == "capability":
+        srv.state.trade_prepare["b"] = False
+    if change == "abnormal":
+        party[0]["level"] = 0
     if change == "keeps_one":
         party[0]["hp"] = 0
         srv._dispatch("b", {"event": "tick", "party": [_mon("b", hp=0)]})
@@ -149,7 +155,8 @@ def test_rr_hidden_picker_waits_for_both_visibility_and_recovery(tmp_path, hidde
     srv._dispatch("a", {"event": "tick", "party": [_mon("a")]})
     assert srv.state.pending_trade["phase"] == "choosing"
     assert srv.state._trade_to_json() is None  # an uncommitted choice cannot survive restart
-    if recovery: srv.state.trade_recovery_pending[hidden_player] = False
+    if recovery:
+        srv.state.trade_recovery_pending[hidden_player] = False
     srv._dispatch(hidden_player, {"event": "tick", "party": [_mon(hidden_player)]})
     assert srv.state.pending_trade["phase"] == "confirming"
     assert srv.state.pending_trade["token"] == token
@@ -164,7 +171,8 @@ def test_rr_hidden_picker_remains_cancelable_and_bounded(tmp_path, stop):
         srv._dispatch("a", {"event": "menu_result", "token": token, "choice": 0, "withdraw": True})
     else:
         srv.state.TRADE_WATCHDOG_EVENTS = 2
-        for _ in range(4): srv._dispatch("a", {"event": "tick", "party_hidden": True})
+        for _ in range(4):
+            srv._dispatch("a", {"event": "tick", "party_hidden": True})
     assert srv.state.pending_trade is None
 
 
@@ -857,9 +865,10 @@ def test_hidden_player_cannot_mutate_game_state(tmp_path, caplog, title, via, ev
     srv, _entry, _token = _applying(tmp_path, title=title)
     srv._dispatch("a", _hello("a", rom_type=title, party_hidden=True))
     state = srv.state
-    snapshot = lambda: deepcopy((state.links, state.party_keys, state.pending_captures,
-                                 state.pending_trade, state.queued_commands, state.sync_inflight,
-                                 srv.party_details, srv.pc_boxes, srv._mon_cache))
+    def snapshot():
+        return deepcopy((state.links, state.party_keys, state.pending_captures,
+                         state.pending_trade, state.queued_commands, state.sync_inflight,
+                         srv.party_details, srv.pc_boxes, srv._mon_cache))
     before = snapshot()
     msg = {"event": event, "key": KEYS["a"], "old_key": KEYS["a"],
            "new_key": "00000009:00000011", "new_species": 25, "reason": "npc_trade",
@@ -893,10 +902,11 @@ def test_emerald_hidden_empty_hello_is_not_an_empty_party_or_ball_gate_signal(tm
     srv = SLinkServer(data_dir=str(tmp_path))
     srv._dispatch("a", _hello("a", rom_type="emerald", has_pokeballs=False))
     state = srv.state
-    snapshot = lambda: deepcopy((state.player_identity, state.pokeballs_obtained,
-                                 state.party_size, state.party_keys, state.partner_blobs,
-                                 state._has_helld, state.snapshot_no, state.mon_stats,
-                                 srv.party_details))
+    def snapshot():
+        return deepcopy((state.player_identity, state.pokeballs_obtained,
+                         state.party_size, state.party_keys, state.partner_blobs,
+                         state._has_helld, state.snapshot_no, state.mon_stats,
+                         srv.party_details))
     before = snapshot()
     msg = _hello("a", rom_type="emerald", party=[], party_hidden=True, has_pokeballs=True)
     srv._dispatch("a", msg)
