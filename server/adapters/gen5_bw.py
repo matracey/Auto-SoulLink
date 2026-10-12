@@ -49,7 +49,6 @@ _GIFT_AREAS_BW1 = frozenset({
 _GIFT_AREAS_BW2 = frozenset({
     "aspertia_city",  # Starter (Bianca's gift)
     "castelia_city",  # Eevee from Amanita
-    "floccesy_ranch", # Riolu egg from Alder's grandson
     "nacrene_city",   # Fossil revives
     "gift",           # Fallback
 })
@@ -116,7 +115,6 @@ class Gen5Adapter(GameAdapter):
         # Fixed-species gifts in BW1/BW2
         _FIXED = frozenset({
             "dreamyard",        # Munna (fixed)
-            "floccesy_ranch",   # Riolu egg (fixed)
         })
         return area_id in _FIXED
 

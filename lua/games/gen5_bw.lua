@@ -60,7 +60,6 @@ M.GIFT_AREAS_BW1 = {
 
 M.GIFT_AREAS_BW2 = {
     aspertia_city  = true,  -- Starter Pokémon (Bianca's gift)
-    floccesy_ranch = true,  -- Riolu egg from Alder's grandson
     castelia_city  = true,  -- Eevee from Amanita
     nacrene_city   = true,  -- Fossil revives
     gift           = true,  -- fallback

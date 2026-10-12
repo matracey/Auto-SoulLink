@@ -1,8 +1,12 @@
 """Tests for the Gen 5 BW/BW2 adapter."""
 
+from pathlib import Path
+
 import pytest
+from lupa import LuaRuntime
 
 from server.adapters.gen5_bw import Gen5Adapter
+from server.state import AreaStatus, SoulLinkState
 
 
 @pytest.fixture
@@ -50,7 +54,6 @@ def test_bw1_gift_areas_return_true(adapter_bw1, area_id):
 
 @pytest.mark.parametrize("area_id", [
     "aspertia_city",
-    "floccesy_ranch",
     "castelia_city",
     "nacrene_city",
     "gift",
@@ -84,7 +87,7 @@ def test_gift_areas_for_bw1(adapter):
 def test_gift_areas_for_bw2(adapter):
     gift_set = adapter.gift_areas_for_rom("pokemon_black_2")
     assert "aspertia_city" in gift_set
-    assert "floccesy_ranch" in gift_set
+    assert "floccesy_ranch" not in gift_set
     assert "nuvema_town" not in gift_set
 
 
@@ -98,6 +101,46 @@ def test_is_gift_area_respects_rom_type():
     # aspertia_city is BW2 starter town only
     assert bw2.is_gift_area("aspertia_city") is True
     assert bw1.is_gift_area("aspertia_city") is False
+
+
+@pytest.mark.parametrize("rom_type", ["pokemon_black_2", "pokemon_white_2"])
+def test_floccesy_ranch_uses_wild_rules_on_both_sides(rom_type):
+    adapter = Gen5Adapter(rom_type=rom_type)
+    module = Path(__file__).resolve().parents[2] / "lua/games/gen5_bw.lua"
+    game = LuaRuntime().execute(module.read_text(encoding="utf-8"))
+    assert not game.GIFT_AREAS_BW2["floccesy_ranch"]
+    assert not game.is_gift_area("floccesy_ranch")
+    assert not adapter.is_gift_area("floccesy_ranch")
+    assert not adapter.is_fixed_species_gift("floccesy_ranch")
+    assert adapter.gift_link_area("floccesy_ranch") == "gift_floccesy_ranch"
+    assert adapter.is_gift_area("gift_floccesy_ranch")
+
+
+@pytest.mark.parametrize("rom_type", ["pokemon_black_2", "pokemon_white_2"])
+@pytest.mark.parametrize("retry", [False, True])
+def test_floccesy_ranch_failed_catch_respects_retry_rule(tmp_path, rom_type, retry):
+    state = SoulLinkState(data_dir=str(tmp_path), adapter=Gen5Adapter(rom_type=rom_type),
+                          retry_same_species=retry)
+    commands = state.handle_event("a", {"event": "no_catch", "area_id": "floccesy_ranch",
+                                       "species_id": 447})
+    if retry:
+        assert state.encounter_locks["floccesy_ranch"]["a"].species == 447
+        assert any(c["cmd"] == "unresolve_area" for c in commands)
+    else:
+        assert state.area_states["floccesy_ranch"] == AreaStatus.DEAD_ZONE
+
+
+@pytest.mark.parametrize("rom_type", ["pokemon_black_2", "pokemon_white_2"])
+def test_floccesy_ranch_wild_pair_keeps_species_clause(tmp_path, rom_type):
+    state = SoulLinkState(data_dir=str(tmp_path), species_lock=True,
+                          adapter=Gen5Adapter(rom_type=rom_type))
+    state.pokeballs_obtained = {"a": True, "b": True}
+    state.handle_event("a", {"event": "capture", "key": "AAAA0001:11111111",
+                            "area_id": "floccesy_ranch", "species_id": 447})
+    commands = state.handle_event("b", {"event": "capture", "key": "BBBB0002:22222222",
+                                       "area_id": "floccesy_ranch", "species_id": 447})
+    assert not state.links
+    assert any(c["cmd"] == "force_faint" and c["key"] == "BBBB0002:22222222" for c in commands)
 
 
 # ── Evo family ────────────────────────────────────────────────────────────
