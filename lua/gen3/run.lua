@@ -21,6 +21,19 @@ local host = SLINK_HOST or os.getenv("SLINK_HOST") or "127.0.0.1"
 local port = tonumber(SLINK_PORT or os.getenv("SLINK_PORT") or 54321)
 local player = SLINK_PLAYER or os.getenv("SLINK_PLAYER") or "a"
 
+-- >>> singleton guard >>>
+local function acquire_instance_guard(socket_module, guard_port)
+    local guard, why = socket_module.socket.tcp()
+    if not guard then return nil, why end
+    guard:settimeout(0)
+    local ok, bind_why = guard:bind("127.0.0.1", guard_port)
+    if not ok then guard:close(); return nil, bind_why end
+    local listening, listen_why = guard:listen(1)
+    if not listening then guard:close(); return nil, listen_why end
+    return guard
+end
+-- <<< singleton guard <<<
+
 -- The io/ev adapters (copied from lua/gen3/shadow_run.lua build_io:58-85 / build_ev:92-119,
 -- not dofile'd from it: shadow_run.lua is P3's read-only observer bootstrap and is
 -- deliberately not shipped in the player release -- tools/make_release.py _LUA_GEN3). This is
@@ -72,6 +85,24 @@ if not admitted then
     H.show(START_REFUSED, 255, 80, 80, 600)
     H.render()
     return
+end
+
+local socket_module = require("socket")
+local guard_port = 55000 + ((port or 54321) % 5000) * 2 + (player == "b" and 1 or 0)
+local instance_guard, instance_error = acquire_instance_guard(socket_module, guard_port)
+if not instance_guard then
+    local msg = "[SLink-gen3] refused: another Gen 3 client is already running"
+    console.log(msg .. " (" .. tostring(instance_error) .. ")")
+    H.init({ screen_w = 240, screen_h = 160 })
+    H.show(START_REFUSED, 255, 80, 80, 600)
+    H.render()
+    return
+end
+local function release_instance_guard()
+    if instance_guard then
+        pcall(function() instance_guard:close() end)
+        instance_guard = nil
+    end
 end
 
 H.init({ screen_w = 240, screen_h = 160 })
@@ -420,6 +451,7 @@ if not ok_build then
     console.log(msg)
     H.show(START_REFUSED, 255, 80, 80, 600)
     H.render()
+    release_instance_guard()
     return
 end
 local ok, err = pcall(function() client:start() end)
@@ -428,6 +460,7 @@ if not ok then
     console.log(msg)
     H.show(START_REFUSED, 255, 80, 80, 600)
     H.render()
+    release_instance_guard()
     return
 end
 console.log(string.format("[SLink-gen3] %s/%s (%s by %s) player %s -> %s:%d (rom %s)",
@@ -442,4 +475,7 @@ event.onframeend(function()
     if not fok then console.log("[SLink-gen3] frame error: " .. tostring(ferr)) end
     H.render()
 end)
-event.onexit(function() pcall(function() client:stop() end) end)
+event.onexit(function()
+    pcall(function() client:stop() end)
+    release_instance_guard()
+end)

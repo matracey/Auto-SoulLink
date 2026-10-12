@@ -89,6 +89,10 @@ def _run(
         "package.loaded.connector = {init=function()end,send=function()end,"
         "receive=function()end,pump=function()end,connected=function()return false end}"
     )
+    g.package.loaded.socket = lua.table(socket=lua.table(tcp=lambda: lua.table(
+        settimeout=lambda *_: None, bind=lambda *_: True,
+        listen=lambda *_: True, close=lambda *_: None,
+    )))
     shown = hud_messages if hud_messages is not None else []
     g.package.loaded.hud = lua.table(
         init=lambda *_: None, render=lambda *_: None, show=lambda text, *_: shown.append(str(text))
