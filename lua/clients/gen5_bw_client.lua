@@ -145,9 +145,7 @@ local function parse_command_list(raw)
         local b     = tonumber(obj:match('"b"%s*:%s*(%d+)'))
         local frames = tonumber(obj:match('"frames"%s*:%s*(%d+)'))
         local fb    = obj:match('"fb"%s*:%s*"([^"]*)"')   -- msgbox fallback style (prompt/hud)
-        -- The server attaches the cached stat block to party_mon (state.py mon_stats).
-        -- exec_party_mon falls back to `stats.level or 5` / `stats.maxHP or 1`, so
-        -- without parsing this every restored mon came back at level 5 with 1 max HP.
+        -- Restoration requires the complete cached party-stat block.
         local stats = nil
         local sj = obj:match('"stats"%s*:%s*(%b{})')
         if sj then
@@ -261,6 +259,7 @@ local function dispatch_commands(cmds)
             console.log("[SLink]   ↳ box_mon QUEUED: " .. short_key)
         elseif c.cmd == "party_mon" and c.key then
             pending_sync_cmds = _filter_pending("box_mon", c.key)
+            pending_sync_cmds = _filter_pending("party_mon", c.key)
             table.insert(pending_sync_cmds, {cmd="party_mon", key=c.key, stats=c.stats})
             console.log("[SLink]   ↳ party_mon QUEUED: " .. short_key)
         elseif c.cmd == "memorialize" and c.key then
@@ -562,7 +561,7 @@ local function exec_box_mon(key)
 end
 
 local function exec_party_mon(key, stats)
-    stats = stats or {}
+    if type(stats) ~= "table" then stats = {} end
     local count = M.readPartyCount()
     for slot = 0, count - 1 do
         local addr = M.partyAddr(slot)
@@ -578,6 +577,13 @@ local function exec_party_mon(key, stats)
         console.log("[SLink]   ↳ party_mon: party full for " .. key:sub(1,8))
         hud_show("! Unbox " .. nick_label(key), 255, 200, 60, 600)
         return false
+    end
+    for _, field in ipairs({"level", "maxHP", "attack", "defense", "speed", "spAtk", "spDef"}) do
+        local value = stats[field]
+        local limit = field == "level" and 100 or 65535
+        if type(value) ~= "number" or value < 1 or value > limit or value % 1 ~= 0 then
+            return "missing_stats"
+        end
     end
     local src_box, src_slot, src_addr = nil, nil, nil
     for box = 0, MEMORIAL_BOX do
@@ -610,13 +616,14 @@ local function exec_party_mon(key, stats)
         memory.write_u8(dst_addr + i, memory.read_u8(src_addr + i, _RAM), _RAM)
     end
     local pid = mem_u32(dst_addr)
-    local s_level = stats.level or 5
-    local s_maxHP = stats.maxHP or 1
+    local s_level = stats.level
+    local s_maxHP = stats.maxHP
     local s_curHP = s_maxHP
     for i = 0x88, M.MON_SIZE - 1 do
         memory.write_u8(dst_addr + i, 0, _RAM)
     end
-    M.encrypt_stats(dst_addr + 0x88, pid, 0, s_level, s_curHP, s_maxHP, 0, 0, 0, 0, 0)
+    M.encrypt_stats(dst_addr + 0x88, pid, 0, s_level, s_curHP, s_maxHP,
+                    stats.attack, stats.defense, stats.speed, stats.spAtk, stats.spDef)
     M.writePartyCount(count + 1)
     M.clearDebounce()
     for i = 0, 0x87 do
@@ -1048,6 +1055,13 @@ local function on_frame()
                 console.log("[SLink]   ↳ DROPPED after 3 retries")
                 hud_show("X " .. cmd.cmd .. " fail: " .. nick_label(cmd.key or ""), 255, 80, 80, 600)
             end
+        elseif cmd.cmd == "party_mon" and exec_result == "missing_stats" then
+            if not cmd._stats_notice then
+                console.log("[SLink] party_mon held: incomplete stats for "..cmd.key)
+                hud_show("! Missing stats: unbox " .. nick_label(cmd.key), 255, 200, 60, 600)
+                cmd._stats_notice = true
+            end
+            table.insert(pending_sync_cmds, cmd)
         elseif cmd.cmd == "party_mon" and exec_result == false then
             cmd._retries = (cmd._retries or 0) + 1
             if cmd._retries <= 3 then
