@@ -668,14 +668,11 @@ class TestCFRUBoxHandling:
         )
         tracker.state.links.append(entry)
         tracker.state._index_entry(entry)
-        # The dead_keys set includes both sides of a dead pair, so DEAD:0002 is allowed
-        # in box 13 even when checking player A — this is the correct behavior
         with caplog.at_level(logging.WARNING, logger="server.server"):
             tracker._check_memorial_box_contamination("a", [
                 {"key": "DEAD:0002", "box": 13, "slot": 0, "species_id": 7},
             ])
-        # DEAD:0002 is in dead_keys (entry is dead), so no warning expected
-        assert not any("NON-DEAD" in r.message for r in caplog.records)
+        assert any("NON-DEAD" in r.message for r in caplog.records)
 
 
 # ── Fixed-species gift areas ──────────────────────────────────────────────────

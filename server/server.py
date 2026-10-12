@@ -5303,10 +5303,9 @@ class SLinkServer:
         all_dead_keys: set[str] = set()
         for entry in s.links:
             if entry.status.value in ("dead", "memorial"):
-                if entry.a:
-                    all_dead_keys.add(entry.a.key)
-                if entry.b:
-                    all_dead_keys.add(entry.b.key)
+                mon = entry.a if player_id == "a" else entry.b
+                if mon:
+                    all_dead_keys.add(mon.key)
 
         # Also treat pending_memorials for *this* player as "expected in memorial box"
         # so they are not flagged as orphans while still in transit.
