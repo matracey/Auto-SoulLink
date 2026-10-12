@@ -129,7 +129,15 @@ function Deferred:run(gate, frame, game_over)
     end
     local function rescan() if exec.rescan then exec.rescan() end end
 
-    local cmd = table.remove(self.items, 1)
+    local at = 1
+    if self.paused then
+        while self.items[at] and self.paused(self.items[at].key) do at = at + 1 end
+        if not self.items[at] then
+            held(self, frame, "missing linked Pokemon; waiting for recovery")
+            return false
+        end
+    end
+    local cmd = table.remove(self.items, at)
     local requeued, settled
     local durable=self.outbox and cmd.intent_id and OPPOSITE[cmd.cmd]
     local function answer(event, fields)

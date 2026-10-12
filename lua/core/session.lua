@@ -88,6 +88,7 @@ function Session.new(p)
         resolved_areas = {}, seeded = false, config = {}, pending_safe = false,
         battle_pending = {}, pre_hello = {}, ack_pending = {}, signals = nil, signal_failure_shown = false,
         game = game, identity = identity, deferred = deferred,
+        recovery_paused = {}, recovery_cancelled = {}, recovery_ready = not game.inventory_protocol,
     }
 
     local function transmit(name, fields)
@@ -136,6 +137,7 @@ function Session.new(p)
 
     function self:eligible()
         return self.writes_enabled == true and self.hello_sent == true and net.connected() == true
+            and self.recovery_ready
             and (not outbox or (outbox.accepted and outbox:ready()))
     end
     -- the queue's shared seams are the session's own unless the caller bound others
@@ -144,6 +146,7 @@ function Session.new(p)
     deferred.hud = deferred.hud or hud
     deferred.identity = deferred.identity or identity
     deferred.read_party = deferred.read_party or game.read_party
+    deferred.paused = function(key) return self.recovery_paused[key] == true end
 
     -- ── the writes gate: pause, never drop ─────────────────────────────────────────
     function self:validate()
@@ -196,7 +199,9 @@ function Session.new(p)
             local slot, mon, _party, why
             if party then slot, mon, _party, why = identity:find_party_slot(e.key, party) end
             local res, rwhy
-            if why then
+            if not self.recovery_ready or self.recovery_paused[e.key] then
+                res, rwhy = "hold", "missing linked Pokemon; waiting for recovery"
+            elseif why then
                 log(e.cmd .. " refused in battle: " .. why .. " " .. tostring(e.key))
                 res = "done"
             elseif not self.writes_enabled or (outbox and not self:eligible()) then
@@ -289,6 +294,22 @@ function Session.new(p)
         self.arrivals = (self.arrivals or 0) + 1
         cmd.arrival = self.arrivals                         -- server order, kept across a battle hold
         if c == "noop" then return end
+        if c == "recovery_control" then
+            local paused = {}
+            for _, key in ipairs(cmd.paused or {}) do paused[key] = true end
+            self.recovery_paused, self.recovery_ready = paused, true
+            for key, revision in pairs(cmd.cancelled or {}) do
+                if revision > (self.recovery_cancelled[key] or 0) then
+                    self.recovery_cancelled[key] = revision
+                    for _, queue in ipairs({deferred.items, self.battle_pending}) do
+                        for i = #queue, 1, -1 do
+                            if queue[i].key == key then table.remove(queue, i) end
+                        end
+                    end
+                end
+            end
+            return
+        end
         if c == "report_binding" and outbox then
             local ok,why=pcall(outbox.bind,outbox,cmd.binding,game.report_ot and game.report_ot())
             if not ok then
@@ -470,6 +491,7 @@ function Session.new(p)
         local connected = net.connected()
         if not connected then
             self.hello_sent = false
+            self.recovery_ready = not game.inventory_protocol
             self.pre_hello = {}
             if outbox then outbox:disconnect(); report_wait=nil end
             if game.on_disconnect then game.on_disconnect() end
@@ -563,6 +585,7 @@ function Session.new(p)
                 return false, self.gate_revoked and "writes paused" or "writes not enabled yet"
             end
             if not net.connected() then return false, "not connected" end
+            if not self.recovery_ready then return false, "waiting for recovery control" end
             if outbox and not self:eligible() then return false,"report binding not accepted" end
             return game.checkpoint_ok()
         end, self.frame, self.game_over)

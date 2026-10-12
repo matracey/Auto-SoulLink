@@ -16,6 +16,7 @@ from tests.unit import protocol_schema as ps
 REPO = pathlib.Path(__file__).resolve().parents[2]
 STATE = (REPO / "server" / "state.py").read_text(encoding="utf-8")
 SERVER = (REPO / "server" / "server.py").read_text(encoding="utf-8")
+RECOVERY = (REPO / "server" / "recovery.py").read_text(encoding="utf-8")
 
 
 def _server_events() -> set[str]:
@@ -29,7 +30,7 @@ def _server_events() -> set[str]:
 
 
 def _server_commands() -> set[str]:
-    names = set(re.findall(r'"cmd": *"([a-z_]+)"', STATE + SERVER))
+    names = set(re.findall(r'"cmd": *"([a-z_]+)"', STATE + SERVER + RECOVERY))
     for pair in re.findall(r'cmd_name = "([a-z_]+)" if explode else "([a-z_]+)"', STATE):
         names |= set(pair)  # the one command name built conditionally (state.py:2621)
     return names
