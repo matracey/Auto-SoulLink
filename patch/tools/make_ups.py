@@ -4,11 +4,10 @@
 UPS is the primary format: it has CRC32 integrity for source/target/patch and, unlike
 IPS, no offset ceiling. IPS is offered as a convenience but **only addresses the low
 16 MB** of a ROM (24-bit offsets), so for the 32 MB Radical Red ROM it is usable only
-for changes below file offset 0xFFFFFF — UPS is always safe.
+for changes below file offset 0xFFFFFF. Shrinking is supported only by UPS.
 
-Self-validation: every patch we emit is immediately re-applied to the original and the
-result asserted byte-identical (md5) to the modified ROM. That round-trip is the gate
-the plan (§5) requires before any patch is trusted.
+Every requested patch is re-applied and compared byte-for-byte with the modified
+ROM before any output is written.
 
 CLI:
     python make_ups.py create <original.gba> <modified.gba> <out_basename> [--ips]
@@ -122,6 +121,8 @@ IPS_MAX = 0x1000000  # 24-bit offsets
 
 
 def ips_create(source: bytes, target: bytes) -> bytes:
+    if len(target) < len(source):
+        raise ValueError("IPS cannot shrink a ROM; use UPS for this ROM")
     # changes beyond 16 MB are unrepresentable in IPS
     if len(target) > IPS_MAX and any(
         (i >= IPS_MAX) and (i >= len(source) or source[i] != target[i])
@@ -210,20 +211,19 @@ def cmd_create(args):
     src = _read(args.original)
     tgt = _read(args.modified)
     ups = ups_create(src, tgt)
+    if ups_apply(src, ups) != tgt:
+        raise ValueError("UPS round-trip mismatch!")
+    ips = ips_create(src, tgt) if args.ips else None
+    if ips is not None and ips_apply(src, ips) != tgt:
+        raise ValueError("IPS round-trip mismatch!")
     out_ups = args.out_basename + ".ups"
     with open(out_ups, "wb") as f:
         f.write(ups)
-    # mandatory self-validation round-trip
-    rt = ups_apply(src, ups)
-    assert _md5(rt) == _md5(tgt), "UPS round-trip mismatch!"
     print(f"UPS  -> {out_ups}  ({len(ups)} bytes)  round-trip OK (md5 {_md5(tgt)})")
-    if args.ips:
-        ips = ips_create(src, tgt)
+    if ips is not None:
         out_ips = args.out_basename + ".ips"
         with open(out_ips, "wb") as f:
             f.write(ips)
-        rt2 = ips_apply(src, ips)
-        assert _md5(rt2) == _md5(tgt), "IPS round-trip mismatch!"
         print(f"IPS  -> {out_ips}  ({len(ips)} bytes)  round-trip OK")
     return 0
 
