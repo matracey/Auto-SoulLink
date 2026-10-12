@@ -303,6 +303,7 @@ class Gen1Adapter(GameAdapter):
             raise ValueError(f"unrecognised Gen 1 rom_type: {rom_type!r}")
         self._variant = _ROM_VARIANT[rom_type]
         self._enc_variant = self._variant  # existing AP/table consumers inspect this label
+        self._supports_companion = rom_type in _COMPANION_ROM_TYPES
         self._rom_encounters: dict[str, dict[str, list[dict]]] | None = None
 
     @property
@@ -390,12 +391,10 @@ class Gen1Adapter(GameAdapter):
         return True   # lua/gen1/client.lua pc_boxes_generation
 
     def supports_info_panel(self) -> bool:
-        # The companion patch's native panel exists for Red/Blue, not Yellow.
-        return self._variant != "yellow"
+        return self._supports_companion
 
     def native_trade_ui(self) -> bool:
-        # The receptionist/trade-scene hooks ship in the Red/Blue companion patch only.
-        return self._variant in ("red", "blue")
+        return self._supports_companion
 
     def info_panel_width(self) -> int:
         # Game Boy tilemap width; constants/map_constants.asm map geometry uses 20.

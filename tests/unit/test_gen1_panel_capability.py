@@ -17,11 +17,41 @@ test does, and why none of them could see this.
 """
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
 
 from server.adapters.gen1_rby import Gen1Adapter
 from server.adapters.gen3_frlge import Gen3Adapter
 from server.server import SLinkServer
+from server.ui_capabilities import ui_capabilities
+
+
+@pytest.mark.parametrize("title,variant,supported", [
+    ("red_ap", "red", False), ("blue_ap", "blue", False),
+    ("red", "red", True), ("blue", "blue", True),
+    ("Red", "red", True), ("Blue", "blue", True),
+    ("yellow", "yellow", False), ("Yellow", "yellow", False),
+])
+def test_companion_capabilities_belong_to_the_cartridge(title, variant, supported):
+    adapter = Gen1Adapter(rom_type=title)
+    assert adapter._enc_variant == variant
+    assert adapter.supports_info_panel() is supported
+    assert adapter.native_trade_ui() is supported
+    assert adapter.info_panel_width() == (20 if supported else 0)
+    caps = ui_capabilities(adapter, title)
+    assert caps["info_panel"] is supported
+    assert caps["info_panel_width"] == (20 if supported else 0)
+
+
+@pytest.mark.parametrize("title", ["red_ap", "blue_ap"])
+def test_generated_ap_capabilities_match_the_adapter(title):
+    path = Path(__file__).resolve().parents[1] / "fixtures/ui/capabilities.json"
+    saved = json.loads(path.read_text(encoding="utf-8"))[title]
+    actual = ui_capabilities(Gen1Adapter(rom_type=title), title)
+    assert saved == actual
+    assert saved["info_panel"] is False
 
 
 @pytest.fixture

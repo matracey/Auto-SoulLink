@@ -163,8 +163,9 @@ def test_gen3_trade_request_menu_pick_confirm_apply_shape_is_unchanged(tmp_path)
 def test_native_trade_ui_is_off_by_default_and_on_for_red_blue_only():
     assert GameRulesAdapter.native_trade_ui(None) is False   # the shared default
     assert Gen3Adapter().native_trade_ui() is False
-    assert Gen1Adapter(rom_type="yellow").native_trade_ui() is False
-    for rom_type in ("red", "blue", "red_ap", "blue_ap"):
+    for rom_type in ("yellow", "red_ap", "blue_ap"):
+        assert Gen1Adapter(rom_type=rom_type).native_trade_ui() is False
+    for rom_type in ("red", "blue"):
         assert Gen1Adapter(rom_type=rom_type).native_trade_ui() is True
 
 
