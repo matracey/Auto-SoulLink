@@ -5763,29 +5763,26 @@ class SLinkServer:
         except Exception:
             return aiohttp_web.json_response({"ok": False, "error": "invalid JSON"}, status=400)
 
-        a_slot = int(body.get("a_slot", 0))
-        b_slot = int(body.get("b_slot", 0))
-
-        s = self.state
-        a_keys = sorted(s.party_keys.get("a", set()))
-        b_keys = sorted(s.party_keys.get("b", set()))
-
-        if not a_keys:
-            return aiohttp_web.json_response(
-                {"ok": False, "error": "No party keys known for player A."}, status=400)
-        if not b_keys:
-            return aiohttp_web.json_response(
-                {"ok": False, "error": "No party keys known for player B."}, status=400)
-        if a_slot >= len(a_keys):
-            return aiohttp_web.json_response(
-                {"ok": False, "error": f"a_slot {a_slot} out of range (A has {len(a_keys)} party mons)"}, status=400)
-        if b_slot >= len(b_keys):
-            return aiohttp_web.json_response(
-                {"ok": False, "error": f"b_slot {b_slot} out of range (B has {len(b_keys)} party mons)"}, status=400)
+        keys = {}
+        for player in ("a", "b"):
+            slot = body.get(f"{player}_slot", 0)
+            if type(slot) is not int or not 0 <= slot < 6:
+                return aiohttp_web.json_response(
+                    {"ok": False, "error": f"{player}_slot must be an integer from 0 to 5."}, status=400)
+            matches = [
+                key for key, detail in self.party_details.get(player, {}).items()
+                if type(detail.get("slot")) is int and detail["slot"] == slot
+                and key in self.state.party_keys.get(player, set())
+            ]
+            if len(matches) != 1:
+                return aiohttp_web.json_response(
+                    {"ok": False, "error": f"Player {player.upper()} slot {slot} is unavailable or ambiguous."},
+                    status=400)
+            keys[player] = matches[0]
 
         # Build a fake request that delegates to inject_link
         resolved = {
-            "a_key": a_keys[a_slot], "b_key": b_keys[b_slot],
+            "a_key": keys["a"], "b_key": keys["b"],
             "area_id": body.get("area_id", "manual"),
             "force": body.get("force", False),
         }

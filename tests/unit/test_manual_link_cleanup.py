@@ -8,6 +8,61 @@ from server.server import SLinkServer
 from server.state import AreaStatus, EncounterLock, LinkEntry, LinkStatus, MonInfo, SoulLinkState
 
 
+def _slot_server(tmp_path):
+    server = SLinkServer(data_dir=str(tmp_path))
+    for pid, ot in (("a", "11111111"), ("b", "22222222")):
+        server.party_details[pid] = {
+            f"FFFFFFFF:{ot}": {"slot": 0, "species_id": 1},
+            f"00000001:{ot}": {"slot": 2, "species_id": 2},
+        }
+        server.state.party_keys[pid] = set(server.party_details[pid])
+    return server
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("slot,prefix", [(0, "FFFFFFFF"), (2, "00000001")])
+async def test_slot_link_uses_physical_slots_not_sorted_keys(tmp_path, slot, prefix):
+    server = _slot_server(tmp_path)
+
+    async def body():
+        return {"a_slot": slot, "b_slot": slot, "area_id": "route_1"}
+
+    response = await server.handle_inject_link_by_slot_api(SimpleNamespace(json=body))
+    assert response.status == 200 and json.loads(response.text)["ok"]
+    entry, = server.state.links
+    assert entry.a.key == f"{prefix}:11111111" and entry.b.key == f"{prefix}:22222222"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("player", ["a", "b"])
+@pytest.mark.parametrize("slot", [-1, 1, 6, True, 1.5, "0", None])
+async def test_invalid_or_missing_physical_slot_cannot_link(tmp_path, player, slot):
+    server = _slot_server(tmp_path)
+
+    async def body():
+        return {f"{player}_slot": slot}
+
+    response = await server.handle_inject_link_by_slot_api(SimpleNamespace(json=body))
+    assert response.status == 400 and not json.loads(response.text)["ok"]
+    assert not server.state.links
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("problem", ["duplicate", "stale"])
+async def test_uncertain_physical_slot_cannot_link(tmp_path, problem):
+    server = _slot_server(tmp_path)
+    if problem == "duplicate":
+        server.party_details["a"]["00000001:11111111"]["slot"] = 0
+    else:
+        server.state.party_keys["a"].remove("FFFFFFFF:11111111")
+
+    async def body():
+        return {"a_slot": 0, "b_slot": 0}
+
+    response = await server.handle_inject_link_by_slot_api(SimpleNamespace(json=body))
+    assert response.status == 400 and not server.state.links
+
+
 @pytest.mark.asyncio
 async def test_manual_link_clears_stale_encounter_lock(tmp_path):
     server = SLinkServer(data_dir=str(tmp_path))
