@@ -11,6 +11,7 @@ from __future__ import annotations
 import pathlib
 import shutil
 import sys
+from types import SimpleNamespace
 
 import pytest
 
@@ -134,3 +135,59 @@ def subprocess_result(stdout: bytes):
     import subprocess
 
     return subprocess.CompletedProcess(args=[], returncode=0, stdout=stdout, stderr=b"")
+
+
+@pytest.mark.parametrize("failure", ["", "wrong-head", "dirty-source", "wrong-rom", "symbol-drift"])
+def test_prepare_inputs_publishes_only_a_verified_build(tmp_path, monkeypatch, failure):
+    import hashlib
+
+    build = tmp_path / "build"
+    published = tmp_path / "published"
+    build.mkdir()
+    published.mkdir()
+    rom = b"built ROM"
+    lock = {
+        "source": {"commit": "locked"},
+        "rgbds_version": "v1.0.3", "w64devkit_version": "2.10.0",
+        "make_args": [], "make_targets": ["polishedcrystal.gbc"],
+        "outputs": {"polishedcrystal": {
+            "filename": "polishedcrystal.gbc", "sha1": hashlib.sha1(rom).hexdigest(),
+        }},
+    }
+    (build / "polishedcrystal.gbc").write_bytes(b"bad" if failure == "wrong-rom" else rom)
+    for suffix in ("sym", "map"):
+        (build / f"polishedcrystal.{suffix}").write_bytes(b"symbols")
+        (published / f"polishedcrystal.{suffix}").write_bytes(
+            b"drift" if failure == "symbol-drift" else b"symbols")
+    monkeypatch.setenv("SLINK_WORK_ROOT", str(tmp_path / "work"))
+    monkeypatch.setattr(bps, "OUT_DIR", published)
+    monkeypatch.setattr(bps, "load_lock", lambda: lock)
+    monkeypatch.setattr(bps, "verify_source", lambda *args: tmp_path)
+    monkeypatch.setattr(bps, "export_source", lambda *args: None)
+    monkeypatch.setattr(bps, "space_free_toolchain", lambda path, name: path)
+
+    def git(repo, *args):
+        return SimpleNamespace(stdout=(
+            ("wrong" if failure == "wrong-head" else "locked") if args[0] == "rev-parse"
+            else (" M core.asm" if failure == "dirty-source" else "")))
+
+    monkeypatch.setattr(bps, "_git", git)
+    monkeypatch.setattr(bps.subprocess, "run", lambda *args, **kwargs: SimpleNamespace(returncode=0))
+    kwargs = {
+        "build_dir": build,
+        "rgbds_bin": tmp_path,
+        "w64devkit_bin": tmp_path,
+        "prepare_inputs": True,
+    }
+    output = tmp_path / "work/cache/polished/release/polishedcrystal.gbc"
+    sym_output = tmp_path / "work/cache/polished/release/polishedcrystal.sym"
+    if failure in ("wrong-head", "dirty-source", "wrong-rom"):
+        with pytest.raises(RuntimeError, match="clean source checkout|build does not match"):
+            bps.build_rom_syms(**kwargs)
+    else:
+        assert bps.build_rom_syms(**kwargs) == (1 if failure else 0)
+    assert output.exists() == (not failure)
+    assert sym_output.exists() == (not failure)
+    if not failure:
+        assert output.read_bytes() == rom
+        assert sym_output.read_bytes() == b"symbols"

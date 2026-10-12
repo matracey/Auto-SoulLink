@@ -10,8 +10,8 @@ On Windows: auto-downloads the official rgbds-win64.zip to
 inside the current worktree, verifies SHA-256 against the release page, and
 extracts.
 
-On macOS / Linux: refuses to auto-install (system-level installs require
-sudo). Prints the brew / apt one-liner and exits.
+On Linux x86_64: installs pinned portable releases in the same cache, without sudo.
+Other Unix configurations require an existing install.
 
 Driving RGBDS directly avoids the GNU-make + w64devkit dependency entirely —
 we never call `make`, only rgbasm.exe and rgblink.exe. pureRGB's Makefile
@@ -45,6 +45,7 @@ import platform
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
 import urllib.request
 import zipfile
@@ -62,6 +63,11 @@ RGBDS_PINS: dict[str, dict] = {
         "url": "https://github.com/gbdev/rgbds/releases/download/v1.0.3/rgbds-win64.zip",
         "sha256": "b66c23cb6d073dd3866ea30ef1ca5164549e0dae9ebe771957aff25e2658b0e3",
         "size": 1_104_362,
+        "linux_x86_64": {
+            "url": "https://github.com/gbdev/rgbds/releases/download/v1.0.3/rgbds-linux-x86_64.tar.xz",
+            "sha256": "280a52061a0c516999bee75ac357628d6d50784309e0486cef25f7460e6f330b",
+            "size": 1_403_152,
+        },
     },
 }
 
@@ -240,6 +246,24 @@ def _install_rgbds_windows(version: str) -> pathlib.Path:
     return bin_dir
 
 
+def _install_rgbds_linux(version: str) -> pathlib.Path:
+    pin = RGBDS_PINS[version]["linux_x86_64"]
+    archive = _download_and_verify(pin["url"], pin["sha256"], pin["size"])
+    bin_dir = REPO_ROOT / ".cache" / "build-tools" / f"rgbds-{version}" / "bin"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    with tarfile.open(archive, "r:xz") as tf:
+        for name in (*REQUIRED_BINARIES, "rgbgfx"):
+            member = tf.getmember(name)
+            if not member.isfile():
+                raise RuntimeError(f"RGBDS archive member {name} is not a regular file")
+            with tf.extractfile(member) as source, (bin_dir / name).open("wb") as target:
+                shutil.copyfileobj(source, target)
+            (bin_dir / name).chmod(0o755)
+    if not _verify_rgbds_version(bin_dir / "rgbasm", version):
+        raise RuntimeError(f"Installed RGBDS {version} cannot run on this Linux host")
+    return bin_dir
+
+
 def _install_instructions_unix(version: str) -> str:
     system = platform.system()
     if system == "Darwin":
@@ -261,8 +285,8 @@ def ensure_rgbds(version: str = RGBDS_VERSION) -> pathlib.Path:
       1. SLINK_RGBDS_BIN env var — an existing dir with the binaries, trusted as-is.
       2. .cache/build-tools/rgbds-<version>/ inside the worktree (auto-installed).
       3. RGBDS binaries on system PATH (accepted if the version matches).
-      4. On Windows only: auto-download + install to .cache/build-tools/.
-      5. On macOS / Linux: print install instructions and exit.
+      4. On Windows or supported Linux x86_64 releases: install to .cache/build-tools/.
+      5. Otherwise: print install instructions and exit.
 
     Raises RuntimeError if RGBDS cannot be located after attempting install.
     """
@@ -295,6 +319,9 @@ def ensure_rgbds(version: str = RGBDS_VERSION) -> pathlib.Path:
 
     if platform.system() == "Windows":
         return space_free_toolchain(_install_rgbds_windows(version), f"rgbds-{version}")
+    if (platform.system() == "Linux" and platform.machine() == "x86_64"
+            and "linux_x86_64" in RGBDS_PINS[version]):
+        return _install_rgbds_linux(version)
 
     if rgbasm_on_path:
         actual_version = subprocess.run(

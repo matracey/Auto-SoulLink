@@ -17,6 +17,7 @@ jobs:
           cache: pip
       - name: Install
         run: |
+          echo "SLINK_WORK_ROOT=$RUNNER_TEMP/slink-work" >> "$GITHUB_ENV"
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
       # Gate on the rules that catch real breakage: syntax errors (incl. accidental
@@ -30,6 +31,8 @@ jobs:
         run: ruff check . --statistics || true
       - name: Lua syntax (all lua/**/*.lua parse under 5.4)
         run: python tools/lua_syntax_check.py
+      - name: Prepare pinned Polished test inputs
+        run: python tools/build_polished_syms.py --prepare-inputs --w64devkit-bin /usr/bin
       # tests/live and tests/e2e need EmuHawk + a patched ROM, so they are not run here;
       # their markers are registered in pytest.ini and they skip without SLINK_LIVE/SLINK_E2E.
       - name: Unit + integration tests

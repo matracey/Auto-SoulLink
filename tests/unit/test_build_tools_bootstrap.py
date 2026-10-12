@@ -1,7 +1,9 @@
 """Build-tool path recovery with synthetic installs; no downloads or executables run."""
 
+import io
 import os
 import sys
+import tarfile
 from pathlib import Path
 
 import pytest
@@ -128,3 +130,34 @@ def test_overlay_outer_boundary_keeps_the_actual_copied_toolchain_for_provenance
     monkeypatch.setattr(builder, "make", fake_make)
     with pytest.raises(RuntimeError, match="captured outer normalized"):
         builder.build(repo_dir=tmp_path / "source", rgbds_bin=rgbds, w64devkit_bin=devkit, check=True)
+def test_linux_rgbds_install_uses_the_verified_pin_and_extracts_only_tools(tmp_path, monkeypatch):
+    archive = tmp_path / "rgbds.tar.xz"
+    names = (*bootstrap.REQUIRED_BINARIES, "rgbgfx")
+    with tarfile.open(archive, "w:xz") as tf:
+        for name in (*names, "../outside"):
+            data = name.encode()
+            member = tarfile.TarInfo(name)
+            member.size = len(data)
+            tf.addfile(member, io.BytesIO(data))
+    monkeypatch.setattr(bootstrap, "REPO_ROOT", tmp_path / "repo")
+    monkeypatch.setattr(bootstrap.platform, "system", lambda: "Linux")
+    monkeypatch.setattr(bootstrap.platform, "machine", lambda: "x86_64")
+    monkeypatch.delenv("SLINK_RGBDS_BIN", raising=False)
+    monkeypatch.setattr(bootstrap, "_check_existing_path", lambda name: None)
+    monkeypatch.setattr(bootstrap, "_verify_rgbds_version", lambda *args: True)
+    calls = []
+
+    def download(*args):
+        calls.append(args)
+        return archive
+
+    monkeypatch.setattr(bootstrap, "_download_and_verify", download)
+    result = bootstrap.ensure_rgbds("v1.0.3")
+    pin = bootstrap.RGBDS_PINS["v1.0.3"]["linux_x86_64"]
+    assert calls == [(pin["url"], pin["sha256"], pin["size"])]
+    assert sorted(p.name for p in result.iterdir()) == sorted(names)
+    assert all((result / name).read_bytes() == name.encode() for name in names)
+    assert all((result / name).stat().st_mode & 0o111 for name in names)
+    assert not (result.parent / "outside").exists()
+    assert bootstrap.ensure_rgbds("v1.0.3") == result
+    assert len(calls) == 1

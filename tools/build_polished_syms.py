@@ -85,7 +85,7 @@ def verify_source(repo_dir: pathlib.Path | None, lock: dict) -> pathlib.Path:
     if not repo.exists():
         repo.parent.mkdir(parents=True, exist_ok=True)
         print(f"[polished] git clone {src['url']} -> {repo}", file=sys.stderr)
-        subprocess.run(["git", "clone", src["url"], str(repo)], check=True)
+        subprocess.run(["git", "clone", "--branch", src["tag"], src["url"], str(repo)], check=True)
     commit = _git(repo, "rev-parse", f"{src['commit']}^{{commit}}").stdout.strip()
     if commit != src["commit"]:
         raise RuntimeError(f"locked commit {src['commit']} resolves to {commit}")
@@ -250,9 +250,15 @@ def build_rom_syms(
     rgbds_bin: pathlib.Path | None = None,
     w64devkit_bin: pathlib.Path | None = None,
     check: bool = False,
+    prepare_inputs: bool = False,
 ) -> int:
     lock = load_lock()
     repo = verify_source(repo_dir, lock)
+    if prepare_inputs and (
+        _git(repo, "rev-parse", "HEAD").stdout.strip() != lock["source"]["commit"]
+        or _git(repo, "status", "--porcelain", "--untracked-files=no").stdout.strip()
+    ):
+        raise RuntimeError("Polished test inputs require a clean source checkout at the locked commit")
     build_dir = build_dir or work_root("cache") / "polished" / "build"
     export_source(repo, lock["source"]["commit"], build_dir)
 
@@ -303,13 +309,19 @@ def build_rom_syms(
         print("[polished] built .sym equals the release .sym", file=sys.stderr)
 
     published = {"polishedcrystal.sym": sym, "polishedcrystal.map": mapb}
-    if check:
+    if check or prepare_inputs:
         drift = [n for n, b in published.items()
                  if not (OUT_DIR / n).exists() or _lf((OUT_DIR / n).read_bytes()) != b]
         if drift:
             print(f"[polished] --check: drift from committed data/polished/: {drift}", file=sys.stderr)
             return 1
         print("[polished] --check: build reproduces the committed .sym/.map byte-for-byte", file=sys.stderr)
+        if prepare_inputs:
+            release_dir = work_root("cache") / "polished" / "release"
+            release_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(rom_path, release_dir / spec["filename"])
+            release_sym.write_bytes(sym)
+            print(f"[polished] verified test ROM and symbols installed in {release_dir}", file=sys.stderr)
         return 0
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -358,6 +370,8 @@ def main() -> int:
     p.add_argument("--w64devkit-bin", type=pathlib.Path, default=None)
     p.add_argument("--check", action="store_true",
                    help="build and compare against the lock + committed data/polished/, write nothing")
+    p.add_argument("--prepare-inputs", action="store_true",
+                   help="check the build and cache the verified ROM for tests; leave committed data unchanged")
     p.add_argument("--free-space-only", action="store_true")
     args = p.parse_args()
     try:
@@ -365,7 +379,7 @@ def main() -> int:
             return free_space_only()
         return build_rom_syms(repo_dir=args.repo_dir, build_dir=args.build_dir,
                               rgbds_bin=args.rgbds_bin, w64devkit_bin=args.w64devkit_bin,
-                              check=args.check)
+                              check=args.check, prepare_inputs=args.prepare_inputs)
     except RuntimeError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
