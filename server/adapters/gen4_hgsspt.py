@@ -17,7 +17,7 @@ import json
 import logging
 import os
 
-from server.data.items.gen4 import ITEM_NAMES as _GEN4_ITEM_NAMES
+from server.data.items.gen4 import ITEM_CATALOGS as _GEN4_ITEM_CATALOGS
 from server.pokemon_data import (
     GENDER_RATIO,
     GENDER_SYMBOL,
@@ -459,6 +459,9 @@ class Gen4Adapter(GameAdapter):
         # the registry does not route (Platinum) — which is what makes the box properties
         # refuse below instead of answering for HeartGold.
         self._foundation = foundation_for_rom_type(self._rom_type)
+        self._item_names = _GEN4_ITEM_CATALOGS.get(self._foundation, {})
+        if self._foundation not in _GEN4_ITEM_CATALOGS:
+            log.error("Gen 4: no item catalog for unrouted cartridge %r", self._rom_type)
         # Trainers are version-independent (the pack says so: `version_split: false`), so every
         # routed title reads the same table. Only the WILD tables split, by title, and hg-engine
         # has no title of its own in the pack: it is a HeartGold fork, so it reads HeartGold's.
@@ -612,7 +615,7 @@ class Gen4Adapter(GameAdapter):
         return (entry.get("name", ""), entry.get("class", ""))
 
     def item_name(self, item_id: int) -> str:
-        return _GEN4_ITEM_NAMES.get(item_id, f"Item #{item_id}") if item_id else ""
+        return self._item_names.get(item_id, f"Item #{item_id}") if item_id else ""
 
     def move_name(self, move_id: int) -> str:
         # Gen 4 lookup chain handled inside server.data.moves: gen4 → gen3_vanilla.

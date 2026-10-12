@@ -266,7 +266,7 @@ def test_sprite_html_zero(adapter):
 
 
 def test_item_name(adapter):
-    assert adapter.item_name(44) == "Guard Spec."
+    assert adapter.item_name(55) == "Guard Spec."
     assert adapter.item_name(0) == ""
 
 
