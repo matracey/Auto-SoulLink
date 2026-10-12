@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import json
 import os
+import stat
+import tempfile
 from pathlib import Path
 
 SCHEMA = "slink-companion-pins-v1"
@@ -26,10 +28,32 @@ def load(path: Path = PINS) -> dict:
 
 def update(slug: str, fields: dict, path: Path = PINS) -> dict:
     """Merge `fields` into pins[slug] (created if absent) and write the file back; returns the merged pin."""
-    doc = load(path)
-    pin = doc["pins"].setdefault(slug, {})
-    pin.update(fields)
-    tmp = Path(str(path) + ".tmp")
-    tmp.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8", newline="\n")
-    os.replace(tmp, path)
-    return pin
+    path = Path(path).resolve()
+    # Never unlink the sidecar: every writer must lock the same inode.
+    with Path(str(path) + ".lock").open("a+b") as lock:
+        if os.name == "nt":
+            import msvcrt
+
+            lock.seek(0)
+            msvcrt.locking(lock.fileno(), msvcrt.LK_LOCK, 1)
+        else:
+            import fcntl
+
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        doc = load(path)
+        pin = doc["pins"].setdefault(slug, {})
+        pin.update(fields)
+        tmp = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="w", encoding="utf-8", newline="\n", dir=path.parent,
+                prefix=f".{path.name}.", suffix=".tmp", delete=False,
+            ) as output:
+                tmp = Path(output.name)
+                output.write(json.dumps(doc, indent=2) + "\n")
+            os.chmod(tmp, stat.S_IMODE(path.stat().st_mode))
+            os.replace(tmp, path)
+        finally:
+            if tmp is not None:
+                tmp.unlink(missing_ok=True)
+        return pin
