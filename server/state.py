@@ -212,6 +212,10 @@ class SoulLinkState:
         self.area_states: dict[str, AreaStatus] = {}
         # area_id → {player_id → MonInfo} for captures not yet linked
         self.pending_captures: dict[str, dict[str, MonInfo]] = {}
+        # area_id → {player_id → MonInfo} for a surviving half whose partner was lost
+        # outside the tracked run state. These are display-only and never participate
+        # in quarantine, death propagation, or party synchronization.
+        self.unpaired_mons: dict[str, dict[str, MonInfo]] = {}
         # area_id -> player_id -> the first eligible species that player must catch.
         self.encounter_locks: dict[str, dict[str, EncounterLock]] = {}
         # KEY-SCOPE: {player: {monKey: LinkEntry}}. A mon's identity is scoped per player: two
@@ -1864,6 +1868,16 @@ class SoulLinkState:
                     pid: MonInfo(**mon_data)
                     for pid, mon_data in players.items()
                 }
+            for area_id, players in data.get("unpaired_mons", {}).items():
+                if not isinstance(area_id, str) or not isinstance(players, dict):
+                    continue
+                restored = {
+                    pid: MonInfo(**mon_data)
+                    for pid, mon_data in players.items()
+                    if pid in ("a", "b") and isinstance(mon_data, dict)
+                }
+                if restored:
+                    state.unpaired_mons[area_id] = restored
             for area_id, players in data.get("encounter_locks", {}).items():
                 if not isinstance(area_id, str) or not isinstance(players, dict):
                     continue
@@ -4094,26 +4108,36 @@ class SoulLinkState:
             if cap and cap.key == old_key:
                 cap.key = new_key
 
-        # 3. Party keys
+        # 3. Preserved unpaired mons
+        for players in self.unpaired_mons.values():
+            mon = players.get(player_id)
+            if mon and mon.key == old_key:
+                mon.key = new_key
+                if msg.get("new_species") is not None:
+                    mon.species = msg["new_species"]
+                if msg.get("new_nickname") is not None:
+                    mon.nickname = msg["new_nickname"]
+
+        # 4. Party keys
         if old_key in self.party_keys[player_id]:
             self.party_keys[player_id].discard(old_key)
             self.party_keys[player_id].add(new_key)
 
-        # 4. Mon stats cache
+        # 5. Mon stats cache
         if old_key in self.mon_stats[player_id]:
             self.mon_stats[player_id][new_key] = self.mon_stats[player_id].pop(old_key)
 
-        # 5. Bonus keys (shiny clause)
+        # 6. Bonus keys (shiny clause)
         if old_key in self.bonus_keys[player_id]:
             self.bonus_keys[player_id].discard(old_key)
             self.bonus_keys[player_id].add(new_key)
 
-        # 6. Pending memorials
+        # 7. Pending memorials
         if old_key in self.pending_memorials[player_id]:
             self.pending_memorials[player_id].discard(old_key)
             self.pending_memorials[player_id].add(new_key)
 
-        # 7. Queued commands referencing the old key — and the same commands already
+        # 8. Queued commands referencing the old key — and the same commands already
         #    on the wire, so the drift reconciler still sees them as in flight.
         for cmd in self.queued_commands[player_id]:
             for field in ("key", "old_key"):
@@ -4123,13 +4147,13 @@ class SoulLinkState:
         for ident in [i for i in inflight if i[0] == old_key]:
             inflight[(new_key, ident[1])] = inflight.pop(ident)
 
-        # 8. Pending bonus queue (shiny keys in partner's pending_bonus)
+        # 9. Pending bonus queue (shiny keys in partner's pending_bonus)
         owner_q = _partner(player_id)                   # KEY-SCOPE: this player's shiny waits there
         self.pending_bonus[owner_q] = deque(
             new_key if k == old_key else k for k in self.pending_bonus[owner_q]
         )
 
-        # 9. Partner blobs (rival team swap cache) and an active whiteout rebuild
+        # 10. Partner blobs (rival team swap cache) and an active whiteout rebuild
         for be in self.partner_blobs[player_id]:
             if be.get("key") == old_key:
                 be["key"] = new_key
@@ -4141,7 +4165,7 @@ class SoulLinkState:
                 rb["restored_keys"].discard(old_key)
                 rb["restored_keys"].add(new_key)
 
-        # 10. An in-flight trade naming the old key
+        # 11. An in-flight trade naming the old key
         pt = self.pending_trade
         if pt:
             for field in ("a_key", "b_key"):
@@ -4248,6 +4272,9 @@ class SoulLinkState:
         if any(players.get(player_id) and players[player_id].key == key
                for players in self.pending_captures.values()):
             refs.add("pending_captures")
+        if any(players.get(player_id) and players[player_id].key == key
+               for players in self.unpaired_mons.values()):
+            refs.add("unpaired_mons")
         pt = self.pending_trade
         if pt and key in (pt.get("a_key"), pt.get("b_key")):
             refs.add("pending_trade")
@@ -4883,6 +4910,13 @@ class SoulLinkState:
                     for player_id, mon in players.items()
                 }
                 for area_id, players in self.pending_captures.items()
+            },
+            "unpaired_mons": {
+                area_id: {
+                    player_id: asdict(mon)
+                    for player_id, mon in players.items()
+                }
+                for area_id, players in self.unpaired_mons.items()
             },
             "encounter_locks": {
                 area_id: {
