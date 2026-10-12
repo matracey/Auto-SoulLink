@@ -198,3 +198,38 @@ async def test_refused_rand_reconnect_drops_stale_tables_but_keeps_the_partner(t
         assert server.adapter_for("a").trainer_brief(414) is None
         assert server.adapter_for("a").encounter_table("route_1") is None
         assert server.adapter_for("b").trainer_brief(414) == partner
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("same_socket", [False, True])
+@pytest.mark.parametrize("bad_content", [None, {}, {"tables": [{"addr": 0x08000000, "hex": "zz"}]}])
+async def test_refused_rand_hello_preserves_only_a_surviving_connection_adapter(
+        tmp_path, monkeypatch, same_socket, bad_content):
+    from server.adapters.gen3_frlge import Gen3Adapter
+
+    # ROM decoding is modeled; admission, socket ownership and rollback are real.
+    proof = {"model_valid": True}
+    tables = {"route_1": {"Grass": [{"species": 75, "min_level": 5, "max_level": 5}]}}
+    refuse = Gen3Adapter.refused_rom_content
+    monkeypatch.setattr(Gen3Adapter, "refused_rom_content",
+                        lambda self, payload, **kw: "" if payload == proof else refuse(self, payload, **kw))
+    monkeypatch.setattr(Gen3Adapter, "ingest_rom_content", lambda self, payload: tables)
+    server = SLinkServer(data_dir=str(tmp_path))
+    async with client(server) as active, client(server) as competing:
+        accepted = await active(hello(rom_content=proof))
+        assert not any(command.get("refused") for command in accepted["commands"])
+        adapter = server._player_adapters["a"]
+        assert adapter.encounter_table("route_1") == tables["route_1"]
+        generation = server._conn_gen["a"]
+        refused = await (active if same_socket else competing)(hello(rom_content=bad_content))
+        assert refused["commands"] == [{"cmd": "noop", "refused": "admission"}]
+        assert server._conn_gen["a"] == generation
+        if same_socket:
+            assert "a" not in server._player_adapters
+            assert not server.is_admitted("a")
+        else:
+            assert server.adapter_for("a") is adapter
+            assert adapter.encounter_table("route_1") == tables["route_1"]
+            assert server.is_admitted("a")
+            tick = await active({"event": "tick", "player": "a", "party": []})
+            assert not any(command.get("refused") for command in tick["commands"])

@@ -129,6 +129,36 @@ async def test_old_disconnect_does_not_mark_live_replacement_disconnected(tmp_pa
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("rom_type", ["firered", "unknown"])
+async def test_rejected_sockets_clear_presence_without_owning_gameplay(tmp_path, rom_type):
+    srv = SLinkServer(data_dir=str(tmp_path))
+    hello = _hello("a", {"rom_type": "firered", **companion("firered"), "ot_id": 0x1234})
+    async with _tcp(srv) as (connect, tasks):
+        original = await connect()
+        original_task = next(iter(tasks))
+        await _send(original, hello)
+        original[1].close()
+        await original[1].wait_closed()
+        await asyncio.wait_for(original_task, 3)
+        assert not srv.connected_players["a"]["connected"]
+        rejected = []
+        for _ in range(2):
+            previous = set(tasks)
+            connection = await connect()
+            handler = next(iter(tasks - previous))
+            await _send(connection, {**hello, "rom_type": rom_type, "ot_id": 0x5678})
+            rejected.append((connection, handler))
+        assert srv.connected_players["a"]["connected"]
+        assert not srv._client_writers.get("a")
+        for index, (connection, handler) in enumerate(rejected):
+            connection[1].close()
+            await connection[1].wait_closed()
+            await asyncio.wait_for(handler, 3)
+            assert srv.connected_players["a"]["connected"] == (index == 0)
+        assert not srv._client_writers.get("a")
+
+
+@pytest.mark.asyncio
 async def test_a_hello_from_a_does_not_admit_b_on_the_same_socket(tmp_path, monkeypatch):
     srv = SLinkServer(data_dir=str(tmp_path))
     dispatched = []

@@ -582,6 +582,8 @@ class SLinkServer:
         self.connected_players: dict[str, dict] = {}
         self._client_connections: set[asyncio.StreamWriter] = set()
         self._client_writers: dict[str, set[asyncio.StreamWriter]] = {}
+        # Refused hellos still count as transport connections, not gameplay owners.
+        self._presence_writers: dict[str, set[asyncio.StreamWriter]] = {}
         # Per-player display data (updated from events, used only for status page)
         self.player_area: dict[str, str] = {"a": "", "b": ""}
         self.player_area_id: dict[str, str] = {"a": "", "b": ""}  # raw area_id for state lookups
@@ -1696,12 +1698,42 @@ class SLinkServer:
                     await self._respond(writer, [{"cmd": "noop", "refused": "no_hello"}])
                     continue
 
-                # Retain overlapping connections until each closes, including a socket
-                # carrying multiple player slots. Reset/rollback must disconnect all of them.
-                self._client_writers.setdefault(player_id, set()).add(writer)
+                if (msg.get("event") != "hello"
+                        and conn_gen.get(player_id) != self._conn_gen.get(player_id)):
+                    await self._respond(writer, [{"cmd": "noop", "refused": "superseded"}])
+                    continue
+
+                prev_conn = dict(self.connected_players.get(player_id, {}))
+                prev_error = self.state.identity_error.get(player_id)
+                prev_admission = dict(self.admission.get(player_id, {}))
+                prev_player_adapter = self._player_adapters.get(player_id)
+                prev_rom_rejected = player_id in self._rom_type_rejected
+                other_active = bool(self._client_writers.get(player_id, set()) - {writer})
+
+                def restore_active_connection(player_id=player_id, prev_conn=prev_conn,
+                                              prev_error=prev_error, prev_admission=prev_admission,
+                                              prev_player_adapter=prev_player_adapter,
+                                              prev_rom_rejected=prev_rom_rejected,
+                                              other_active=other_active):
+                    if not other_active:
+                        return
+                    self.connected_players[player_id] = prev_conn
+                    self.admission[player_id] = prev_admission
+                    if prev_player_adapter is None:
+                        self._player_adapters.pop(player_id, None)
+                    else:
+                        self._player_adapters[player_id] = prev_player_adapter
+                    if prev_error is None:
+                        self.state.identity_error.pop(player_id, None)
+                    else:
+                        self.state.identity_error[player_id] = prev_error
+                    if prev_rom_rejected:
+                        self._rom_type_rejected.add(player_id)
+                    else:
+                        self._rom_type_rejected.discard(player_id)
 
                 # Update connection info
-                prev_conn = self.connected_players.get(player_id, {})
+                self._presence_writers.setdefault(player_id, set()).add(writer)
                 self.connected_players[player_id] = {
                     "connected":  True,
                     "last_event": msg.get("event", "?"),
@@ -1723,6 +1755,7 @@ class SLinkServer:
                     if carried in prev_conn:
                         self.connected_players[player_id][carried] = prev_conn[carried]
                 if msg.get("event") == "hello":
+                    hello_players.discard(player_id)
                     # A rom_type the router does not know used to leave the server on
                     # whichever adapter it already had -- silently -- and the run carried on
                     # under the wrong generation (Gen 3 genders and abilities on Red/Blue
@@ -1744,6 +1777,7 @@ class SLinkServer:
                         self.state.identity_error[player_id] = err
                         self._rom_type_rejected.add(player_id)
                         self._record_hello_refusal(player_id, err, msg)
+                        restore_active_connection()
                         await self._respond(writer, [{
                             "cmd": "hud_show", "text": f"[x] UNKNOWN ROM: {_rt}",
                             "r": 255, "g": 0, "b": 0, "frames": 600,
@@ -1773,6 +1807,7 @@ class SLinkServer:
                         self.state.identity_error[player_id] = _mixed
                         self._rom_type_rejected.add(player_id)
                         self._record_hello_refusal(player_id, _mixed, msg)
+                        restore_active_connection()
                         await self._respond(writer, [{
                             "cmd": "hud_show", "text": "[x] MIXED GAMES",
                             "color": [255, 0, 0], "duration": 600,
@@ -1796,6 +1831,7 @@ class SLinkServer:
                         self.state.identity_error[player_id] = _needs
                         self._rom_type_rejected.add(player_id)
                         self._record_hello_refusal(player_id, _needs, msg)
+                        restore_active_connection()
                         await self._respond(writer, [{
                             "cmd": "hud_show", "text": "[x] NEEDS COMPANION PATCH",
                             "color": [255, 0, 0], "duration": 600,
@@ -1819,16 +1855,15 @@ class SLinkServer:
                         continue
                     log.debug(f"[TCP] player={player_id}  seq={seq}  last={last_seq}  outcome=accepted  event={msg.get('event','?')}")
                     last_seq = seq
-                if msg.get("event") == "hello":
-                    hello_players.add(player_id)
-                    self._conn_gen[player_id] = conn_gen[player_id] = self._conn_gen.get(player_id, 0) + 1
-                elif conn_gen.get(player_id, self._conn_gen.get(player_id)) != self._conn_gen.get(player_id):
-                    # KEY-SCOPE-5: a newer connection helloed as this player; a delayed line from
-                    # this one would roll its party back.
-                    await self._respond(writer, [{"cmd": "noop", "refused": "superseded"}])
-                    continue
-
                 commands = self._dispatch(player_id, msg)
+                if msg.get("event") == "hello":
+                    if (msg.get("_rejected") or not self.is_admitted(player_id)
+                            or any(c.get("refused") for c in commands)):
+                        restore_active_connection()
+                    else:
+                        hello_players.add(player_id)
+                        self._conn_gen[player_id] = conn_gen[player_id] = self._conn_gen.get(player_id, 0) + 1
+                        self._client_writers.setdefault(player_id, set()).add(writer)
                 await self._respond(writer, commands)
                 # Log non-trivial responses at DEBUG for post-mortem tracing.
                 _real_cmds = [c for c in commands if c.get("cmd") not in ("noop", "resolved_areas")]
@@ -1855,6 +1890,12 @@ class SLinkServer:
                 writers.discard(writer)
                 if not writers:
                     self._client_writers.pop(player_id)
+            for player_id, writers in list(self._presence_writers.items()):
+                if writer not in writers:
+                    continue
+                writers.discard(writer)
+                if not writers:
+                    self._presence_writers.pop(player_id)
                     info = self.connected_players.get(player_id)
                     if info is not None:
                         info["connected"] = False
