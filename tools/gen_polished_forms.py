@@ -28,12 +28,14 @@ import pathlib
 import re
 import sys
 
+from slink_space import work_root
+
 REPO = pathlib.Path(__file__).resolve().parent.parent
 PACK = REPO / "data" / "games" / "polished_crystal"
 OUT = PACK / "forms_index.json"
 LOCK = REPO / "data" / "polished_sources.lock.json"
-DEFAULT_SRC = pathlib.Path("F:/slink-work/cache/polished/src")
-DEFAULT_ROMS = pathlib.Path("F:/slink-work/cache/polished/release")
+DEFAULT_SRC = work_root("cache") / "polished" / "src"
+DEFAULT_ROMS = work_root("cache") / "polished" / "release"
 BASE_STATS_STRIDE = 34  # constants/pokemon_data_constants.asm:35 BASE_DATA_SIZE
 
 INCLUDE_RE = re.compile(r'^INCLUDE "data/pokemon/base_stats/([a-z0-9_]+)\.asm"')
@@ -161,7 +163,7 @@ def read_forms(src: pathlib.Path) -> dict[str, int]:
         m = REGIONAL_RE.match(line)
         if m:
             out[m.group(1)] = int(m.group(2))
-    consts = {m.group(1): int(m.group(2)) for m in (DEF_EQU_RE.match(l) for l in text.splitlines()) if m}
+    consts = {m.group(1): int(m.group(2)) for m in (DEF_EQU_RE.match(line) for line in text.splitlines()) if m}
     in_ext_block = False
     value = 0
     for line in text.splitlines():
@@ -193,7 +195,7 @@ def read_records(src: pathlib.Path) -> list[tuple[str, str]]:
     """Record index 1..N -> (base_stats file stem, trailing comment), in INCLUDE order."""
     text = (src / "data" / "pokemon" / "base_stats.asm").read_text(encoding="utf-8")
     rx = re.compile(r'^\s*INCLUDE "data/pokemon/base_stats/([a-z0-9_]+)\.asm"\s*(?:;\s*(.*))?$')
-    rows = [(m.group(1), (m.group(2) or "").strip()) for m in (rx.match(l) for l in text.splitlines()) if m]
+    rows = [(m.group(1), (m.group(2) or "").strip()) for m in (rx.match(line) for line in text.splitlines()) if m]
     if len(rows) < 300:
         raise SystemExit(f"only {len(rows)} base_stats includes parsed")
     return rows

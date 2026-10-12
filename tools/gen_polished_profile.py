@@ -5,6 +5,8 @@ Every address and struct member offset comes from the OVERLAY build's own .sym
 never used (docs/polished/RAM.md §2.1: it disagrees with the built ROM). Source constants (stat-stage
 bounds, masks, capacities) come from the pinned polishedcrystal checkout via tools/gen_polished_pack.py's
 parser, and each is cross-checked against the .sym geometry where one exists. Run with --check to compare.
+ROM-table crosschecks read data/games/polished_crystal/upr_polished_entries.ini;
+data/polished retains build/provenance inputs, not the runtime offsets table.
 """
 
 from __future__ import annotations
@@ -92,7 +94,7 @@ ROM_SYMBOLS = ("BaseData", "GrassMonProbTable", "WaterMonProbTable", "TreeMons",
 INI_KEYS = {"BaseData": "PokemonStatsOffset", "FishGroups": "FishingWildsOffset", "ContestMons": "BCCWildsOffset",
             "TreeMons": "TreemonWildsOffset", "RoamMaps": "RoamMonsterMapsOffset",
             **{f"{r}{k}WildMons": f"{r}{k}WildMonsOffset" for r in WILD_REGIONS for k in ("Grass", "Water")}}
-INI = ROOT / "data/polished/upr_polished_entries.ini"
+INI = ROOT / "data/games/polished_crystal/upr_polished_entries.ini"
 PARTY_REQUIRED = ("Species", "Item", "Moves", "ID", "Exp", "EVs", "HPEV", "AtkEV", "DefEV", "SpeEV",
                   "SatEV", "SdfEV", "DVs", "Personality", "Form", "PP",
                   "Happiness", "PokerusStatus", "CaughtData", "CaughtLevel", "CaughtLocation", "Level",

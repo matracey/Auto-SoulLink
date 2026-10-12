@@ -30,13 +30,15 @@ import pathlib
 import re
 import sys
 
+from slink_space import work_root
+
 REPO = pathlib.Path(__file__).resolve().parent.parent
 PACK = REPO / "data" / "games" / "polished_crystal"
 DATA = REPO / "data" / "polished"
 LOCK = REPO / "data" / "polished_sources.lock.json"
 PROVENANCE = DATA / "build_provenance.json"
 UPS = REPO / "patch" / "dist" / "SLink-Polished.ups"
-DEFAULT_ROMS = pathlib.Path("F:/slink-work/cache/polished/release")
+DEFAULT_ROMS = work_root("cache") / "polished" / "release"
 
 SIGNALS_OUT = PACK / "engine_signals.json"
 CHECKPOINT_OUT = PACK / "write_checkpoint.json"

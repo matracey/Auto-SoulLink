@@ -9,6 +9,7 @@ Every assertion below is a check the generator itself cannot make about its own 
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import sys
@@ -102,7 +103,7 @@ def test_the_starter_sites_resolve_to_the_three_starters_at_level_five(document)
     """
     starters = {s["species_const"]: s for s in document["sites"] if "ElmsLab" in s["source"]}
     assert set(starters) == {"CYNDAQUIL", "TOTODILE", "CHIKORITA"}
-    for name, row in starters.items():
+    for row in starters.values():
         assert row["offset"] is not None, row
         assert row["level"] == 5, row
         assert row["kind"] == "givepoke"
@@ -257,3 +258,43 @@ def test_the_form_byte_is_a_whole_byte_not_a_five_bit_field(document):
     # and FEMALE | PLAIN_FORM, the shape maps/Route35GoldenrodGate.asm:41 uses
     assert (0x80 | forms["PLAIN_FORM"]) & 0xFF == 0x81
     assert rom is not None and syms is not None
+
+
+def test_cli_overrides_resolve_a_site_from_the_selected_source_and_rom(tmp_path, monkeypatch):
+    source = tmp_path / "source"
+    constants = source / "constants"
+    constants.mkdir(parents=True)
+    (constants / "pokemon_constants.asm").write_text("DEF PLAIN_FORM EQU 1\n", encoding="utf-8")
+    (constants / "pokemon_data_constants.asm").write_text("DEF FEMALE EQU %10000000\n", encoding="utf-8")
+    release = tmp_path / "release"
+    release.mkdir()
+    rom = bytearray(0x200)
+    rom[0x100:0x104] = bytes([0x2F, 155, 1, 5])
+    (release / gen.ROM_NAME).write_bytes(rom)
+    sym = b"00:0100 GiftScript\n00:0110 NextScript\n"
+    (release / gen.SYM_NAME).write_bytes(sym)
+    ini = tmp_path / "entries.ini"
+    ini.write_text(
+        "GivePokeSite0=Unresolved\nGivePokeSite0Label=GiftScript\n"
+        "GivePokeSite0ScriptOffset=0x100\nGivePokeSite0Species=CYNDAQUIL\n"
+        "GivePokeSite0Arg2=PLAIN_FORM\nGivePokeSite0Source=maps/Gift.asm:1\n",
+        encoding="utf-8",
+    )
+    species = tmp_path / "species.json"
+    species.write_text('{"species": {"155": {"const": "CYNDAQUIL"}}}', encoding="utf-8")
+    out = tmp_path / "script_sites.json"
+    monkeypatch.setattr(gen, "ROM_SHA1", hashlib.sha1(rom).hexdigest())
+    monkeypatch.setattr(gen, "SYMS_SHA256", hashlib.sha256(sym).hexdigest())
+    monkeypatch.setattr(gen, "INI", ini)
+    monkeypatch.setattr(gen, "SPECIES_PACK", species)
+    monkeypatch.setattr(gen, "OUT", out)
+    argv = ["gen_polished_script_sites.py", "--src", str(source), "--roms", str(release)]
+    monkeypatch.setattr(sys, "argv", argv)
+
+    assert gen.main() == 0
+    row = json.loads(out.read_text(encoding="utf-8"))["sites"][0]
+    assert (row["offset"], row["species"], row["form"], row["level"]) == (0x101, 155, 1, 5)
+    monkeypatch.setattr(sys, "argv", [*argv, "--check"])
+    assert gen.main() == 0
+    out.write_text("{}\n", encoding="utf-8")
+    assert gen.main() == 1
