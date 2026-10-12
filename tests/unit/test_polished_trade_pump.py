@@ -906,6 +906,62 @@ def test_published_arm_fault_requires_reset_and_warns_once(role):
     assert p.writes() == before
 
 
+@pytest.mark.parametrize("role", ["proposer", "responder"])
+def test_preflight_read_failure_only_cancels_without_reset(role):
+    p = Pump()
+    shown = []
+    arm_results = []
+    p.lua.execute("return function(hud, rec) hud.show = function(text) rec(text) end end")(p.deps.hud, shown.append)
+    if role == "proposer":
+        p.accepted(p.apply_command())
+    else:
+        responder_accepted(p)
+    lease = p.parts.profile.overlay.trade.lease
+    before_memory, before_writes = dict(p.mem.items()), p.writes()
+    before_reports = p.sent("menu_result")
+    p.lua.execute("""return function(io, binder, base, size, record)
+        local read, arm = io.read_range, binder.arm
+        local in_arm, failed = false, false
+        io.read_range = function(addr, n, ...)
+            if in_arm and not failed and addr == base and n == size then
+                failed = true
+                error("injected preflight read failure", 0)
+            end
+            return read(addr, n, ...)
+        end
+        binder.arm = function(self, ...)
+            in_arm = true
+            local result = table.pack(pcall(arm, self, ...))
+            in_arm = false
+            if not result[1] then error(result[2], 0) end
+            record(result[2], result[3], result[4])
+            return table.unpack(result, 2, result.n)
+        end
+    end""")(p.io, p.binder, lease.base, lease.size, lambda *result: arm_results.append(result))
+    p.frame(4)
+    assert p.sent("trade_done") == []
+    assert shown == []
+    assert arm_results == [(None, "NOT_PUBLISHED", "preflight read failed: injected preflight read failure")]
+    token_addresses = [lease.base + lease.fields.token + i for i in range(4)]
+    expected_memory = before_memory | dict.fromkeys(token_addresses, 0)
+    assert dict(p.mem.items()) == expected_memory  # party/box/save untouched; only token cleared
+    cancel_writes = [
+        {"frame": p.arm_trace[-1][1], "domain": "System Bus", "addr": address, "value": 0}
+        for address in token_addresses
+    ]
+    assert p.writes()[len(before_writes):] == cancel_writes
+    cancellations = p.sent("menu_result")[len(before_reports):]
+    assert len(cancellations) == 1 and cancellations[0]["choice"] == 0
+    assert cancellations[0].get("withdraw", False) == (role == "proposer")
+    disposition, reason = p.binder.disposition(p.binder)
+    assert disposition == "NOT_PERFORMED"
+    assert "preflight read failed: injected preflight read failure" in reason
+    p.command(p.apply_command())
+    p.frame(3)
+    assert p.sent("trade_done") == [] and p.sent("menu_result") == before_reports + cancellations
+    assert dict(p.mem.items()) == expected_memory and p.writes() == before_writes + cancel_writes
+
+
 @pytest.mark.parametrize("phase", ["query", "offer"])
 def test_poll_read_failure_is_logged_once_and_retries_without_outcome(phase):
     p = Pump()
