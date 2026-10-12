@@ -10,7 +10,7 @@ Everything lives under F:/slink-work/lanes/g2r-live (SLINK_C5_ROOT): short, non-
 A cell runs the lane's own tools/e2e_duo.py overlay scenario through `_shim`, which swaps each instance's executed
 cartridge for the Manager-provisioned randomized ROM and puts the Manager's rom_contract.json + roms/ in the server's
 data dir. Resumable: out/<digest12>/summary.json; a cell PASSed at the same code digest AND the same contract sha1s is
-skipped. Exactly one duo (two EmuHawk) at a time; a timeout kills only this runner's own process tree (taskkill /T).
+skipped. Exactly one duo (two EmuHawk) at a time; a timeout kills only this runner's own process tree.
 See docs/gen2/C5_RUNBOOK.md.
 """
 from __future__ import annotations
@@ -19,6 +19,7 @@ import argparse
 import hashlib
 import json
 import os
+import signal
 import sys
 from pathlib import Path
 
@@ -64,8 +65,11 @@ def make_lane(name: str, sha: str = "HEAD") -> Path:
     for sub in ("gen2-build", "gen2-fixtures"):
         shutil.copytree(GEN2_CACHE / sub, path / ".cache" / sub, symlinks=True)
     for sub in JUNCTION:
-        subprocess.run(["cmd", "/c", "mklink", "/J", os.path.normpath(path / ".cache" / sub),
-                        os.path.normpath(MAIN_CACHE / sub)], check=True, capture_output=True)
+        if os.name == "nt":
+            subprocess.run(["cmd", "/c", "mklink", "/J", os.path.normpath(path / ".cache" / sub),
+                            os.path.normpath(MAIN_CACHE / sub)], check=True, capture_output=True)
+        else:
+            (path / ".cache" / sub).symlink_to((MAIN_CACHE / sub).resolve(), target_is_directory=True)
     return path
 
 
@@ -431,11 +435,15 @@ def run_cell(pair, scenario, covers, lane, out, digest, sha, attempt_base):
         with open(log, "a", encoding="utf-8") as handle:
             handle.write(f"$ {' '.join(cmd)}\n")
             handle.flush()
-            proc = subprocess.Popen(cmd, cwd=lane, env=env, stdout=handle, stderr=subprocess.STDOUT)
+            proc = subprocess.Popen(cmd, cwd=lane, env=env, stdout=handle, stderr=subprocess.STDOUT,
+                                    start_new_session=os.name != "nt")
             try:
                 code = proc.wait(timeout=e2e_duo.SCENARIOS[scenario]["timeout"] * 2 + 600)
             except subprocess.TimeoutExpired:
-                subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)], capture_output=True)   # our tree only
+                if os.name == "nt":
+                    subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)], capture_output=True)
+                else:
+                    os.killpg(proc.pid, signal.SIGKILL)
                 proc.wait()
                 code = "timeout"
         receipts, texts = {}, {}

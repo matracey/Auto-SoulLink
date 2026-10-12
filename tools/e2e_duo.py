@@ -51,13 +51,21 @@ else:
     from slink_space import work_root
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-EMUHAWK = "E:/Howard/Bizhawk/EmuHawk.exe"
-BIZHAWK_CONFIG = "E:/Howard/Bizhawk/config.ini"
+EMUHAWK = os.environ.get("SLINK_EMUHAWK", "E:/Howard/Bizhawk/EmuHawk.exe")
+BIZHAWK_CONFIG = os.environ.get("SLINK_BIZHAWK_CONFIG", "E:/Howard/Bizhawk/config.ini")
 ROM_REL = "patch/build/slink_RR.gba"
 BUILD = os.path.join(REPO, "patch", "build")
 # Where --wire-log parks a run's golden transcripts (tests/fixtures/gen3/wire/README.md).
 WIRE_FIXTURES = os.path.join(REPO, "tests", "fixtures", "gen3", "wire")
 WT_FWD = REPO.replace("\\", "/")
+
+
+def _kill_emulator(process):
+    if sys.platform == "win32":
+        subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"], capture_output=True)
+    else:
+        process.kill()
+
 
 # Per-scenario knobs: extra server flags, per-side timeout (seconds), fillers (default True;
 # or {"a":…,"b":…} — explode keeps B at ONE mon so the Explosion self-faint whites out
@@ -4982,9 +4990,9 @@ class DuoRun:
         os.makedirs(os.path.join(REPO, "patch", "build"), exist_ok=True)
         with open(os.path.join(REPO, "patch", "build", f"duo_{self.lane}_{inst}.out"), "wb") as emu_out:
             p = subprocess.Popen(
-                [EMUHAWK, f"--config=patch/build/duo_cfg_{self.lane}_{inst}.ini",
-                 f"--lua=patch/build/duo_{self.lane}_{inst}.lua",
-                 self._rom_for(inst)],
+                [EMUHAWK, f"--config={Path(cfg_ini).resolve()}",
+                 f"--lua={Path(stub).resolve()}",
+                 str((Path(REPO) / self._rom_for(inst)).resolve())],
                 cwd=REPO, stdout=emu_out, stderr=subprocess.STDOUT,
                 **({"env": env} if env is not None else {}))
         self.emus.append(p)
@@ -5007,7 +5015,7 @@ class DuoRun:
         self._expected_exit.add(inst)
         p = self.emu_by_inst[inst]
         if p.poll() is None:
-            subprocess.run(["taskkill", "/PID", str(p.pid), "/T", "/F"], capture_output=True)
+            _kill_emulator(p)
             p.wait(timeout=15)
         print(f"[duo] terminated {inst} pid={p.pid}; server retained")
 
@@ -8264,8 +8272,7 @@ class DuoRun:
                                    "refusing taskkill")
         for p in self.emus:
             if p.poll() is None:
-                subprocess.run(["taskkill", "/PID", str(p.pid), "/T", "/F"],
-                               capture_output=True)
+                _kill_emulator(p)
         if self.server and self.server.poll() is None:
             self.server.terminate()
             try:

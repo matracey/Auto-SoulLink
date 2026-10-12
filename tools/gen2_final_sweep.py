@@ -123,7 +123,10 @@ def drop_lane(path):
     for name in JUNCTION:   # unlink the junctions FIRST: never recurse through one
         junction = path / ".cache" / name
         if junction.exists() or os.path.lexists(junction):
-            os.rmdir(junction)
+            if junction.is_symlink():
+                junction.unlink()
+            else:
+                os.rmdir(junction)
     if path.exists():
         shutil.rmtree(path, onerror=_writable)
     git(REPO, "worktree", "prune")

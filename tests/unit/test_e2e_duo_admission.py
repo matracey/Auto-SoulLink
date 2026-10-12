@@ -537,8 +537,10 @@ def test_a_only_relaunch_does_not_reseed_the_flushed_save(runner, tmp_path, monk
     assert runner.emu_by_inst["a"].pid == 42 and len(runner.emus) == 1
 
 
-def test_reconnect_kills_only_a_and_leaves_b_process_running(runner, monkeypatch):
+@pytest.mark.parametrize("platform", ["win32", "linux"])
+def test_reconnect_kills_only_a_and_leaves_b_process_running(runner, monkeypatch, platform):
     calls = []
+    monkeypatch.setattr(duo.sys, "platform", platform)
 
     class Process:
         def __init__(self, pid):
@@ -550,10 +552,14 @@ def test_reconnect_kills_only_a_and_leaves_b_process_running(runner, monkeypatch
         def wait(self, timeout):
             calls.append(("wait", self.pid, timeout))
 
+        def kill(self):
+            calls.append(("kill", self.pid))
+
     runner.emu_by_inst = {"a": Process(41), "b": Process(42)}
     monkeypatch.setattr(duo.subprocess, "run", lambda cmd, **_kwargs: calls.append(tuple(cmd)))
     runner.terminate_instance("a")
-    assert calls == [("taskkill", "/PID", "41", "/T", "/F"), ("wait", 41, 15)]
+    killed = ("taskkill", "/PID", "41", "/T", "/F") if platform == "win32" else ("kill", 41)
+    assert calls == [killed, ("wait", 41, 15)]
 
 
 def test_existing_red_town_is_not_a_second_ot_save():

@@ -88,7 +88,9 @@ def test_gen2_launch_uses_cgb_300_percent_and_isolated_process_environment(monke
         paths = config["PathEntries"]["Paths"]
         assert all(Path(row["Path"]) == Path(run._saveram_dir(side)) for row in paths)
         assert "mutate_otid = false" in Path(run.stub_path(side)).read_text()
-    assert launched[0][0][-1] == launched[1][0][-1] == "pinned.gbc"
+    assert launched[0][0][-1] == launched[1][0][-1] == str(tmp_path / "pinned.gbc")
+    for argv, _kwargs in launched:
+        assert all(Path(arg.split("=", 1)[1]).is_absolute() for arg in argv[1:3])
     assert launched[0][1]["env"]["SLINK_GEN2_FIXTURE_CASE"] == "qualified-a"
     assert launched[1][1]["env"]["SLINK_GEN2_FIXTURE_CASE"] == "qualified-b"
     assert launched[0][1]["env"]["SLINK_GEN2_SAVERAM_DIR"] != launched[1][1]["env"]["SLINK_GEN2_SAVERAM_DIR"]

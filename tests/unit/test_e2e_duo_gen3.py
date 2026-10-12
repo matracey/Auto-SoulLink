@@ -946,7 +946,7 @@ def test_launch_seeds_the_flash_body_and_writes_a_gba_config(monkeypatch, tmp_pa
     stub = Path(run.stub_path("a")).read_text()
     assert 'title = "firered"' in stub and 'scenario_prefix = "gen3_"' in stub
     assert 'game = "gen3_frlg"' in stub and "duo_gen3_main.lua" in stub
-    assert launched[0][-1] == "patch/build/gen3_a.gba"
+    assert launched[0][-1] == str((Path(duo.REPO) / "patch/build/gen3_a.gba").resolve())
     if scenario == "trainer_bench_gen3":
         assert 'scenario_module = "battle_window"' in stub
         assert f'battle_window_case = "{duo.SCENARIOS[scenario]["battle_window_case"]}"' in stub
