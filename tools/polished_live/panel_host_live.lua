@@ -20,6 +20,64 @@ function Oracle.evaluate_pages(rows, pages, lines)
     end
     return {expected_pages = expected, ok = ok}
 end
+
+-- Driver-only observation: the live sink is forwarded unchanged, never replaced by
+-- requested payloads. A native frame does not advance inside a permit write.
+local function image(lib, addr, n)
+    local bytes = {}
+    for i = 0, n - 1 do bytes[#bytes + 1] = lib.bus(addr + i) end
+    return bytes
+end
+function Oracle.observe_panel_writes(writes, lib, raw_memory, lo, hi)
+    local active, audit = nil, {}
+    local original = writes.write_bytes
+    writes.write_bytes = function(self, addr, bytes)
+        local record = {values = {}, ops = {}, before = image(lib, addr, #bytes),
+                        mailbox_before = image(lib, lo, hi - lo + 1)}
+        local first = #self.log + 1
+        active = record
+        local result = table.pack(pcall(original, self, addr, bytes))
+        active = nil
+        record.after = image(lib, addr, #bytes)
+        record.mailbox_after = image(lib, lo, hi - lo + 1)
+        for i = first, #self.log do audit[self.log[i]] = record end
+        if not result[1] then error(result[2], 0) end
+        return table.unpack(result, 2, result.n)
+    end
+    local observed = setmetatable({}, {__index = raw_memory})
+    observed.write_u8 = function(addr, value, domain)
+        if not active then return raw_memory.write_u8(addr, value, domain) end
+        local before = raw_memory.read_u8(addr, domain)
+        local result = table.pack(raw_memory.write_u8(addr, value, domain))
+        active.values[#active.values + 1] = value
+        active.ops[#active.ops + 1] = {addr = addr, value = value, domain = domain,
+                                      before = before, after = raw_memory.read_u8(addr, domain)}
+        return table.unpack(result, 1, result.n)
+    end
+    return observed, audit
+end
+function Oracle.receipts(log, audit, json)
+    local out = {}
+    for _, r in ipairs(log) do
+        local raw = assert(audit[r], "panel permit receipt lacks raw write observation")
+        out[#out + 1] = {addr = string.format("%X", r.addr), n = r.n, why = r.why,
+                        frame = r.frame, status = r.status, domain = r.domain,
+                        values = json.array(raw.values), ops = json.array(raw.ops),
+                        before = json.array(raw.before), after = json.array(raw.after),
+                        mailbox_before = json.array(raw.mailbox_before),
+                        mailbox_after = json.array(raw.mailbox_after)}
+    end
+    return json.array(out)
+end
+function Oracle.phone_snapshot(lib)
+    local list = {}
+    for i, value in ipairs(lib.wbytes("wPhoneList", 0, 5)) do list[i] = value end
+    return {frame = emu.framecount(), cursor = lib.rw("wPokegearPhoneCursorPosition"),
+            scroll = lib.rw("wPokegearPhoneScrollPosition"),
+            phone_calls = lib.hits.MakePhoneCallFromPokegear, caller = lib.rw("wCurCaller"),
+            phone_list = lib.json.array(list), phone_state = lib.rw("wJumptableIndex"),
+            panel_state = lib.rw("wSlinkMailbox", 9)}
+end
 if POL_ORACLE_ONLY then return Oracle end
 local L = dofile(os.getenv("SLINK_ROOT") .. "/tools/polished_live/pol_lib.lua")
 local fmt = string.format
@@ -57,6 +115,8 @@ local TEXT = L.woff("wSlinkPanelText", 0)
 local C = package.loaded["connector"]
 local ev = {sent_events = {}, panels = {}, synth = {}, pages = {}, driver_writes = {}}
 ev.lines_per_page = PAN.lines
+local receipt_audit
+memory, receipt_audit = Oracle.observe_panel_writes(P.panel_writes, L, memory, 0xC000 + MB_LO, 0xC000 + MB_HI)
 local orig_send, orig_recv = C.send, C.receive
 C.send = function(line, ...)
     local ok, msg = pcall(J.decode, line)
@@ -246,6 +306,9 @@ L.check("client reports the panel present+fresh", SLINK_GEN2_PARTS.panel:present
 -- ── open the panel (A -> submenu, A -> Call) and page through it; the CLIENT answers every AWAIT ─────────────
 local calls0, gate0, panel0 = L.hits.MakePhoneCallFromPokegear, L.hits.SlinkPhone_CallGate, L.hits.SlinkPanel
 local caller0, plist_before = L.rw("wCurCaller"), plist()
+ev.close = {before = Oracle.phone_snapshot(L), input = "B"}
+ev.mailbox_images = {addr = 0xC000 + MB_LO, n = MB_HI - MB_LO + 1,
+                     before = J.array(image(L, 0xC000 + MB_LO, MB_HI - MB_LO + 1))}
 press("A", 30)
 L.check("C0 A opened the contact submenu", L.hits.PokegearPhoneContactSubmenu >= 1)
 press("A", 10)
@@ -287,6 +350,8 @@ wait(function() return state() == 0x0a end, 400, "B did not return to PHONEJOYPA
 L.idle(40)
 shot("panel_host_back")
 local c1, s1 = cur()
+ev.close.after = Oracle.phone_snapshot(L)
+ev.mailbox_images.after = J.array(image(L, 0xC000 + MB_LO, MB_HI - MB_LO + 1))
 L.check("C4 back on the Phone list with the cursor/scroll intact", c1 == c0 and s1 == s0, fmt("%d/%d -> %d/%d", c0, s0, c1, s1))
 L.check("C4 no phone call placed", L.hits.MakePhoneCallFromPokegear == calls0)
 L.check("C4 wCurCaller untouched", L.rw("wCurCaller") == caller0)
@@ -294,13 +359,13 @@ L.check("C4 wPhoneList untouched by the panel", plist() == plist_before, plist()
 L.check("C4 the panel cleared PANEL_STATE on close", L.rw("wSlinkMailbox", OFF_STATE) == 0, L.rw("wSlinkMailbox", OFF_STATE))
 
 -- ── who wrote the mailbox? the CLIENT's panel permit receipts (and nothing from this driver) ────────────────
-local receipts = {}
+local receipts
 local plog = SLINK_GEN2_PARTS.panel_writes and SLINK_GEN2_PARTS.panel_writes.log or {}
 local outside = 0
 for _, r in ipairs(plog) do
-    receipts[#receipts + 1] = {addr = fmt("%X", r.addr), n = r.n, why = r.why, frame = r.frame, status = r.status}
     if r.addr < 0xC000 + MB_LO or r.addr + r.n - 1 > 0xC000 + MB_HI then outside = outside + 1 end
 end
+receipts = Oracle.receipts(plog, receipt_audit, J)
 ev.client_receipts, ev.mailbox = receipts, fmt("%X..%X", 0xC000 + MB_LO, 0xC000 + MB_HI)
 L.check("C5 the CLIENT's panel permit logged writes (attribution is non-vacuous)", #plog > 0, #plog)
 L.check("C5 every client panel write is inside the mailbox span", outside == 0, outside)
