@@ -5857,13 +5857,13 @@ def test_decode_failure_latches_and_refuses_events(tmp_path, monkeypatch, error)
 
 
 @pytest.mark.parametrize("contents", ["{broken", "null", '{"area_states":{"route_1":"nonsense"}}'])
-def test_load_distinguishes_unreadable_json_from_decode_errors(tmp_path, contents):
+def test_load_refuses_unreadable_json_and_decode_errors(tmp_path, contents):
     (tmp_path / "links.json").write_text(contents)
     state = SoulLinkState.load(data_dir=str(tmp_path))
-    assert bool(state.load_failed) == (contents != "{broken")
+    assert state.load_failed
 
 
-def test_open_error_remains_tolerant_but_unsafe_migration_raises(tmp_path, monkeypatch):
+def test_open_error_refuses_writes_and_unsafe_migration_raises(tmp_path, monkeypatch):
     import builtins
 
     from server.state import UnsafeGameMigration
@@ -5876,7 +5876,7 @@ def test_open_error_remains_tolerant_but_unsafe_migration_raises(tmp_path, monke
         return original(name, *args, **kwargs)
     with monkeypatch.context() as patch:
         patch.setattr(builtins, "open", locked)
-        assert SoulLinkState.load(data_dir=str(tmp_path)).load_failed == ""
+        assert SoulLinkState.load(data_dir=str(tmp_path)).load_failed == "PermissionError: locked"
     def unsafe(*_args):
         raise UnsafeGameMigration("migration refused")
     monkeypatch.setattr(SoulLinkState, "_load_mon_stats", unsafe)
@@ -5935,11 +5935,12 @@ def test_unknown_saved_area_state_is_a_strict_load_failure(tmp_path):
 
 
 @pytest.mark.parametrize("event", ["tick", "safe"])
-def test_partial_party_snapshot_drops_bad_entries_with_warning(event, caplog):
+def test_partial_party_snapshot_is_refused_without_changing_census(event, caplog):
     import logging
     state = make_state_with_link()
-    state.handle_event("a", {"event": event, "party": [1, {"maxHP": 10}, {"key": "A:1", "hp": 5, "maxHP": 10}]})
-    assert state.party_size["a"] == 1 and state.party_keys["a"] == {"A:1"}
+    reply = state.handle_event("a", {"event": event, "party": [1, {"maxHP": 10}, {"key": "A:1", "hp": 5, "maxHP": 10}]})
+    assert state.party_size["a"] == 2 and state.party_keys["a"] == {"A:1"}
+    assert reply == [{"cmd": "noop", "refused": "party_snapshot"}]
     assert any(r.levelno == logging.WARNING and "party" in r.message for r in caplog.records)
 
 
@@ -5958,7 +5959,7 @@ def test_unkeyed_lead_cannot_bypass_the_identity_lock(caplog):
     state.handle_event("a", {"event": "hello", "trainer_name": "A", "party": [{"key": "AAAA:1111", "hp": 10, "maxHP": 10}]})
     message = {"event": "hello", "trainer_name": "Other", "party": [{"maxHP": 10}, {"key": "BBBB:2222", "hp": 10, "maxHP": 10}]}
     state.handle_event("a", message)
-    assert message.get("_rejected") and "2222" in state.identity_error["a"]
+    assert message.get("_rejected") and "malformed" in state.identity_error["a"]
     assert state.party_keys["a"] == {"AAAA:1111"}
 
 

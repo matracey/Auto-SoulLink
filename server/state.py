@@ -515,10 +515,11 @@ class SoulLinkState:
         party = [m for m in raw if isinstance(m, dict) and isinstance(m.get("key"), str) and m["key"]] if isinstance(raw, list) else []
         dropped = len(raw) - len(party) if isinstance(raw, list) else 1
         if dropped:
-            log.warning("[%s] dropped %s malformed or unkeyed party entries", player_id, dropped)
-        if not isinstance(raw, list) or (raw and not party):
+            log.warning("[%s] refusing incomplete party snapshot: %s malformed or unkeyed entries",
+                        player_id, dropped)
+        if not isinstance(raw, list) or dropped:
             if event == "hello":
-                self.identity_error[player_id] = "Party snapshot contains no keyed entries"
+                self.identity_error[player_id] = "Party snapshot contains malformed entries"
                 msg["_rejected"] = True
             return [{"cmd": "noop", "refused": "party_snapshot"}]
         msg["party"] = party
@@ -704,6 +705,7 @@ class SoulLinkState:
                 # same snapshot.  See _ingest_party_blobs for the shape.
                 self._ingest_party_blobs(player_id, party)
                 self._trade_evidence(player_id, party)
+                self._reconcile_initiating_faints(player_id, msg, party)
                 # Reconcile party_keys against Lua's actual party snapshot.  Catches
                 # state drift from spurious party_to_box / missed box_to_party events
                 # in the Lua diff loop — without this, a phantom deposit propagates
@@ -2982,13 +2984,15 @@ class SoulLinkState:
                     self.queued_commands[pid].append(cmd)
                     log.info(f"Post-link: {pid}:{mon_obj.key[:8]} → party_mon (un-quarantine)")
             else:
-                # At least one party is full — keep both in box, cancel stale quarantine commands.
+                # Keep the quarantine direction when either party cannot fit its new half.
                 for pid in ("a", "b"):
                     mon_obj = a_mon if pid == "a" else b_mon
                     self.queued_commands[pid] = [
                         c for c in self.queued_commands[pid]
-                        if not (c.get("key") == mon_obj.key and c.get("cmd") == "box_mon")
+                        if not (c.get("key") == mon_obj.key and c.get("cmd") == "party_mon")
                     ]
+                    if not self._has_pending_command(pid, mon_obj.key, "box_mon"):
+                        self.queued_commands[pid].append({"cmd": "box_mon", "key": mon_obj.key})
                 full_pid = "a" if not a_has_room else "b"
                 log.info(f"Post-link: both stay in box — {full_pid} party full ({self.party_size.get(full_pid, 0)}/6)")
         else:
@@ -3025,6 +3029,22 @@ class SoulLinkState:
             log.debug(f"[FAINT GATE] player={player_id}  key={key[:8]}  suppressed=True  reason=nuzlocke_not_active")
             return
         entry = self.entry_for(player_id, key)
+        if entry is None:
+            for area_id, players in list(self.pending_captures.items()):
+                cap = players.get(player_id)
+                if not cap or cap.key != key:
+                    continue
+                entry = LinkEntry(area_id=area_id, a=players.get("a"),
+                                  b=players.get("b"), status=LinkStatus.ALIVE)
+                self.links.append(entry)
+                self._index_entry(entry)
+                del self.pending_captures[area_id]
+                self.encounter_locks.pop(area_id, None)
+                self._set_area_state(area_id, AreaStatus.DEAD_ZONE,
+                                     player=player_id, reason="pending_capture_fainted")
+                for pid in ("a", "b"):
+                    self._queue_resolved_areas(pid)
+                break
         if not entry or entry.status != LinkStatus.ALIVE:
             log.debug(f"[{player_id}] faint {key[:8]}: no alive linked entry — ignored "
                       f"(status={entry.status.value if entry else 'not_found'})")
@@ -3541,7 +3561,7 @@ class SoulLinkState:
 
         # Dead/memorial mons must stay in the memorial box — re-box immediately.
         if entry.status in (LinkStatus.DEAD, LinkStatus.MEMORIAL):
-            my_mon = entry.a if entry.a.key == key else entry.b
+            my_mon = entry.a if player_id == "a" else entry.b
             nick = my_mon.nickname or self.adapter.species_name(my_mon.species) or msg.get("nickname") or key[:8]
             self.queued_commands[player_id].append({"cmd": "memorialize", "key": key})
             self.queued_commands[player_id].append({
@@ -3658,6 +3678,26 @@ class SoulLinkState:
             if cap and cap.key == key:
                 return True
         return False
+
+    def _reconcile_initiating_faints(self, player_id: str, msg: dict, party: list) -> None:
+        # A snapshot cannot establish which battle caused an exemptible zero.
+        if (not self.pokeballs_obtained[player_id]
+                or self._trade_settle_ticks.get(player_id, 0) > 0 or self.ignore_wild_faints):
+            return
+        counts = Counter(mon.get("key") for mon in party)
+        for mon in party:
+            key = mon.get("key")
+            if (not key or type(mon.get("hp")) not in (int, float) or mon["hp"] != 0
+                    or type(mon.get("maxHP")) not in (int, float) or mon["maxHP"] <= 0
+                    or counts[key] != 1 or key in self.ambiguous_keys[player_id]):
+                continue
+            entry = self.entry_for(player_id, key)
+            if not ((entry and entry.status == LinkStatus.ALIVE) or self._is_quarantined(player_id, key)):
+                continue
+            event = {"event": "faint", "key": key, "_level": mon.get("level", 0)}
+            if not self._hold_for_trade(player_id, event):
+                log.warning("[%s] recovering missed faint from HP-zero snapshot: %s", player_id, key)
+                self._handle_faint(player_id, event)
 
     def _repair_lost_faints(self, player_id: str, party: list, in_battle: bool) -> None:
         """Owner ruling O-24: re-issue a DEATH_COMMAND the client never applied.
@@ -4107,6 +4147,10 @@ class SoulLinkState:
             cap = players.get(player_id)
             if cap and cap.key == old_key:
                 cap.key = new_key
+                if msg.get("new_species") is not None:
+                    cap.species = msg["new_species"]
+                if msg.get("new_nickname") is not None:
+                    cap.nickname = msg["new_nickname"]
 
         # 3. Preserved unpaired mons
         for players in self.unpaired_mons.values():
