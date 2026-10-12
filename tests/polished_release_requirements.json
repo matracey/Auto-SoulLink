@@ -71,6 +71,8 @@
     "LIVE-DUO-NATURAL-WHITEOUT"
   ],
   "code_digest_files": [
+    "lua/*.lua",
+    "server/**/*.py",
     "lua/gen2/polished*.lua",
     "lua/gen2/entry.lua",
     "lua/gen2/client.lua",

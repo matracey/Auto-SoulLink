@@ -1245,6 +1245,22 @@ def test_declared_runtime_digest_covers_and_reacts_to_every_added_input(tmp_path
         target.write_bytes(original)
 
 
+@pytest.mark.parametrize("relative", [
+    "server/state.py", "server/server.py", "server/adapters/base.py",
+    "server/adapters/gen2_gsc.py", "lua/hud.lua",
+])
+def test_shared_runtime_byte_change_changes_the_polished_digest(tmp_path, relative):
+    config, _ = _runtime_digest_fixture(tmp_path)
+    target = tmp_path / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(b"initial\n")
+    baseline = verifier.compute_code_digest(tmp_path, config["code_digest_files"],
+                                            excludes=config.get("code_digest_exclude", []))
+    target.write_bytes(b"Initial\n")
+    assert verifier.compute_code_digest(tmp_path, config["code_digest_files"],
+                                        excludes=config.get("code_digest_exclude", [])) != baseline, relative
+
+
 def test_runtime_digest_ignores_only_pack_prose_not_runtime_bytes(tmp_path):
     config, _ = _runtime_digest_fixture(tmp_path)
     baseline = verifier.compute_code_digest(tmp_path, config["code_digest_files"],

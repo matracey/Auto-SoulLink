@@ -41,6 +41,8 @@ Concurrency labels: **BUILD ALONE** means no other process may use the Polished 
 
 3. **Prepare artifacts and executable pins before the final freeze.** Re-derive beacon/profile/engine sites (the engine-sites generator also writes `write_checkpoint.json`), then commit any resulting artifact changes. A changed trade item table must precede the overlay build. After all changes, record the final HEAD and both digest/provenance hashes, then start the receipt runs. Do not patch a driver pin while receipt jobs are already running.
 
+   Digest scope is declared by `tests/polished_release_requirements.json`: `lua/*.lua` and `server/**/*.py` conservatively cover shared runtime alongside the existing Polished client/core, adapter, assembly and runtime-pack entries. Shared admission, quarantine and memorial-relocation changes therefore stale LIVE receipts. The Polished-pack `.md`/`.txt` prose exclusions remain unchanged.
+
    ```powershell
    & $PY tools/gen_polished_beacon.py --check
    & $PY tools/gen_polished_profile.py --check
