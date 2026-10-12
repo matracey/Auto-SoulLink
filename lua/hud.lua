@@ -179,6 +179,7 @@ local function wrap_prompt_n(text, max_lines)
 end
 
 function H.init(opts)
+    H.clear()
     if not opts then return end
     for k, v in pairs(opts) do cfg[k] = v end
     -- Derive defaults if not explicitly set. Small screens (GB/GBC, 144 px high)
@@ -443,6 +444,7 @@ end
 function H.clear()
     hud_queue = {}
     prompt_queue = {}
+    game_over = false
     rebuild_text = nil
     nuzlocke_start_text = nil
     nuzlocke_start_frames = 0

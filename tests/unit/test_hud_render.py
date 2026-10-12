@@ -25,6 +25,7 @@ from __future__ import annotations
 import pathlib
 
 import lupa
+import pytest
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
 HUD = (REPO / "lua" / "hud.lua").as_posix()
@@ -138,6 +139,37 @@ def test_explicit_clear_wipes_the_surface_once():
     assert w.state.box is False
     assert w.state.text is False
     assert "drawText" not in w.render()
+
+
+@pytest.mark.parametrize("action", ["clear", "init", "init_defaults"])
+@pytest.mark.parametrize("screen", [(160, 144), (240, 160), (256, 192)])
+def test_reused_module_starts_without_previous_session_banners(action, screen):
+    w = World()
+    options = w.lua.table_from({"screen_w": screen[0], "screen_h": screen[1]})
+    w.H.init(options)
+    w.H.show("OLD NOTICE", 255, 255, 0, 240)
+    w.H.prompt("OLD PROMPT", 255, 0, 0, 300)
+    w.H.set_rebuilding("OLD TEAM")
+    w.H.nuzlocke_start("OLD RUN")
+    w.H.set_game_over()
+    w.render()
+    assert "GAME OVER!" in w.drawn
+    if action == "clear":
+        w.H.clear()
+    else:
+        w.H.init(options if action == "init" else None)
+    assert not w.H.is_game_over()
+    assert not w.H.is_rebuilding()
+    assert not w.H.is_nuzlocke_start()
+    assert not w.state.box and not w.state.text
+    w.render()
+    assert w.drawn == []
+    w.H.nuzlocke_start("NEW RUN")
+    w.render()
+    assert w.drawn == ["NEW RUN"]
+    w.H.set_game_over()
+    w.render()
+    assert w.drawn == ["GAME OVER!"]
 
 
 # ── HUD-3: word wrap instead of "..." ────────────────────────────────────────
@@ -320,4 +352,3 @@ def test_the_rebuild_banner_wraps_instead_of_running_off_screen():
     assert len(w.drawn) == 2, w.drawn
     assert all(len(line) <= 25 for line in w.drawn), w.drawn
     assert "".join(w.drawn).replace(" ", "") == "REBUILDING:CHARMANDER,BULBASAUR1,SQUIRTLE12+3"
-
