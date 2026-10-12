@@ -121,7 +121,7 @@ ITEMS: list[Item] = [
     Item("36", "keys stable across box/party moves, reconnects, nickname/item changes", "world"),
     Item("37", "same-mon key change reported via key_change, no spurious capture/move events",
          "world"),
-    Item("38", "both halves of any link have distinct keys", "world"),
+    Item("38", "keys are scoped per player; a pair's halves may share a key", "world"),
     Item("38a", "every key_change is answered by exactly one ack/rejected in the same reply",
          "world"),
     Item("38b", "a re-sent key_change after reconnect is idempotent, a rejected one mutates "

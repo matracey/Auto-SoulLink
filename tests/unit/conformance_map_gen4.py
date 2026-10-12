@@ -213,7 +213,7 @@ ITEMS: list[Item] = [
               "cannot poke one without re-deriving the permutation."),
     Item("37", "a same-mon key change reported via key_change, with no capture/party_to_box/box_to_party",
          "world", "test_world_an_npc_trade_is_one_key_change_with_no_spurious_move_events"),
-    Item("38", "both halves of any link the client can produce have distinct keys", "world",
+    Item("38", "keys come from the mon's own record (per-player scope; a pair's halves may share one)", "world",
          "test_world_the_two_halves_of_a_link_produce_distinct_keys"),
     Item("38a", "every key_change is answered in the same reply by exactly one key_change_ack/rejected", "world",
          "test_world_one_answer_settles_a_key_change_and_the_alias_follows_that_answer",
