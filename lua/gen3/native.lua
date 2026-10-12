@@ -234,6 +234,7 @@ function N.new(profile, deps)
     function self:trade_active() return trade_context ~= nil and not trade_context.reconciled end
     function self:hello_fields() return {} end -- no invented wire capability fields
     local function finish(job, why, result, reason)
+        if job == trade_binding_job then trade_binding_job = nil end
         if job.done then job.done(why, result, reason) end
     end
     function self:cancel(handle)
@@ -251,6 +252,7 @@ function N.new(profile, deps)
     local function abort(why)
         local active, waiting = pending, queue
         pending, queue = nil, {}
+        trade_binding_job = nil
         call_queued, call_active = nil, nil -- no replay across a native reset/freshness loss
         if active then finish(active, why) end
         for _, job in ipairs(waiting) do finish(job, why) end

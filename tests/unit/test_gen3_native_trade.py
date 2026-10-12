@@ -108,6 +108,77 @@ def to_python(value):
     return value
 
 
+def _binding_world(title):
+    if title == "radical_red":
+        from tests.unit.test_gen3_native_rr_trade import RRTradeWorld
+        return RRTradeWorld(bind=False)
+    return TradeNativeWorld(title=title)
+
+
+@pytest.mark.parametrize("title", ["firered", "leafgreen", "radical_red"])
+@pytest.mark.parametrize("reset", ["frame", "beacon", "epoch"])
+@pytest.mark.parametrize("blocked", [None, "journal", "producer"])
+def test_automatic_binding_recovers_only_when_unowned_and_clear(title, reset, blocked):
+    w = _binding_world(title)
+    assert w.native.bind_trade_session(w.native, 9)
+    w.service()
+    assert w.native.trade_capable(w.native)
+    epoch_address = (w.n.get("TRADE_BASE") or w.n["BASE"]) + 0x44
+    w.put(epoch_address, 0, 4)
+    w.output.clear()
+    if blocked == "journal":
+        w.recovery_clear = False
+    elif blocked == "producer":
+        w.phase(1)
+    if reset == "frame":
+        w.frame = 1
+    elif reset == "beacon":
+        w.put(w.n["BASE"], 0, 4)
+        w.service()
+        w.put(w.n["BASE"], w.n["SIG"], 4)
+    w.service()
+    if blocked:
+        assert not w.native.trade_capable(w.native) and not w.output
+        w.recovery_clear = True
+        w.phase(0)
+        w.service()
+    assert w.native.trade_capable(w.native)
+    assert w.read(epoch_address, 4) == 9
+
+
+@pytest.mark.parametrize("title", ["firered", "leafgreen", "radical_red"])
+@pytest.mark.parametrize("retire", ["cancel", "reset", "guard"])
+def test_retired_automatic_binding_can_retry(title, retire):
+    w = _binding_world(title)
+    jobs = []
+    enqueue = w.native.set_session_epoch
+
+    def capture(native, epoch):
+        job = enqueue(native, epoch)
+        if lua54.lua_type(job) == "table":
+            jobs.append(job)
+        return job
+
+    w.native.set_session_epoch = capture
+    w.safe = False
+    assert w.native.bind_trade_session(w.native, 9)
+    w.service()
+    assert len(jobs) == 1
+    if retire == "cancel":
+        assert w.native.cancel(w.native, jobs[0])
+    elif retire == "reset":
+        w.frame = 1
+        w.service()
+    else:
+        w.recovery_clear = False
+        w.service()
+        w.recovery_clear = True
+    w.safe = True
+    w.service()
+    assert w.native.trade_capable(w.native)
+    assert w.native.mailbox(w.native).session_epoch == 9
+
+
 @pytest.mark.parametrize("field", ["session_epoch", "visit_id", "token", "revision", "visit_flags",
                                   "milestones", "milestone_seq", "final_result", "save_status",
                                   "milestone_frame", "old_pid", "old_otid", "received_pid", "received_otid"])
@@ -158,7 +229,8 @@ def test_emerald_published_binding_uses_same_durable_contract():
     w.prepare(ready=False)
     assert w.read(w.n["BASE"]+6,2)==29
     w.witness(bits=1,result=0,phase=2)
-    w.ack();w.service()
+    w.ack()
+    w.service()
     assert w.native.trade_visit(w.native).old_key==w.old_key
 
 
