@@ -70,7 +70,7 @@ array order is what disambiguates, and `checkHandlers` is scanned for the first
 Reuse the pureRGB generator pattern (`tools/gen_upr_gen1_ini.py:1-16`,
 `data/purergb/upr_pure_entries.ini:1-3`). The new tool reads
 `release/polishedcrystal-3.2.3.sym`, converts `bank:addr` to flat
-(`bank*0x4000 + addr-0x4000`), and writes `data/polished/upr_polished_entries.ini`
+(`bank*0x4000 + addr-0x4000`), and writes `data/games/polished_crystal/upr_polished_entries.ini`
 plus the in-fork `src/com/dabomstew/pkrandom/config/polished_offsets.ini`, guarded
 by `// ---- BEGIN/END slink polished entries ----` markers so `--check` can prove
 staleness.

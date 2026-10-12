@@ -83,7 +83,7 @@ def test_struct_offsets_agree_with_the_codec():
 
 def test_profile_rom_tables_are_the_sym_and_the_upr_ini():
     sym = _sym()
-    ini = dict(re.findall(r"^(\w+)=(0x[0-9A-Fa-f]+)", (REPO / "data/polished/upr_polished_entries.ini")
+    ini = dict(re.findall(r"^(\w+)=(0x[0-9A-Fa-f]+)", (REPO / "data/games/polished_crystal/upr_polished_entries.ini")
                           .read_text(encoding="utf-8"), re.M))
     for name, e in P["rom"].items():
         assert sym[name] == (e["bank"], e["addr"]) and e["flat"] == e["bank"] * 0x4000 + e["addr"] - 0x4000, name
