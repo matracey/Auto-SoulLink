@@ -5,6 +5,25 @@ import {inGen, inGens, tests} from './helper';
 
 describe('calc', () => {
   describe('Multi-Gen', () => {
+    inGens(8, 9, ({gen, calculate, Pokemon, Move}) => {
+      test.each([
+        ...['TR24', 'TR28', 'TR34', 'TR39', 'TR53', 'TR55', 'TR64', 'TR66', 'TR72', 'TR73']
+          .map(item => ({item, power: 120})),
+        ...['TR01', 'TR41', 'TR62', 'TR93', 'TR97', 'TR98']
+          .map(item => ({item, power: 85})),
+        {item: 'TR03', power: 110},
+        {item: 'Iron Ball', power: 130},
+      ])(`Fling $item uses $power BP (gen ${gen})`, ({item, power}) => {
+        const result = calculate(Pokemon('Mew', {item}), Pokemon('Snorlax'), Move('Fling'));
+        const reference = calculate(
+          Pokemon('Mew', {item}), Pokemon('Snorlax'),
+          Move('Crunch', {overrides: {basePower: power}})
+        );
+        expect(result.rawDesc.moveBP).toBe(power);
+        expect(result.range()).toEqual(reference.range());
+      });
+    });
+
     inGens(4, 7, ({gen, calculate, Pokemon, Move}) => {
       test(`Grass Knot (gen ${gen})`, () => {
         const result = calculate(Pokemon('Groudon'), Pokemon('Groudon'), Move('Grass Knot'));
