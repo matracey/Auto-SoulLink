@@ -99,20 +99,15 @@ def test_inflight_party_mon_is_not_reissued_by_drift_reconciler(tmp_path, monkey
     )
 
 
-def test_only_reconciler_passes_spend_the_inflight_window(tmp_path, monkeypatch):
-    """
-    The window is counted in RECONCILER PASSES, not in client events.
-
-    A chatty client sends many events that never carry a party snapshot and so never
-    give the reconciler a pass; they must not expire a command's suppression window.
-    Only passes the reconciler actually makes do, and once spent it may re-issue.
-    """
+def test_reconciler_passes_cannot_expire_an_unanswered_directed_sync(tmp_path, monkeypatch):
+    """An unresolved PC intent keeps its direction until execution is confirmed."""
     state, _ = _form_link_and_drain(tmp_path, monkeypatch)
     # Settle A's side so only B's in-flight party_mon is left in play, then re-open the
     # drift A's cancelled quarantine created (server behind, cartridge holding A:1).
     state.handle_event("a", {"event": "sync_retrieve_done", "key": "A:1"})
     state.party_keys["a"].discard("A:1")
     assert ("B:2", "party_mon") in state.sync_inflight["b"], "sanity: B's command is on the wire"
+    intent = state.sync_versions["b"]["B:2"].copy()
 
     # Chatter: events with no party snapshot, so the reconciler never runs for them.
     for _ in range(SYNC_INFLIGHT_RECONCILES * 4):
@@ -124,16 +119,14 @@ def test_only_reconciler_passes_spend_the_inflight_window(tmp_path, monkeypatch)
     _a_tick(state)
     assert not _party_mons(_b_tick(state), "B:2"), "suppression must still hold after chatter"
 
-    # Now spend the window on what it is actually denominated in.
-    for _ in range(SYNC_INFLIGHT_RECONCILES):
-        _b_tick(state)
-    assert ("B:2", "party_mon") not in state.sync_inflight["b"]
+    for _ in range(SYNC_INFLIGHT_RECONCILES * 4):
+        assert not _party_mons(_b_tick(state), "B:2")
+    assert ("B:2", "party_mon") in state.sync_inflight["b"]
     state.party_keys["a"].discard("A:1")
     _a_tick(state)
-    assert _party_mons(_b_tick(state), "B:2"), (
-        "once the window is spent the reconciler may re-issue — the window bounds "
-        "re-issue suppression, not how long an answer is allowed to take"
-    )
+    assert not _party_mons(_b_tick(state), "B:2")
+    assert state.sync_versions["b"]["B:2"] == intent
+    assert len(_party_mons(state.queued_commands["b"], "B:2")) == 1
 
 
 def test_reconciler_resumes_after_an_answer(tmp_path, monkeypatch):

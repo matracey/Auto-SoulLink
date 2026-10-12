@@ -4,6 +4,8 @@ Each test is the replay of one sequence the sweep named, checked at the source b
 """
 from __future__ import annotations
 
+import pytest
+
 from server.state import LinkStatus, SoulLinkState
 from tests.unit.test_state import has_cmd, make_state_with_link
 
@@ -55,18 +57,29 @@ def test_a_partner_sync_waiting_for_an_offline_partner_survives_a_restart(tmp_pa
     assert has_cmd(reloaded.queued_commands["b"], "box_mon", "B:2")
 
 
-def test_a_delivered_partner_sync_is_not_sent_again_after_a_restart(tmp_path, monkeypatch):
+@pytest.mark.parametrize("completion", ["answer", "inventory"])
+def test_a_delivered_partner_sync_replays_until_completion_survives_restart(tmp_path, monkeypatch, completion):
     state = _fresh(tmp_path, monkeypatch)
     state.handle_event("a", {"event": "party_to_box", "key": "A:1"})
-    assert has_cmd(state.handle_event("b", {"event": "tick"}), "box_mon", "B:2")
+    delivered = next(c for c in state.handle_event("b", {"event": "tick"}) if c["cmd"] == "box_mon")
     reloaded = SoulLinkState.load()
-    assert not has_cmd(reloaded.queued_commands["b"], "box_mon")
+    replay = next(c for c in reloaded.handle_event("b", {"event": "tick"}) if c["cmd"] == "box_mon")
+    assert replay == delivered
+    message = ({"event": "stats_cache", "key": "B:2",
+                "stats": {"hp": 20, "maxHP": 20, "level": 5},
+                "intent_id": replay["intent_id"], "intent_revision": replay["intent_revision"]}
+               if completion == "answer" else
+               {"event": "tick", "party": [], "pc_boxes": [{"key": "B:2"}], "pc_boxes_generation": 1})
+    answer = reloaded.handle_event("b", message)
+    assert not any(c.get("refused") for c in answer), answer
+    assert not reloaded.sync_versions["b"]["B:2"]["active"]
+    assert not has_cmd(SoulLinkState.load().queued_commands["b"], "box_mon")
 
 
 def test_a_whiteout_rebuild_still_owes_the_offline_partner_after_a_restart(tmp_path, monkeypatch):
     """The rebuild queues party_mon for both halves; the hello re-arm only rebuilds the whited-out player's own half, so
     the partner's halves must survive a restart in the queue (sweep cx-06955fa9 finding 2)."""
-    from server.state import LinkEntry, MonInfo, AreaStatus
+    from server.state import AreaStatus, LinkEntry, MonInfo
     state = _fresh(tmp_path, monkeypatch)
     boxed = LinkEntry(area_id="route_2", a=MonInfo(key="A:boxed", level=6), b=MonInfo(key="B:boxed", level=6),
                       status=LinkStatus.ALIVE)

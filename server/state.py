@@ -58,7 +58,6 @@ class UnsafeGameMigration(RuntimeError):
 SYNC_COMMANDS = ("party_mon", "box_mon", "memorialize")
 # Persisted while undelivered (memorialize has its own durable record, pending_memorials).
 DURABLE_SYNC_COMMANDS = ("party_mon", "box_mon")
-
 REPORT_EVENTS = frozenset({
     "capture", "faint", "no_catch", "whiteout", "area_enter", "party_to_box", "box_to_party",
     "key_change", "release", "stats_cache", "sync_retrieve_done", "sync_retrieve_failed",
@@ -557,6 +556,9 @@ class SoulLinkState:
         if malformed is not None:
             return malformed
         event = msg.get("event", "unknown")
+        if (event in ("tick", "safe") and player_id in self.report_bindings
+                and not self.identity_error.get(player_id) and type(msg.get("report_backlog")) is int):
+            self.report_backlog[player_id] = max(0, min(4096, msg["report_backlog"]))
         if event == "hello" and msg.get("report_delivery") == 1:
             ot, rom = msg.get("ot_id"), msg.get("rom_sha1")
             if (type(ot) is not int or not 0 < ot <= 0xFFFFFFFF
@@ -571,7 +573,9 @@ class SoulLinkState:
         # The client has spoken about this key, so nothing we sent for it is still on the wire:
         # every answer to a SYNC_COMMAND (sync_retrieve_done/_failed, box_mon_failed,
         # memorialize_done/_failed, the stats_cache a deposit emits) carries the key.
-        if msg.get("key"):
+        if msg.get("key") and event in (*SYNC_ANSWERS, "memorialize_done", "memorialize_failed"):
+            if event in SYNC_ANSWERS and not self._settle_sync_answer(player_id, msg):
+                return [{"cmd": "noop", "refused": "stale_sync_completion"}]
             self._ack_inflight(player_id, msg["key"])
 
         recovery_hello = event == "hello" and (self.adapter.supports_trade_recovery() or (
@@ -584,6 +588,7 @@ class SoulLinkState:
         elif self._hold_for_trade(player_id, msg):
             pass                                        # replayed once the trade settles
         elif event == "hello":
+            self.sync_delivered[player_id].clear()
             queued_before = len(self.queued_commands[player_id])
             self._handle_hello(player_id, msg)           # runs this hello's trade evidence too
             if recovery_hello and msg.get("_rejected"):
@@ -611,6 +616,7 @@ class SoulLinkState:
                         if not row.get("active"):
                             self.queued_commands[player_id].append({
                                 "cmd": "sync_cancel", "key": key, "intent_revision": row["revision"]})
+                self._confirm_sync_census(player_id, msg)
                 self.trade_prepare[player_id] = msg.get("trade_prepare") is True
                 if recovery_hello:
                     self._tick_pending_trade()
@@ -647,8 +653,12 @@ class SoulLinkState:
         elif event == "whiteout":
             self._handle_whiteout(player_id, msg)
         elif event == "party_to_box":
+            if self.sync_versions[player_id].get(msg.get("key"), {}).get("active"):
+                self.cancel_sync(player_id, msg["key"], reason="manual PC move")
             self._handle_party_to_box(player_id, msg)
         elif event == "box_to_party":
+            if self.sync_versions[player_id].get(msg.get("key"), {}).get("active"):
+                self.cancel_sync(player_id, msg["key"], reason="manual PC move")
             self._handle_box_to_party(player_id, msg)
         elif event == "key_change":
             self._handle_key_change(player_id, msg)
@@ -676,6 +686,9 @@ class SoulLinkState:
                     rb["restored_keys"].add(key)
                     self._maybe_finish_rebuild(player_id)
         elif event == "sync_retrieve_failed":
+            if msg.get("intent_id"):
+                self._save()
+                return self._deliver_commands(player_id)
             # Retrieval failed (party full, no stats, etc.) — don't add to party_keys.
             # Since both linked mons must stay in sync, re-box the partner's mon too.
             key = msg.get("key", "")
@@ -704,6 +717,9 @@ class SoulLinkState:
                         })
                         log.info(f"[{partner}] re-boxing {partner_mon.key[:8]} — partner's retrieve failed")
         elif event == "box_mon_failed":
+            if msg.get("intent_id"):
+                self._save()
+                return self._deliver_commands(player_id)
             # The deposit did not happen. The server has ALREADY discarded this key from
             # party_keys and decremented party_size -- it does that the moment it queues
             # the command, so a swap in flight does not read as a full party -- so silence
@@ -743,6 +759,7 @@ class SoulLinkState:
                     self._save()
             party = None if hidden else msg.get("party")
             if party is not None:
+                self._confirm_sync_census(player_id, msg)
                 old_size = self.party_size.get(player_id, 0)
                 self.party_size[player_id] = len(party)
                 if old_size != len(party):
@@ -763,11 +780,25 @@ class SoulLinkState:
                 and not self.party_hidden[player_id]):
             self._resume_prepared_trade_on_visible_snapshot()
 
-        cmds = self.queued_commands[player_id][:]
-        self.queued_commands[player_id].clear()
+        if event in SYNC_ANSWERS and msg.get("key"):
+            self._save()
+        return self._deliver_commands(player_id)
+
+    def _deliver_commands(self, player_id: str) -> list[dict]:
+        self._prepare_sync_intents()
+        owed = self.queued_commands[player_id][:]
+        cmds = [c for c in owed if c.get("cmd") not in DURABLE_SYNC_COMMANDS
+                or player_id in self.report_bindings
+                or c.get("intent_id") not in self.sync_delivered[player_id]]
+        if any(c.get("cmd") in DURABLE_SYNC_COMMANDS for c in cmds) or self.report_bindings:
+            self._save()
+        if self.save_failed and any(c.get("intent_id") or c.get("cmd") == "report_binding" for c in cmds):
+            return [{"cmd": "noop", "refused": "persistence"}]
+        self.sync_delivered[player_id].update(
+            c["intent_id"] for c in cmds if c.get("cmd") in DURABLE_SYNC_COMMANDS)
+        self.queued_commands[player_id] = [
+            c for c in owed if c.get("cmd") in DURABLE_SYNC_COMMANDS]
         self._arm_inflight(player_id, cmds)
-        if any(c.get("cmd") in DURABLE_SYNC_COMMANDS for c in cmds):
-            self._save()                                 # handed over: no longer owed after a restart
         if cmds:
             _summary = ", ".join(
                 c.get("cmd", "?") + (":" + c["key"][:8] if "key" in c else "")
@@ -831,6 +862,158 @@ class SoulLinkState:
             log.error("[%s] gameplay report not committed: %s", player_id, exc)
             return [{"cmd": "noop", "refused": "report_not_committed"}]
 
+    def cancel_sync(self, player_id: str, key: str, *, reason: str = "cancelled") -> int:
+        """Suspend this owner's PC intent and invalidate every earlier completion."""
+        self.sync_revision += 1
+        self.queued_commands[player_id] = [
+            c for c in self.queued_commands[player_id]
+            if not (c.get("key") == key and c.get("cmd") in DURABLE_SYNC_COMMANDS)]
+        self._ack_inflight(player_id, key)
+        self.sync_versions[player_id][key] = {
+            "revision": self.sync_revision, "active": False, "reason": reason}
+        if player_id in self.report_bindings:
+            self.queued_commands[player_id].append({
+                "cmd": "sync_cancel", "key": key, "intent_revision": self.sync_revision})
+        self._save()
+        return self.sync_revision
+
+    def suspend_sync(self, player_id: str, key: str, *, reason: str) -> int:
+        revision = self.cancel_sync(player_id, key, reason=reason)
+        self.sync_versions[player_id][key]["suspended"] = True
+        self._save()
+        return revision
+
+    def resume_sync(self, player_id: str, key: str) -> None:
+        row = self.sync_versions[player_id].get(key)
+        if row:
+            row.pop("suspended", None)
+            self._save()
+
+    def _prepare_sync_intents(self) -> None:
+        for pid in ("a", "b"):
+            queue = self.queued_commands[pid]
+            death_keys = {c.get("key") for c in queue if c.get("cmd") in (*DEATH_COMMANDS, "memorialize")}
+            death_keys |= self.pending_memorials[pid]
+            keep, latest = [], {}
+            for key, old in list(self.sync_versions[pid].items()):
+                entry = self.entry_for(pid, key)
+                if old.get("active") and (key in death_keys or (entry and entry.status != LinkStatus.ALIVE)):
+                    self._ack_inflight(pid, key)
+                    self.sync_revision += 1
+                    self.sync_versions[pid][key] = {
+                        "revision": self.sync_revision, "active": False, "reason": "death"}
+                    if pid in self.report_bindings:
+                        keep.append({"cmd": "sync_cancel", "key": key, "intent_revision": self.sync_revision})
+            for c in queue:
+                if c.get("cmd") not in DURABLE_SYNC_COMMANDS:
+                    keep.append(c)
+                    continue
+                key = c.get("key")
+                if not key:
+                    continue
+                if self.sync_versions[pid].get(key, {}).get("suspended"):
+                    continue
+                if key in death_keys:
+                    old = self.sync_versions[pid].get(key)
+                    if old and old.get("active"):
+                        self._ack_inflight(pid, key)
+                        self.sync_revision += 1
+                        self.sync_versions[pid][key] = {
+                            "revision": self.sync_revision, "active": False, "reason": "death"}
+                        if pid in self.report_bindings:
+                            keep.append({"cmd": "sync_cancel", "key": key, "intent_revision": self.sync_revision})
+                    continue
+                prev = latest.get(key)
+                if prev and prev["cmd"] == c["cmd"]:
+                    prev.update({k: v for k, v in c.items() if k not in ("intent_id", "intent_revision")})
+                else:
+                    latest[key] = c
+                    keep.append(c)
+            for key, c in latest.items():
+                old = self.sync_versions[pid].get(key)
+                if not (old and old.get("active") and old.get("cmd") == c["cmd"]
+                        and (not c.get("intent_id") or c.get("intent_id") == old.get("intent_id"))):
+                    self.sync_revision += 1
+                    c["intent_id"] = f"{self.report_run_id}:{self.sync_revision}"
+                    c["intent_revision"] = self.sync_revision
+                    self.sync_versions[pid][key] = {
+                        "revision": self.sync_revision, "intent_id": c["intent_id"],
+                        "cmd": c["cmd"], "active": True,
+                        "superseded": old is not None and c["cmd"] in old.get("history", [old.get("cmd")]),
+                        "history": list(dict.fromkeys([*(old or {}).get("history", [(old or {}).get("cmd")]),
+                                                       c["cmd"]]))}
+                else:
+                    c["intent_id"], c["intent_revision"] = old["intent_id"], old["revision"]
+            self.queued_commands[pid] = [
+                c for c in keep if c.get("cmd") not in DURABLE_SYNC_COMMANDS or c is latest.get(c.get("key"))]
+
+    def _settle_sync_answer(self, player_id: str, msg: dict) -> bool:
+        key = msg["key"]
+        row = self.sync_versions[player_id].get(key)
+        intent_id = msg.get("intent_id")
+        if not row and intent_id:
+            visited = set()
+            while key not in visited:
+                visited.add(key)
+                migration = next((r for r in self.key_migration_ledger[player_id] if r["old_key"] == key), None)
+                if not migration:
+                    break
+                key = migration["new_key"]
+            row = self.sync_versions[player_id].get(key)
+            if row and row.get("intent_id") == intent_id:
+                msg["key"] = key
+        if not row:
+            return not intent_id
+        if (intent_id and (intent_id != row.get("intent_id") or
+                          msg.get("intent_revision") != row["revision"])):
+            return False
+        if not intent_id and player_id in self.report_bindings:
+            return False
+        if not intent_id and row.get("superseded"):
+            return False
+        if not row.get("active") and not row.get("confirmed"):
+            return False
+        if row.get("cmd") != SYNC_ANSWERS[msg["event"]]:
+            return False
+        if msg["event"].endswith("_failed") and intent_id:
+            row["problem"] = msg.get("reason", "application refused")
+            return True
+        row["active"], row["confirmed"] = False, True
+        row.pop("problem", None)
+        self.queued_commands[player_id] = [
+            c for c in self.queued_commands[player_id] if c.get("intent_id") != row.get("intent_id")]
+        return True
+
+    def _confirm_sync_census(self, player_id: str, msg: dict) -> None:
+        if (self.party_snapshot_withheld(player_id, msg) or msg.get("in_battle")
+                or type(msg.get("pc_boxes_generation")) is not int or msg["pc_boxes_generation"] < 1
+                or not isinstance(msg.get("pc_boxes"), list) or not isinstance(msg.get("party"), list)
+                or self.pending_trade or self._trade_settle_ticks.get(player_id, 0)):
+            return
+        party = Counter(m.get("key") for m in msg["party"] if isinstance(m, dict))
+        boxes = Counter(m.get("key") for m in msg["pc_boxes"] if isinstance(m, dict))
+        confirmed = False
+        for key, row in self.sync_versions[player_id].items():
+            if not row.get("active") or key in self.ambiguous_keys[player_id]:
+                continue
+            # An older, opposite command may still be waiting on the client.
+            if row.get("intent_id") not in self.sync_delivered[player_id]:
+                continue
+            applied = ((row["cmd"] == "box_mon" and party[key] == 0 and boxes[key] == 1)
+                       or (row["cmd"] == "party_mon" and party[key] == 1 and boxes[key] == 0))
+            if not applied:
+                continue
+            row["active"], row["confirmed"] = False, True
+            confirmed = True
+            self._ack_inflight(player_id, key)
+            self.queued_commands[player_id] = [
+                c for c in self.queued_commands[player_id] if c.get("intent_id") != row["intent_id"]]
+            if row["cmd"] == "box_mon":
+                self.party_keys[player_id].discard(key)
+            else:
+                self.party_keys[player_id].add(key)
+        if confirmed:
+            self._save()
 
     def _handle_ghost_pos(self, player_id: str, msg: dict):
         """Relay a player's overworld position to the partner as an (ephemeral) ghost_pos
@@ -2170,7 +2353,7 @@ class SoulLinkState:
                             continue
                         entry = state.entry_for(pid, c["key"])
                         if (c["key"] in migrated or c["key"] in state.pending_memorials[pid]
-                                or entry is None or entry.status != LinkStatus.ALIVE):
+                                or (entry is not None and entry.status != LinkStatus.ALIVE)):
                             continue
                         state.queued_commands[pid].append(c)
             log.info(f"Loaded {len(state.links)} links from {state._links_path}")
@@ -3629,6 +3812,7 @@ class SoulLinkState:
         partner_in_party = (
             partner not in self._has_helld
             or partner_mon.key in self.party_keys[partner]
+            or self._has_pending_command(partner, partner_mon.key, "party_mon")
         )
         if partner_mon and partner_in_party:
             # Cancel any pending party_mon for the same key before queuing box_mon.
@@ -3711,7 +3895,8 @@ class SoulLinkState:
         # behind until partner's Lua ACKs the command.  Subtract pending box_mon
         # commands from party_size so we don't get false "party full" blocks when a
         # swap is in-flight.
-        if partner_mon and partner_mon.key not in self.party_keys[partner]:
+        if partner_mon and (partner_mon.key not in self.party_keys[partner]
+                            or self._has_pending_command(partner, partner_mon.key, "box_mon")):
             pending_box_mons = sum(
                 1 for c in self.queued_commands[partner] if c.get("cmd") == "box_mon"
             )
@@ -3782,6 +3967,8 @@ class SoulLinkState:
         """
         inflight = self.sync_inflight[player_id]
         for ident in list(inflight):
+            if ident[1] in DURABLE_SYNC_COMMANDS:
+                continue
             inflight[ident] -= 1
             if inflight[ident] <= 0:
                 del inflight[ident]
@@ -3789,6 +3976,9 @@ class SoulLinkState:
     def _has_pending_command(self, player_id: str, key: str, *cmds: str) -> bool:
         """True if a matching command for key is queued for player_id, or has been
         delivered and is still unanswered (in flight on the client — see sync_inflight)."""
+        if (self.sync_versions[player_id].get(key, {}).get("suspended")
+                and any(c in DURABLE_SYNC_COMMANDS for c in cmds)):
+            return True
         if any((key, c) in self.sync_inflight[player_id] for c in cmds):
             return True
         if key in self.death_inflight[player_id] and any(c in DEATH_COMMANDS for c in cmds):
@@ -3917,6 +4107,8 @@ class SoulLinkState:
         # below protect, so it runs first (invariant review MINOR-5: a rebuild whose answer was
         # lost, or an `applying` trade, used to switch it off for as long as they lasted).
         self._repair_lost_faints(player_id, party, in_battle)
+        if self.report_backlog[player_id] or self.report_backlog[_partner(player_id)]:
+            return
         if self.rebuild_pending.get(player_id):
             return
         # A trade owns party bookkeeping while the swap is in flight + a short settle window after.
@@ -4297,6 +4489,8 @@ class SoulLinkState:
         # 5. Mon stats cache
         if old_key in self.mon_stats[player_id]:
             self.mon_stats[player_id][new_key] = self.mon_stats[player_id].pop(old_key)
+        if old_key in self.sync_versions[player_id]:
+            self.sync_versions[player_id][new_key] = self.sync_versions[player_id].pop(old_key)
 
         # 6. Bonus keys (shiny clause)
         if old_key in self.bonus_keys[player_id]:
@@ -5050,6 +5244,7 @@ class SoulLinkState:
             raise RuntimeError(f"Refusing to overwrite unreadable run state: {self.load_failed}")
         if self._report_transaction:
             return
+        self._prepare_sync_intents()
         os.makedirs(self._data_dir, exist_ok=True)
         payload = {
             "gameplay_delivery": {

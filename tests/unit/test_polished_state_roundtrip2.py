@@ -25,6 +25,7 @@ import pytest
 from tests.unit.polished_state_rig import (
     MutantRig,
     PolishedStateBridge,
+    assert_sync_command,
     new_state,
     seed_pair,
     seed_rebuild,
@@ -217,11 +218,11 @@ def model_is_consistent(sc):
                 assert snap["key"] in snap["cartridge_keys"], f"{label}: acknowledged a still-boxed mon"
                 assert snap["key"] in sc.keys, f"{label}: ack for an unrequested mon"
                 restored.add(snap["key"])
+                queued.discard(snap["key"])
                 inflight.discard(snap["key"])
             delivered = [c for c in snap["returned"] if c["cmd"] == "party_mon"]
             for command in delivered:
                 assert command["key"] in sc.keys, f"{label}: unexpected party_mon"
-                queued.discard(command["key"])
                 inflight.add(command["key"])
         assert snap["party_keys"]["a"] == sorted(set(sc.base_keys) | restored), f"{label}: A membership"
         assert snap["party_keys"]["b"] == sorted(sc.partners), f"{label}: partner membership"
@@ -274,7 +275,7 @@ def test_no_rebuild_duplicate_reacks_without_adding_or_reboxing(tmp_path, idempo
     assert [e["key"] for e in sc.rig.sent("sync_retrieve_done")] == list(sc.keys)
     commands = [cmd for _, cmd in sc.bridge.delivered if cmd["cmd"] == "party_mon"]
     (command,) = commands
-    assert command == {"cmd": "party_mon", "key": sc.keys[0]}
+    assert_sync_command(sc.state, "a", command, "party_mon", sc.keys[0])
     mark = sc.bridge.mark()
     before = sc.bridge.history[-1]
     writes, image = len(sc.rig.writes()), cartridge_bytes(sc.rig)
@@ -295,7 +296,8 @@ def test_no_rebuild_duplicate_reacks_without_adding_or_reboxing(tmp_path, idempo
         assert nack["rebuild"] == {"a": None, "b": None}  # NO rebuild key exists to drop or protect the partner
         assert sc.keys[0] not in nack["party_keys"]["a"]
         assert sc.partners[0] not in nack["party_keys"]["b"]
-        assert any(c == {"cmd": "box_mon", "key": sc.partners[0]} for c in nack["queued"]["b"])
+        (box,) = [c for c in nack["queued"]["b"] if c["cmd"] == "box_mon"]
+        assert_sync_command(sc.state, "b", box, "box_mon", sc.partners[0])
         with pytest.raises(AssertionError, match="duplicate changed A's party_keys"):
             duplicate_is_safe(sc, mark, before["party_keys"]["a"], before["party_size"]["a"])
 

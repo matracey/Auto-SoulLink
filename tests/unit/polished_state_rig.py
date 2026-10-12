@@ -47,6 +47,18 @@ end
 PLAYERS = ("a", "b")
 
 
+def assert_sync_command(state, player, command, name, key):
+    version = state.sync_versions[player][key]
+    assert version["cmd"] == name
+    assert version["revision"] > 0
+    assert command == {
+        "cmd": name,
+        "key": key,
+        "intent_id": f"{state.report_run_id}:{version['revision']}",
+        "intent_revision": version["revision"],
+    }
+
+
 def new_state(tmp_path):
     """The real server state, isolated (links.json / memorial.json live under tmp_path), on the real Polished adapter."""
     return SoulLinkState(data_dir=str(tmp_path), adapter=Gen2PolishedAdapter(artifact_kind="overlay"))

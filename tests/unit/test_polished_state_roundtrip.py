@@ -30,6 +30,7 @@ from server.state import LinkStatus
 from tests.unit.polished_state_rig import (
     MutantRig,
     PolishedStateBridge,
+    assert_sync_command,
     new_state,
     seed_pair,
     seed_rebuild,
@@ -86,7 +87,7 @@ def scenario(tmp_path, make_rig=Rig, cartridge_party=3, lag_one=False):
     sc = Scenario(rig, state, bridge, key, partner, other, bridge.mark())
     bridge.feed("b", {"event": "box_to_party", "key": partner})            # B withdrew natively
     (cmd,) = [c for c in bridge.deliver("a") if c["cmd"] != "noop"]        # A's next tick returns it
-    assert cmd == {"cmd": "party_mon", "key": key}, cmd
+    assert_sync_command(state, "a", cmd, "party_mon", key)
     sc.command = cmd
     return sc
 
@@ -278,6 +279,6 @@ def test_characterised_a_full_party_refusal_discards_the_key_and_reboxes_the_par
     assert nack["party_keys"]["b"] == []
     # and the state really hands the partner's box_mon to B on B's next tick (inflight armed)
     (box,) = [c for c in sc.bridge.deliver("b") if c["cmd"] == "box_mon"]
-    assert box == {"cmd": "box_mon", "key": sc.partner}
+    assert_sync_command(sc.state, "b", box, "box_mon", sc.partner)
     assert [(k, c) for k, c, _ in sc.bridge.history[-1]["sync_inflight"]["b"]] == [(sc.partner, "box_mon")]
     assert sc.bridge.commands_since(mark, "b", "box_mon", sc.partner)
