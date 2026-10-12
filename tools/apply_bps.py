@@ -97,8 +97,6 @@ def main() -> int:
     with open(args.patch, "rb") as f:
         patch = f.read()
     target = apply(source, patch)
-    with open(args.out, "wb") as f:
-        f.write(target)
 
     print(f"source sha1={hashlib.sha1(source).hexdigest()} size={len(source)}")
     print(
@@ -108,6 +106,8 @@ def main() -> int:
     if args.expect_sha1 and hashlib.sha1(target).hexdigest() != args.expect_sha1.lower():
         print(f"expected sha1 {args.expect_sha1} does not match", file=sys.stderr)
         return 2
+    with open(args.out, "wb") as f:
+        f.write(target)
     return 0
 
 

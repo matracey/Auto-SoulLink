@@ -1,4 +1,5 @@
 """Unit tests for tools/apply_bps.py — synthetic BPS only, no ROMs, no network."""
+import hashlib
 import struct
 import sys
 import zlib
@@ -7,7 +8,7 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from tools.apply_bps import apply  # noqa: E402
+from tools.apply_bps import apply, main  # noqa: E402
 
 
 def _vlq(n: int) -> bytes:
@@ -67,6 +68,30 @@ def _make_fixture():
 def test_apply_reproduces_target():
     source, target, patch = _make_fixture()
     assert apply(source, patch) == target
+
+
+@pytest.mark.parametrize("existing", [False, True])
+@pytest.mark.parametrize("expected", [None, "correct", "uppercase", "wrong"])
+def test_cli_verifies_before_publishing(tmp_path, monkeypatch, existing, expected):
+    source, target, patch = _make_fixture()
+    source_path, patch_path, output = (tmp_path / name for name in ("source", "patch", "out"))
+    source_path.write_bytes(source)
+    patch_path.write_bytes(patch)
+    if existing:
+        output.write_bytes(b"trusted output")
+    argv = ["apply_bps", str(source_path), str(patch_path), str(output)]
+    if expected:
+        digest = hashlib.sha1(target).hexdigest()
+        argv += ["--expect-sha1", "0" * 40 if expected == "wrong" else
+                 digest.upper() if expected == "uppercase" else digest]
+    monkeypatch.setattr(sys, "argv", argv)
+    assert main() == (2 if expected == "wrong" else 0)
+    if expected == "wrong":
+        assert output.exists() == existing
+        if existing:
+            assert output.read_bytes() == b"trusted output"
+    else:
+        assert output.read_bytes() == target
 
 
 def test_bad_magic():
