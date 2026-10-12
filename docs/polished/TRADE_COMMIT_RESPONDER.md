@@ -95,6 +95,10 @@ Before the first **party, dex or SRAM mutation**, recheck:
    text; they do **not** establish full form/stat policy.
    (`patch/polished/src/trade_validate.asm:15-39,43-149`;
    `docs/polished/TRADE.md:1376-1380`.)
+
+   The current responder validates the selected local nickname with
+   `SlinkTradeValidateText` (eleven-byte bound, terminator `$53`, no control bytes) before
+   `GetNickname` or any native UI. Incoming staged names retain their independent validator.
 3. Apply the owner-approved last-usable-mon rule to **the resulting party**, not merely
    count >1. Native `CheckAnyOtherAliveMonsForTrade` searches other local HP, then incoming
    HP; it permits replacing the sole usable mon with a usable incoming mon. Preserve this
@@ -221,6 +225,17 @@ save assumptions or counter-first timeout. Proposed phases:
    for stat changes (`P/engine/pokemon/move_mon.asm:953-1023`;
    `P/engine/pokemon/mon_stats.asm:545-561`). If the later native overwrite dialog is
    declined, report no trade, not “no bytes changed.”
+
+   **Current responder checkpoints:** `SlinkTradeResponderCheckConsent` verifies header,
+   token, generation/ACK, PROMPT command, the private selected slot, current own-slot
+   legality and unchanged party count immediately after either consent menu returns.
+   The check precedes normalization, is repeated before the full save, and runs again after
+   save and before snapshot. Decline also rechecks before publishing. A canceled/replaced
+   visit exits before the next native write or stale consent publication. Changes already
+   made while the preceding checkpoint was valid are not described as rolled back.
+   `tests/unit/test_polished_responder_safety.py` executes these checks in the shipped
+   responder bytes with native menus/save/normalization trapped; it is not SRAM-durability
+   or live interrupt-timing proof.
 4. Decline: bounded 90-frame RELEASE wait, with B/timeout allowed, then close lease and
    CloseText. Consent: keep the foreground stack, textbox, token and snapshot while waiting
    for matching RELEASE of the PROMPT generation; only after observing it accept fresh APPLY

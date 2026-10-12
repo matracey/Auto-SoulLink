@@ -535,6 +535,16 @@ def build(*, check: bool = False, version: str | None = None,
     if test_output is not None:
         provenance["test_only"] = {"SLINK_TRADE_COMMIT_ENABLE": 1,
                                    "statement": "ISOLATED TEST BUILD; not a shipped pin"}
+    # Runtime consumers read this small generated contract instead of build provenance.
+    # Keep it in `files` so --check detects byte-for-byte drift alongside the UPS/symbols.
+    companion_abi = {
+        "schema": "polished-companion-abi-v1",
+        "abi_version": provenance["abi_version"],
+        "rom_sha1": {"clean": provenance["base_sha1"], "overlay": provenance["output"]["sha1"]},
+    }
+    files[output_root / "data/games/polished_crystal/companion_abi.json"] = (
+        json.dumps(companion_abi, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
 
     print(f"[polished-companion] clean sha1 {spec['sha1']} reproduced", file=sys.stderr)
     print(f"[polished-companion] overlay sha1 {provenance['output']['sha1']}  ups {len(ups)} B  ({release_check})",

@@ -2,9 +2,8 @@
 
 Two layers, both against the REAL overlay artifacts:
 
-* the ROM side is read out of patch/polished/src/panel.asm and the built overlay .sym, so the
-  panel's wire (wSlinkPanelText, the two fixed-stride lines, the <RAM>/<LNBRK> script) is pinned to
-  bytes that exist rather than to a description of them;
+* native rendering, sanitization, mailbox bounds and input waits execute the shipped UPS
+  in test_polished_panel_rom.py;
 * the host side runs the same in-process rig as test_polished_client.py over a WRAM image laid out
   from that .sym and drives the shared AWAIT/STAGED handshake exactly as the cartridge does.
 
@@ -37,8 +36,6 @@ from tests.unit.test_polished_client import (  # noqa: F401
 
 lupa = pytest.importorskip("lupa")
 
-import tools.build_polished_companion as pc  # noqa: E402
-import tools.gen_polished_profile as gp  # noqa: E402
 
 ROOTP = Path(ROOT)
 MAILBOX = SYM["wSlinkMailbox"][1]
@@ -54,7 +51,6 @@ BLANK = 0x7F
 PROFILE = json.loads((ROOTP / "data/games/polished_crystal/profile.json").read_text(encoding="utf-8"))
 PANEL = PROFILE["titles"]["polished"]["overlay"]["panel"]
 LINES, LINE_MAX, STRIDE, TERM = PANEL["lines"], PANEL["line_max"], PANEL["stride"], PANEL["terminator"]
-PANEL_ASM = gp.PANEL_SRC.read_text(encoding="utf-8")
 
 _CODES: dict[str, int] | None = None
 
@@ -135,45 +131,6 @@ def _window(mem, base: int, n: int = 64) -> list[int]:
     return [mem[base + i] for i in range(n)]
 
 
-# ── the ROM's half ────────────────────────────────────────────────────────────────────────
-
-def test_the_staged_page_is_painted_from_the_mailbox_at_each_lines_own_origin():
-    """The staged page is two fixed-stride mailbox lines painted with PlaceString, each at its own
-    origin (INNERY and INNERY + 1) -- a `<RAM> a <LNBRK> <RAM> b` chain resumes line 2 at the END of line 1
-    (home/text.asm HandleLineBreak advances the string's STARTING coords): live C2/C3 screen "PAR|TNER: RED".
-    Both sources are the mailbox, never VRAM, and the ROM clamps both lines' terminator itself.
-
-    Red control (applied): paint line 2 from wTilemap (or at INNERY + 2) and this fails."""
-    code = [ln.split(";")[0].strip() for ln in PANEL_ASM.splitlines()]
-    code = [ln for ln in code if ln]
-    start = code.index("jr nz, .nostage")
-    window = code[start + 1: start + 16]
-    assert window[:3] == ["ld a, '@'",
-                          "ld [wSlinkPanelText + SLINK_PANEL_LINE_MAX], a",
-                          "ld [wSlinkPanelText + SLINK_PANEL_STRIDE + SLINK_PANEL_LINE_MAX], a"], window
-    assert window[3:9] == ["hlcoord TEXTBOX_INNERX, TEXTBOX_INNERY", "ld de, wSlinkPanelText", "rst PlaceString",
-                           "hlcoord TEXTBOX_INNERX, TEXTBOX_INNERY + 1",
-                           "ld de, wSlinkPanelText + SLINK_PANEL_STRIDE", "rst PlaceString"], window
-    assert "SlinkPanelScript:" not in PANEL_ASM, "the dead <RAM>/<LNBRK> script chain must stay deleted"
-    codes = {k: int(v) for k, v in
-             re.findall(r'\["([^"]+)"\] = (\d+)',
-                        (ROOTP / "data/games/polished_crystal/charmap.lua").read_text(encoding="utf-8"))}
-    assert codes["@"] == TERM
-
-
-def test_the_mailbox_is_whole_and_the_page_fits_inside_its_tail():
-    """The mailbox is Polished's own 69-byte Unused section and the staged page lives in its tail.
-
-    Red control (applied): claim a third line (panel.asm SLINK_PANEL_LINES 3) and this fails -- it
-    is the check that would catch a greedy panel overrunning the reserved span."""
-    assert MAILBOX == pc.MAILBOX
-    assert MAILBOX_END - MAILBOX == 69, "the reserved section keeps its size, so no symbol moves"
-    assert gp._def(PANEL_ASM, "SLINK_PANEL_LINES") == LINES == 2
-    assert gp._def(PANEL_ASM, "SLINK_PANEL_LINE_MAX") == LINE_MAX == 16
-    assert gp._def(PANEL_ASM, "SLINK_PANEL_STRIDE") == STRIDE == LINE_MAX + 1
-    assert PANEL_TEXT == MAILBOX + 34 == PANEL["base"]
-    assert 34 + STRIDE * LINES <= MAILBOX_END - MAILBOX
-    assert TERM == 0x53
 
 
 def test_the_overlay_advertises_panel_and_sound_and_nothing_else(roms):  # noqa: F811
@@ -252,14 +209,15 @@ def test_a_write_outside_the_mailbox_is_refused_by_the_permit(roms):  # noqa: F8
 
     Red control (applied): drop the `narrow` argument to Panel.writes and the tilemap case writes."""
     lua, parts, io, log, mem = _build(roms, _fresh())
+    before = _window(mem, TILEMAP)
     w = parts.panel_writes
     w.arm(w, "panel", lambda addr, n: True)             # a lying allow(): the permit's bound still bites
     for addr, n in ((TILEMAP, 4), (MAILBOX_END - 4, 8), (PANEL_TEXT + LINES * STRIDE, 1)):
         with pytest.raises(Exception, match="refused"):
             w.write_bytes(w, addr, lua.table_from([1] * n))
-    assert _window(mem, TILEMAP) == _window(mem, TILEMAP)
+    assert _window(mem, TILEMAP) == before
     w.disarm()
-    w.arm(w, "panel", lambda addr, n: PANEL_TEXT <= addr and addr + n <= MAILBOX_END)
+    w.arm(w, "panel", lambda addr, n: addr >= PANEL_TEXT and addr + n <= MAILBOX_END)
     w.write_bytes(w, PANEL_TEXT, lua.table_from([BLANK]))
     w.disarm()
     assert _written(log)[PANEL_TEXT] == BLANK
@@ -295,23 +253,3 @@ def test_rows_are_cut_to_the_line_padded_to_it_and_bad_payloads_refused(roms):  
     assert second[2:LINE_MAX] == [BLANK] * (LINE_MAX - 2), "a short line is padded, not left short"
     assert second[LINE_MAX] == TERM
 
-
-def test_the_fallback_does_not_prompt_and_the_staged_path_waits_for_a_fresh_key():
-    """STAGE-2/3 DEFECT PIN. (1) SlinkPanelFallback ends in `done`, never `prompt`, so AWAIT is published before any
-    key wait. (2) PrintText never waits (home/text.asm CheckTerminatorChar returns on <PROMPT> BEFORE dispatch), so the
-    STAGED path itself must reach `.WaitForButton` (release-then-press) before .ready reads hJoyDown, or the A that chose
-    Call advances/closes the page the frame it is drawn (live C2/C3 finding). The timeout path closes the lease first.
-
-    SOURCE check on purpose; the behaviour is the live C0-C5 run (docs/polished/LIVE_PANEL.md).
-    RED CONTROL (applied): restore `prompt` on the fallback, or replace `jr .waitkey` with `jr .ready`."""
-    lines = PANEL_ASM.splitlines()
-    body = lines[lines.index("SlinkPanelFallback:") + 1: lines.index("SlinkPanelEnd::")]
-    data = [ln for ln in body if ln.strip() and not ln.strip().startswith(";")]
-    terminator = data[-1].strip().split()[0]
-    assert terminator == "done", f"the fallback must not prompt, got {terminator!r}"
-    code = [ln.split(";")[0].strip() for ln in lines]
-    code = [ln for ln in code if ln]
-    assert "jr .waitkey" in code and "jr .ready" not in code[code.index("jr nz, .nostage"):code.index(".nostage")]
-    nostage = code.index(".nostage")
-    assert code[nostage + 1: nostage + 3] == ["xor a", "ld [wSlinkMailbox + SLINK_OFS_PANEL_STATE], a"]
-    assert code[code.index(".waitkey") + 1] == "call .WaitForButton"

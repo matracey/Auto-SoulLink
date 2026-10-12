@@ -1,8 +1,8 @@
 {
-  "schema": "polished-companion-abi-v1",
   "abi_version": 3,
   "rom_sha1": {
     "clean": "6930b48af5844d373e3c9130f26d6dd1084cf4ed",
-    "overlay": "fe8c57e1034059331ccf25d232ff757d675363b2"
-  }
+    "overlay": "ede69bbf399b7a02007cfe563ff61658535de039"
+  },
+  "schema": "polished-companion-abi-v1"
 }

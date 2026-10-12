@@ -486,15 +486,30 @@ so the `xor a` / `ld a,1` pair around the print is mandatory, not cosmetic. Prin
 *before* the original would instead be erased by the very next thing the original does.
 
 **One-time vs per-pass trade-off.** A one-time print at `SetUpMenu` is cheaper but, per
-§8.3, is erased in the RTC-unset state. A per-pass print costs one extra
-`PlaceString` per frame in the main menu — a menu that is idle and redrawn at 60 Hz. That
-is the price of correctness here, and it is the only correct option.
+§8.3, is erased in the RTC-unset state. A per-pass print costs one bounded literal-glyph
+loop per frame in the main menu — a menu that is idle and redrawn at 60 Hz. That is the
+price of correctness here.
 
-**`PlaceString` is the vanilla printer and is safe here**: `PlaceString 00:0030` per
-HOOKS.md §3.3, and the version text is a normal Polished string with `@` = `$53`
-(`constants/charmap.asm:43`), so `patch/gen2/src/version.asm`'s
-`db "SoulLink {SLINK_BUILD_VERSION}@"` form ports over unchanged, including its 20-byte
-fixed field and both `ASSERT`s.
+**Current renderer: `SlinkPrintVersionBounded`.** Row 10 stays the per-pass origin. The active
+`wMenuBorderLeftCoord` and `wMenuBorderRightCoord` constrain the horizontal interval to
+`left+1 .. right-1`; the native rectangle is columns `0 .. 16`, not the full screen width.
+The ROM copies at most `right-left-1` literal glyphs and stops at `@` (`$53`), truncating
+long versions without wrapping or touching either border. The 20-byte `SlinkVersionText`
+field is emitted with the scoped `no_ngrams` charmap: the nine-byte `SoulLink ` prefix,
+literal stamp and padding keep the version-masked identity contract and slot length stable.
+The bounded routine is outside that field, so changing the stamp does not move code.
+
+`tests/unit/test_polished_version_bounds.py` executes the native menu-coordinate calculation,
+border painter and per-pass bridge against the actual UPS-applied ROM. Long and short stamps
+cover New Game, Continue and NG+ rectangles, checking exact changed tile cells and untouched
+borders. This is rendering-model evidence, not live video/timing evidence.
+
+Native smoke of the rebuilt overlay also reached the no-save New Game menu in BizHawk.
+A private `SoulLink v12.45.678` stamp rendered `SoulLink v12.45` inside columns `1 .. 15`
+with both border/exterior intervals unchanged (`rf-rom-title-smoke`: PASS, frame 258).
+The private stamp retained canonical SHA1 `1ef4effd9e33177a645c41f9b20d06fca9597c67`.
+For the current engine, `hBGMapMode == 1` enables `UpdateBGMap`'s VBlank tilemap copy;
+the mode reset around the print is drawing hygiene, not a requirement for visibility.
 
 ### 8.5 Tile allocation — settled
 
