@@ -1287,3 +1287,7 @@ def test_f7_unaffected_native_slot_movement_is_allowed():
         mon["slot"] = slot
         mon["address"] = 0xD000 + slot * 48
     assert duo.oracle_faint_natural(ev)[:2] == ("PASS", [])
+
+def test_box_capability_does_not_call_the_retired_adapter_method():
+    # supports_box_mon was removed from the adapters; the S3 launch path must not raise AttributeError.
+    assert duo.adapter_box_capability() is True

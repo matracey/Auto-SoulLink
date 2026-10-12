@@ -25,7 +25,7 @@ PLAY (`--scenario link|boxsync|faint|whiteout|faint-natural|whiteout-natural|all
 fresh run (lane play-<name>/) driven by duo_play.lua through numbered step files, and judged by a server-side oracle
 that FAILS when the specified rule and reporting path did not fire:
   S1 link      both sides catch natively on Route 29 -> /api/status holds an ALIVE link of exactly those two keys.
-  S3 boxsync   reads gen2_polished supports_box_mon(): False -> SKIPPED (never PASS) without launching; True -> A's
+  S3 boxsync   box capability is always on (supports_box_mon retired; False -> SKIPPED, never PASS); A's
                first catch is quarantined (box_mon, executed + read back on A), then party_mon brings it back.
   S2 faint     after S1: SYNTH HP 0 on A's linked mon + a dropped TCP session -> the server's hello reconcile kills the
                link -> force_faint on B's wire -> B's own client writes it -> B's cartridge reads HP 0, nothing else.
@@ -947,11 +947,9 @@ def play_steps(name: str, box_capable: bool) -> list[tuple[str, str]]:
 
 
 def adapter_box_capability() -> bool:
-    """What the server will do: gen2_polished's own supports_box_mon() (impure: imports the adapter)."""
-    if str(REPO) not in sys.path:
-        sys.path.insert(0, str(REPO))
-    from server.adapters import get_adapter
-    return bool(get_adapter("gen2_polished").supports_box_mon())
+    """Always True: the supports_box_mon capability was retired (every admitted client composes a box_mon
+    executor, so the server always queues quarantine). BOX_CAPABILITY_OFF stays for an explicit False."""
+    return True
 
 
 def play_step_lines(text: str) -> dict:
