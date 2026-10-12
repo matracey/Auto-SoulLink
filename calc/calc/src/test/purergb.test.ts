@@ -19,6 +19,23 @@ afterEach(() => {
 });
 
 describe('pureRGB Gen 1 patch (prototype)', () => {
+  describe('Bonemerang fixed hit count', () => {
+    inGen(1, ({calculate, Pokemon, Move}) => {
+      test('include both 60-power hits while retaining the custom type', () => {
+        useDex('purergb');
+        const move = Move('Bonemerang');
+        expect(move.hits).toBe(2);
+        expect(move.bp).toBe(60);
+        expect(move.type).toBe('Bonemerang');
+        const result = calculate(Pokemon('Mew', {level: 50}), Pokemon('Mew', {level: 50}), move);
+        expect(result.range()).toEqual([46, 56]);
+        useDex('vanilla');
+        expect(Move('Bonemerang').hits).toBe(2);
+        expect(Move('Bonemerang').bp).toBe(50);
+      });
+    });
+  });
+
   describe('empty move slots', () => {
     inGen(1, ({calculate, Pokemon, Move}) => {
       test('retain the sentinel across dex swaps without changing other generations', () => {

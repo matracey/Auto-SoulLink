@@ -336,7 +336,7 @@ const MOVES_DATA: {[name: string]: MoveData} = {
   "Crabhammer": {"bp": 90, "type": "Water", "category": "Special"},
   "Explosion": {"bp": 140, "type": "Rock", "category": "Physical"},
   "Dust Claw": {"bp": 40, "type": "Ground", "category": "Physical"},
-  "Bonemerang": {"bp": 60, "type": "Bonemerang", "category": "Physical"},
+  "Bonemerang": {"bp": 60, "type": "Bonemerang", "category": "Physical", "multihit": 2},
   "Rest": {"bp": 0, "type": "Psychic", "category": "Status"},
   "Rock Slide": {"bp": 80, "type": "Rock", "category": "Physical"},
   "Hyper Fang": {"bp": 80, "type": "Normal", "category": "Physical"},

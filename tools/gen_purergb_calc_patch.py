@@ -215,6 +215,8 @@ def build_moves_data(moves: list[dict], calc_names: dict[str, str]) -> tuple[dic
         data: dict = {"bp": m["power"], "type": m["type"], "category": m["split"]}
         if name in MOVE_DRAIN:
             data["drain"] = list(MOVE_DRAIN[name])
+        if name == "Bonemerang":
+            data["multihit"] = 2
         out[name] = data
     return out, warnings
 

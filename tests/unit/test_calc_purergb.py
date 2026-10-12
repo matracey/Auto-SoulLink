@@ -136,6 +136,13 @@ def test_empty_move_sentinel_matches_the_generator_and_generated_table():
     assert gen.MIDDLE_MOVES + block + "\n" + gen.MIDDLE_TYPES in PURERGB_TS.read_text(encoding="utf-8")
 
 
+def test_generator_retains_bonemerangs_fixed_hit_count():
+    from tools import gen_purergb_calc_patch as gen
+
+    moves, _ = gen.build_moves_data(gen.load_json("moves.json")["moves"], gen.load_calc_move_names())
+    assert moves["Bonemerang"] == {"bp": 60, "type": "Bonemerang", "category": "Physical", "multihit": 2}
+
+
 def test_purergb_calc_profile_uses_the_purergb_dex():
     assert Gen1PureRGBAdapter(rom_type="PureRed").calc_profile()["dex"] == "purergb"
 
