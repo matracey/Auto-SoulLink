@@ -282,25 +282,25 @@ function addSets(pokes, name) {
 	var addedpokes = 0;
 	for (var i = 0; i < rows.length; i++) {
 		currentRow = rows[i].split(/[()@]/);
-		for (var j = 0; j < currentRow.length; j++) {
-			currentRow[j] = checkExeptions(currentRow[j].trim());
-			if (calc.SPECIES[9][currentRow[j].trim()] !== undefined) {
-				currentPoke = {};
-				currentPoke.name = currentRow[j].trim();
-				currentPoke.item = getItem(currentRow, j + 1);
-				if (j === 1 && currentRow[0].trim()) {
-					currentPoke.nameProp = currentRow[0].trim();
-				} else {
-					currentPoke.nameProp = name;
-				}
-				currentPoke.isCustomSet = true;
-				currentPoke.ability = getAbility(rows[i + 1].split(":"));
-				currentPoke.teraType = getTeraType(rows[i + 1].split(":"));
-				currentPoke = getStats(currentPoke, rows, i + 1);
-				currentPoke = getMoves(currentPoke, rows, i);
-				addToDex(currentPoke);
-				addedpokes++;
+		var j = /^[^@]*\(/.test(rows[i]) &&
+			calc.SPECIES[9][checkExeptions(currentRow[1].trim())] !== undefined ? 1 : 0;
+		currentRow[j] = checkExeptions(currentRow[j].trim());
+		if (calc.SPECIES[9][currentRow[j]] !== undefined) {
+			currentPoke = {};
+			currentPoke.name = currentRow[j];
+			currentPoke.item = getItem(currentRow, j + 1);
+			if (j === 1 && currentRow[0].trim()) {
+				currentPoke.nameProp = currentRow[0].trim();
+			} else {
+				currentPoke.nameProp = name;
 			}
+			currentPoke.isCustomSet = true;
+			currentPoke.ability = getAbility(rows[i + 1].split(":"));
+			currentPoke.teraType = getTeraType(rows[i + 1].split(":"));
+			currentPoke = getStats(currentPoke, rows, i + 1);
+			currentPoke = getMoves(currentPoke, rows, i);
+			addToDex(currentPoke);
+			addedpokes++;
 		}
 	}
 	if (addedpokes > 0) {

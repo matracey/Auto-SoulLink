@@ -131,3 +131,33 @@ def test_imports_do_not_inherit_previous_spreads(calc_page, spread):
     assert "ivs" not in result["stored"]["without spread"]
     assert result["attackIV"] == 31
     assert result["specialAttackEV"] == 0
+
+
+@pytest.mark.parametrize("header,species,set_name", [
+    ("Eevee (Pikachu) @ Leftovers", ["Pikachu"], "Eevee"),
+    ("Pikachu (Eevee) @ Leftovers", ["Eevee"], "Pikachu"),
+    ("Sparky (Pikachu) (M) @ Leftovers", ["Pikachu"], "Sparky"),
+    ("Aegislash (Pikachu) @ Leftovers", ["Pikachu"], "Aegislash"),
+    ("Pikachu (M) @ Leftovers", ["Pikachu"], "header regression"),
+    ("Pikachu @ Leftovers", ["Pikachu"], "header regression"),
+    ("Aegislash @ Leftovers", ["Aegislash-Blade", "Aegislash-Shield"], "header regression"),
+])
+def test_import_header_resolves_one_species(calc_page, header, species, set_name):
+    messages = []
+
+    def accept(dialog):
+        messages.append(dialog.message)
+        dialog.accept()
+
+    calc_page.once("dialog", accept)
+    result = calc_page.evaluate("""header => {
+        localStorage.removeItem('customsets');
+        addSets(header + '\\nLevel: 50\\n- Thunderbolt', 'header regression');
+        return JSON.parse(localStorage.customsets);
+    }""", header)
+    assert sorted(result) == species
+    for value in result.values():
+        assert list(value) == [set_name]
+        assert value[set_name]["item"] == "Leftovers"
+        assert value[set_name]["level"] == 50
+    assert messages == ["Successfully imported 1 set(s)"]
