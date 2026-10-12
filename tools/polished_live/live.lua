@@ -12,6 +12,8 @@
 -- write_audit.json pairs ordered write_ops with synchronous byte touched_spans.
 -- capture_negative.json retains run_executed, wrong_bank_events, battle_windows
 -- and throws. panel_attempts.json is the original panel permit log as an array.
+-- bootstrap.json records client presence, elapsed CPU time and raw admission parts
+-- on both bootstrap outcomes, before refusal.json and the fatal exit.
 local Oracle = {}
 function Oracle.evaluate_failed_throws(throws)
     local count, hits, clean = 0, 0, true
@@ -199,6 +201,16 @@ console.log = function(text, ...)
 end
 dofile(L.ROOT .. "/lua/slink.lua")
 observing_bootstrap = false
+local bootstrap_parts, raw_parts = {}, SLINK_GEN2_PARTS or {}
+for _, name in ipairs({"pack", "title", "artifact_kind", "qualification", "production_admitted",
+                       "runtime_rom_sha1", "admitted_by", "overlay_sha1"}) do
+    local value = raw_parts[name]
+    if value == nil then value = J.null end
+    bootstrap_parts[name] = value
+end
+write_json("bootstrap.json", {schema = "polished-live-bootstrap-v1",
+    client_present = SLINK_GEN2_CLIENT ~= nil, frame = emu.framecount(),
+    cpu_seconds = os.clock() - t_build, parts = bootstrap_parts})
 L.log(fmt("[live] lua/slink.lua returned after %.1fs cpu; client %s", os.clock() - t_build, tostring(SLINK_GEN2_CLIENT ~= nil)))
 if not SLINK_GEN2_CLIENT then
     local wf = assert(io.open(L.RUN .. "/client_writes.json", "w"))
