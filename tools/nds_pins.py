@@ -451,7 +451,7 @@ class CompanionPin:
                 raise PinError("source-built ARM9/autoload preimages require explicit base compression")
             start, stop = c.ram_base + off, c.ram_base + end
             if start <= site.continuation < stop or not any(
-                    k.ram_base <= site.continuation <= k.ram_base + k.ram_size for k in self.containers):
+                    k.ram_base <= site.continuation < k.ram_base + k.ram_size for k in self.containers):
                 raise PinError(f"site {site.id}: continuation must be a RAM address inside a pinned container "
                                "and outside the site's own bytes")
             intervals.setdefault(site.container, []).append((off, end))

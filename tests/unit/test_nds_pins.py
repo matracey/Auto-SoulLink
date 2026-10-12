@@ -373,6 +373,20 @@ def test_site_continuation_must_be_in_extent_and_outside_the_site():
     assert replace(table, sites=(replace(site, continuation=site.address + 12),))
 
 
+@pytest.mark.parametrize("isa,alignment", [("arm", 4), ("thumb", 2)])
+def test_continuation_uses_half_open_container_extents(isa, alignment):
+    *_, table = patched()
+    container = table.containers[0]
+    end = container.ram_base + container.ram_size
+    site = replace(table.sites[0], isa=isa,
+                   after=ARM_BX_LR.hex() if isa == "arm" else table.sites[0].after)
+    assert replace(table, sites=(replace(site, continuation=end - alignment),))
+    with pytest.raises(PinError, match="continuation"):
+        replace(table, sites=(replace(site, continuation=end),))
+    adjacent = replace(container, name="overlay9:99", file_id=99, ram_base=end, ram_size=32)
+    assert replace(table, containers=(container, adjacent), sites=(replace(site, continuation=end),))
+
+
 def test_per_container_site_overlap_but_not_cross_container_overlap():
     image = NdsImage.load(synthetic(dsi=False))
     a = noop_site(image, sid="a")
