@@ -38,12 +38,12 @@ EVENTS: dict[str, tuple[dict[str, str], dict[str, str]]] = {
                "instrumentation_key": "str",
                "party_hidden": "bool", "trade_outstanding": "list",
                # card C5-10b capability declaration
-               "battle_identity": "bool",
+               "battle_identity": "bool", "report_delivery": "int", "report_backlog": "int",
                # Gen 3 companion evidence (owner 2026-10-02): the pinned mailbox ABI, present only when the
                # cartridge's own companion mailbox is live (lua/gen3/native.lua companion_live)
                "companion_abi": "int"}),
     "tick": ({}, {"has_pokeballs": "bool", "party": "list", "area_id": "str", "loc_name": "str",
-                  "party_hidden": "bool",
+                  "party_hidden": "bool", "report_backlog": "int",
                   "trade_blocked": "bool", "awaiting_save": "bool",
                   "in_battle": "bool", "is_trainer_battle": "bool", "trainer_id": "int",
                   "opponent_name": "str", "opponent_class": "str", "enemy_party": "list",
@@ -55,9 +55,9 @@ EVENTS: dict[str, tuple[dict[str, str], dict[str, str]]] = {
     "capture": ({"key": "key", "area_id": "str"},
                 {"species_id": "int", "level": "int", "hp": "int", "maxHP": "int", "nickname": "str",
                  "held_item_id": "int", "is_egg": "bool", "gift": "bool", "in_box": "bool", "stats": "dict"}),
-    "faint": ({"key": "key"}, {"area_id": "str"}),
+    "faint": ({"key": "key"}, {"area_id": "str", "level": "int", "battle_evidence": "dict"}),
     "no_catch": ({"area_id": "str"}, {"species_id": "int", "level": "int"}),
-    "whiteout": ({}, {}),
+    "whiteout": ({}, {"battle_evidence": "dict"}),
     "party_to_box": ({"key": "key"}, {"stats": "dict"}),
     "box_to_party": ({"key": "key"}, {"area_id": "str", "nickname": "str"}),
     "release": ({"key": "key"}, {}),                  # O-35: a PC release of the player's own mon
@@ -95,6 +95,12 @@ UNCERTAIN_TRADE_DONE = {"trade_done": ({"token": "str", "uncertain": "bool"}, {"
 EVENTS["safe"] = ({}, dict(EVENTS["tick"][1]))
 
 ENVELOPE = {"event": "str", "player": "str", "seq": "int"}
+for _event in ("capture", "faint", "no_catch", "whiteout", "area_enter", "party_to_box",
+               "box_to_party", "key_change", "release", "stats_cache", "sync_retrieve_done",
+               "sync_retrieve_failed", "box_mon_failed", "memorialize_done", "memorialize_failed"):
+    EVENTS[_event][1]["report"] = "dict"
+for _event in ("stats_cache", "box_mon_failed", "sync_retrieve_done", "sync_retrieve_failed"):
+    EVENTS[_event][1].update({"intent_id": "str", "intent_revision": "int"})
 
 # docs/protocol.md §2.1/§2.2 step 1': the hello's pairing fields. The server DERIVES the
 # foundation from rom_type (foundation_for_rom_type -- its own table, reused, not restated) and
@@ -112,12 +118,15 @@ KEY_CHANGE_REASONS = ("nature_change", "evolution", "npc_trade", "trade_undo", "
 
 # cmd -> (required fields, optional fields); docs/protocol.md §5
 COMMANDS: dict[str, tuple[dict[str, str], dict[str, str]]] = {
+    "report_binding": ({"binding": "dict"}, {}),
+    "report_ack": ({"stream": "str", "number": "int"}, {}),
+    "sync_cancel": ({"key": "key", "intent_revision": "int"}, {}),
     "noop": ({}, {"refused": "str"}),   # refused: the line was not processed (identity|admission|no_hello (per player-slot/connection)|duplicate|superseded|load_failed|error|malformed|party_snapshot)
     # "phone": the O-29 tag; Gen 2 phone and capability-gated Emerald v2 Match Call consume it.
     "force_faint": ({"key": "key"}, {"nickname": "str", "phone": "str", "phone_data": "dict"}),
     "force_explode": ({"key": "key"}, {"nickname": "str", "phone": "str", "phone_data": "dict"}),
-    "box_mon": ({"key": "key"}, {}),
-    "party_mon": ({"key": "key"}, {"nickname": "str", "stats": "dict"}),
+    "box_mon": ({"key": "key"}, {"intent_id": "str", "intent_revision": "int"}),
+    "party_mon": ({"key": "key"}, {"nickname": "str", "stats": "dict", "intent_id": "str", "intent_revision": "int"}),
     "memorialize": ({"key": "key"}, {}),
     "game_over": ({}, {}),
     "msgbox": ({"text": "str"}, {"fb": "str", "r": "int", "g": "int", "b": "int", "frames": "int",

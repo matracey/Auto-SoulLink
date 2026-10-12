@@ -108,7 +108,7 @@ def default_kind(pack: str, title: str) -> str:
 
 class World:
     def __init__(self, pack="gen3_frlg", title="firered", kind=None, player="a",
-                 connected=True, native=None, boxes=None, journal=None, model_companion=False):
+                 connected=True, native=None, boxes=None, journal=None, model_companion=False, outbox=None):
         kind = default_kind(pack, title) if kind is None else kind
         self.pack, self.title, self.kind, self.player = pack, title, kind, player
         self.artifact_kind = "clean" if kind == "named" else kind
@@ -167,6 +167,8 @@ class World:
         )
         if journal is not None:
             self.io.trade_journal = journal(L)
+        if outbox is not None:
+            self.io.report_outbox = outbox(L)
         self.ev = L.table(on_bus_exec=self._on_bus_exec, unregister=lambda i: None)
         net = L.table(init=lambda h, p: None, connected=lambda: self.connected, pump=lambda: None,
                       send=self._send, receive=lambda: self.replies.pop(0) if self.replies else None)
