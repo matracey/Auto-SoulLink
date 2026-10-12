@@ -624,11 +624,8 @@ def _pair_oracle(results, *, data_dir, area_id="route_29", ot_ids=None, boot_sav
                                f"{mon.get('level')} disagrees with the engine capture "
                                f"{want['species']}/{want['level']} -- altered links.json")
 
-    # Nothing else in the persisted document may reference either newly-captured key: a second
-    # occurrence would mean the server accepted something the two saves don't show. `mon_stats` is
-    # excluded: it is per-mon bookkeeping keyed by every party mon's key (starters included), not an
-    # acceptance (first physical C<->C duo 2026-09-23: the only other hit was mon_stats).
-    bookkeeping = {"mon_stats"} | ({"pending_memorials"} if status != "alive" else set())
+    # Stats and delivery ledgers reference existing mons, not additional captures.
+    bookkeeping = {"mon_stats", "gameplay_delivery"} | ({"pending_memorials"} if status != "alive" else set())
     accepted_text = json.dumps({k: v for k, v in document.items() if k not in bookkeeping})
     for inst in ("a", "b"):
         occurrences = accepted_text.count(decoded[inst]["key"])

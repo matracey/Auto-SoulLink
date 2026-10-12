@@ -2441,6 +2441,29 @@ def test_duplicate_key_elsewhere_in_links_json_refused(good_case, tmp_path):
         oracles.link_oracle(results, data_dir=data_dir)
 
 
+@pytest.mark.parametrize("duplicate", [None, "pending", "link"])
+def test_delivery_bookkeeping_does_not_hide_duplicate_acceptance(good_case, duplicate):
+    results, data_dir, decoded = good_case
+    path = Path(data_dir) / "links.json"
+    document = json.loads(path.read_text(encoding="utf-8"))
+    document["gameplay_delivery"] = {
+        "sync_versions": {
+            side: {decoded[side]["key"]: {"cmd": "party_mon", "active": False, "confirmed": True}}
+            for side in ("a", "b")
+        }
+    }
+    if duplicate == "pending":
+        document["pending_captures"] = {"route_30": {"a": document["links"][0]["a"]}}
+    elif duplicate == "link":
+        document["links"].append({**document["links"][0], "area_id": "route_30"})
+    path.write_text(json.dumps(document), encoding="utf-8")
+    if duplicate is None:
+        oracles.link_oracle(results, data_dir=data_dir)
+    else:
+        with pytest.raises(RuntimeError, match="accepted something the saves don't show"):
+            oracles.link_oracle(results, data_dir=data_dir)
+
+
 # ---------------------------------------------------------------------------
 # DUO-WAVE-C: whiteout, pc_ops, changebox (tools/gen2_duo_oracles.py *_oracle)
 # ---------------------------------------------------------------------------

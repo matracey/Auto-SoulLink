@@ -2287,6 +2287,15 @@ class SLinkServer:
         refused = self.state.refuse_hidden_event(player_id, msg)
         if refused is not None:
             return refused  # before presentation enrichment or command/census mutation
+        if "report" in msg:
+            report = msg["report"]
+            receipts = self.state.report_receipts[player_id]
+            stream = report.get("stream") if isinstance(report, dict) else None
+            number = report.get("number") if isinstance(report, dict) else None
+            previous = receipts.get(stream) if isinstance(stream, str) else None
+            if (not isinstance(report, dict) or report.get("binding") != self.state.report_bindings.get(player_id)
+                    or type(number) is not int or number != (previous["number"] if previous else 0) + 1):
+                return self.state.handle_event(player_id, msg)
 
         if event == "hello":
             # ── Transactional hello (Codex cx-2985fe38 F1/F2) ──────────────────────────

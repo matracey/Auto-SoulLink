@@ -20,8 +20,10 @@ import json
 import logging
 import os
 import time
+import uuid
 from collections import Counter, deque
 from collections.abc import Mapping
+from copy import deepcopy
 from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
 from enum import Enum
@@ -56,6 +58,14 @@ class UnsafeGameMigration(RuntimeError):
 SYNC_COMMANDS = ("party_mon", "box_mon", "memorialize")
 # Persisted while undelivered (memorialize has its own durable record, pending_memorials).
 DURABLE_SYNC_COMMANDS = ("party_mon", "box_mon")
+
+REPORT_EVENTS = frozenset({
+    "capture", "faint", "no_catch", "whiteout", "area_enter", "party_to_box", "box_to_party",
+    "key_change", "release", "stats_cache", "sync_retrieve_done", "sync_retrieve_failed",
+    "box_mon_failed", "memorialize_done", "memorialize_failed",
+})
+SYNC_ANSWERS = {"stats_cache": "box_mon", "box_mon_failed": "box_mon",
+                "sync_retrieve_done": "party_mon", "sync_retrieve_failed": "party_mon"}
 
 # KEY-SCOPE-5: accepted key migrations remembered per player (replay idempotence and stale-snapshot
 # canonicalization). The count, not a clock, is the guarantee window.
@@ -224,6 +234,14 @@ class SoulLinkState:
         self._pidx: dict[str, dict[str, LinkEntry]] = {"a": {}, "b": {}}
         # commands queued for delivery to each player on their next request
         self.queued_commands: dict[str, list[dict]] = {"a": [], "b": []}
+        self.report_run_id = uuid.uuid4().hex
+        self.report_bindings: dict[str, dict] = {}
+        self.report_receipts: dict[str, dict] = {"a": {}, "b": {}}
+        self.report_backlog = {"a": 0, "b": 0}
+        self.sync_revision = 0
+        self.sync_versions: dict[str, dict[str, dict]] = {"a": {}, "b": {}}
+        self.sync_delivered: dict[str, set[str]] = {"a": set(), "b": set()}
+        self._report_transaction = False
         # SYNC_COMMANDS that have been DELIVERED but not yet answered, as
         # {player: {(monKey, cmd): reconciler_passes_remaining}}.  queued_commands empties the
         # instant a command ships, so without this the window between delivery and the client's
@@ -533,10 +551,19 @@ class SoulLinkState:
         """
         if self.load_failed:
             return [{"cmd": "noop", "refused": "load_failed"}]
+        if "report" in msg:
+            return self._handle_report(player_id, msg)
         malformed = self.normalize_party_snapshot(player_id, msg)
         if malformed is not None:
             return malformed
         event = msg.get("event", "unknown")
+        if event == "hello" and msg.get("report_delivery") == 1:
+            ot, rom = msg.get("ot_id"), msg.get("rom_sha1")
+            if (type(ot) is not int or not 0 < ot <= 0xFFFFFFFF
+                    or not isinstance(rom, str) or len(rom) != 40
+                    or any(c not in "0123456789abcdefABCDEF" for c in rom)):
+                msg["_rejected"] = True
+                return [{"cmd": "noop", "refused": "report_binding"}]
         refused = self.refuse_hidden_event(player_id, msg)
         if refused is not None:
             return refused
@@ -565,6 +592,25 @@ class SoulLinkState:
                 del self.queued_commands[player_id][queued_before:]
                 return refused or [{"cmd": "noop", "refused": "identity"}]
             if not msg.get("_rejected"):
+                if msg.get("report_delivery") == 1:
+                    ot = msg.get("ot_id")
+                    rom = msg.get("rom_sha1")
+                    if (type(ot) is not int or not 0 < ot <= 0xFFFFFFFF
+                            or not isinstance(rom, str) or len(rom) != 40
+                            or any(c not in "0123456789abcdefABCDEF" for c in rom)):
+                        return [{"cmd": "noop", "refused": "report_binding"}]
+                    self.report_bindings[player_id] = {
+                        "run_id": self.report_run_id, "player": player_id,
+                        "ot_id": f"{ot:08X}", "rom_sha1": rom.lower(),
+                    }
+                    self.queued_commands[player_id].insert(0, {
+                        "cmd": "report_binding", "binding": dict(self.report_bindings[player_id])})
+                    backlog = msg.get("report_backlog", 0)
+                    self.report_backlog[player_id] = max(0, min(4096, backlog)) if type(backlog) is int else 0
+                    for key, row in self.sync_versions[player_id].items():
+                        if not row.get("active"):
+                            self.queued_commands[player_id].append({
+                                "cmd": "sync_cancel", "key": key, "intent_revision": row["revision"]})
                 self.trade_prepare[player_id] = msg.get("trade_prepare") is True
                 if recovery_hello:
                     self._tick_pending_trade()
@@ -729,6 +775,62 @@ class SoulLinkState:
             )
             log.debug(f"[CMD QUEUE→{player_id}] flushing {len(cmds)} cmd(s): {_summary}")
         return cmds if cmds else [{"cmd": "noop"}]
+
+    def _handle_report(self, player_id: str, msg: dict) -> list[dict]:
+        report = msg.get("report")
+        expected = self.report_bindings.get(player_id)
+        if (not isinstance(report, dict) or not expected or report.get("binding") != expected
+                or self.identity_error.get(player_id) or msg.get("event") not in REPORT_EVENTS):
+            return [{"cmd": "noop", "refused": "report_binding"}]
+        stream, number = report.get("stream"), report.get("number")
+        if (not isinstance(stream, str) or len(stream) != 32
+                or any(c not in "0123456789abcdef" for c in stream)
+                or type(number) is not int or number < 1 or number > 2**53 - 1):
+            return [{"cmd": "noop", "refused": "report_identity"}]
+        ledger = self.report_receipts[player_id]
+        receipt = ledger.get(stream)
+        if receipt and receipt["binding"] != expected:
+            return [{"cmd": "noop", "refused": "report_binding"}]
+        last = receipt["number"] if receipt else 0
+        ack = {"cmd": "report_ack", "stream": stream, "number": number}
+        if number <= last:
+            # Only the unretired head can be replayed. Preserve its identity verdict too.
+            return ([*receipt.get("replies", []), ack] if number == last else [ack])
+        if number != last + 1 or (not receipt and len(ledger) >= 128):
+            return [{"cmd": "noop", "refused": "report_order_or_capacity"}]
+        before = deepcopy({k: v for k, v in self.__dict__.items()
+                           if k != "adapter" and not callable(v)})
+        try:
+            self._report_transaction = True
+            inner = {k: v for k, v in msg.items() if k != "report"}
+            if inner["event"] in ("faint", "whiteout"):
+                evidence = inner.get("battle_evidence")
+                if (not isinstance(evidence, dict) or type(evidence.get("in_battle")) is not bool
+                        or type(evidence.get("is_trainer")) is not bool):
+                    raise ValueError("missing acquisition-time faint evidence")
+                inner["_is_wild_battle"] = evidence["in_battle"] and not evidence["is_trainer"]
+                if type(inner.get("level")) is int:
+                    inner["_level"] = inner["level"]
+            cmds = self.handle_event(player_id, inner)
+            refusal = next((c.get("refused") for c in cmds if c.get("refused")), None)
+            if refusal and refusal != "stale_sync_completion":
+                raise ValueError(f"gameplay report refused: {refusal}")
+            ledger[stream] = {"binding": dict(expected), "number": number,
+                              "replies": [c for c in cmds if c.get("cmd") in
+                                          ("key_change_ack", "key_change_rejected")]}
+            self._report_transaction = False
+            self._save()
+            if self.save_failed:
+                raise OSError(self.save_failed)
+            return [*cmds, ack]
+        except Exception as exc:
+            self.__dict__.update(before)
+            self._report_transaction = False
+            if isinstance(exc, OSError):
+                self.save_failed = str(exc)
+            log.error("[%s] gameplay report not committed: %s", player_id, exc)
+            return [{"cmd": "noop", "refused": "report_not_committed"}]
+
 
     def _handle_ghost_pos(self, player_id: str, msg: dict):
         """Relay a player's overworld position to the partner as an (ephemeral) ghost_pos
@@ -2035,6 +2137,31 @@ class SoulLinkState:
             # ledger shows migrated (evolution, NPC trade) or a dead pair's half would reach a cartridge
             # that no longer holds it and come back as a failed sync.
             saved_sync = data.get("queued_sync")
+            recovery = data.get("gameplay_delivery")
+            if recovery is not None:
+                if (not isinstance(recovery, dict) or not isinstance(recovery.get("run_id"), str)
+                        or len(recovery["run_id"]) != 32
+                        or type(recovery.get("sync_revision")) is not int
+                        or not isinstance(recovery.get("bindings"), dict)
+                        or not isinstance(recovery.get("receipts"), dict)
+                        or not isinstance(recovery.get("sync_versions"), dict)):
+                    raise ValueError("invalid gameplay delivery state")
+                state.report_run_id = recovery["run_id"]
+                state.report_bindings = recovery["bindings"]
+                state.report_receipts = recovery["receipts"]
+                state.sync_revision = recovery["sync_revision"]
+                state.sync_versions = recovery["sync_versions"]
+                for pid in ("a", "b"):
+                    if (not isinstance(state.report_receipts.get(pid), dict)
+                            or not isinstance(state.sync_versions.get(pid), dict)):
+                        raise ValueError("invalid owner gameplay delivery state")
+                    for row in state.sync_versions[pid].values():
+                        if not isinstance(row, dict) or type(row.get("revision")) is not int:
+                            raise ValueError("invalid PC intent revision")
+                    for row in state.report_receipts[pid].values():
+                        if (not isinstance(row, dict) or type(row.get("number")) is not int
+                                or not isinstance(row.get("binding"), dict)):
+                            raise ValueError("invalid gameplay receipt")
             if isinstance(saved_sync, dict):
                 for pid in ("a", "b"):
                     migrated = {r["old_key"] for r in state.key_migration_ledger[pid]}
@@ -4921,8 +5048,15 @@ class SoulLinkState:
     def _save(self):
         if self.load_failed:
             raise RuntimeError(f"Refusing to overwrite unreadable run state: {self.load_failed}")
+        if self._report_transaction:
+            return
         os.makedirs(self._data_dir, exist_ok=True)
         payload = {
+            "gameplay_delivery": {
+                "run_id": self.report_run_id, "bindings": self.report_bindings,
+                "receipts": self.report_receipts, "sync_revision": self.sync_revision,
+                "sync_versions": self.sync_versions,
+            },
             "game_id": self.adapter.game_id,
             "rules": {
                 "species_lock": self.species_lock,

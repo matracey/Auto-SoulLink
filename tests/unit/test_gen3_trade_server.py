@@ -930,6 +930,7 @@ async def test_recovery_banner_displays_and_escapes_the_actual_problem(tmp_path)
 def _legacy_trace(path, title, decorated, rejected=False):
     """Protocol replies + persisted state bytes for the accepted GB trade flow."""
     srv = SLinkServer(data_dir=str(path))
+    srv.state.report_run_id = "legacy-trace"
     # the patched cartridge each title requires (2026-10-02); Gen 2 is exercised on its overlay, as it always was
     evidence = companion(title) or ({"artifact_kind": "overlay"} if title in ("Crystal", "Gold", "Silver") else {})
     keys = {"a": "AAAA:1111:01", "b": "BBBB:2222:04"}
