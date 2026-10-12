@@ -407,6 +407,36 @@ def test_both_players_may_migrate_to_the_same_npc_trade_key_with_fresh_censuses(
     assert [c["key"] for c in _named(b_cmds, "force_faint")] == [B2] and l1.status == LinkStatus.ALIVE
 
 
+def test_both_halves_of_one_pair_may_npc_trade_to_the_same_key(tmp_path):
+    """DUO-WAVE-D's own case (727c0976): both players traded the two halves of ONE pair to Kyle,
+    so the pair's halves share a key. Both changes are accepted, and a faint still crosses."""
+    state, (l1, l2) = _two_links(tmp_path)
+    assert _named(_npc_trade(state, "b", B1), "key_change_ack")
+    a_cmds = _npc_trade(state, "a", A1)
+    assert _named(a_cmds, "key_change_ack") and not _named(a_cmds, "key_change_rejected")
+    assert (l1.a.key, l1.b.key) == (ONIX, ONIX) and l1.status == LinkStatus.ALIVE
+    assert state.entry_for("a", ONIX) is l1 and state.entry_for("b", ONIX) is l1
+    state.handle_event("a", {"event": "faint", "key": ONIX})
+    b_cmds = state.handle_event("b", {"event": "noop"})
+    assert [c["key"] for c in _named(b_cmds, "force_faint")] == [ONIX]
+    assert l1.status == LinkStatus.DEAD and l2.status == LinkStatus.ALIVE
+
+
+def test_the_protocol_doc_scopes_key_uniqueness_per_player():
+    """docs/protocol.md §3.1 and checklist item 38 were written (ce39251f, 2026-09-14) when the
+    server refused a pair whose halves shared a key; KEY-SCOPE (71d68454) scoped identity per
+    player and dropped that refusal. The doc must not demand distinct halves."""
+    from pathlib import Path
+    doc = (Path(__file__).resolve().parents[2] / "docs" / "protocol.md").read_text(encoding="utf-8")
+    lines = doc.splitlines()
+    uniqueness = [ln for ln in lines if ln.startswith("| Uniqueness |")]
+    item38 = [ln for ln in lines if ln.startswith("38. ")]
+    assert len(uniqueness) == 1 and len(item38) == 1
+    for row in uniqueness + item38:
+        assert "distinct keys" not in row, row
+        assert "per player" in row, row
+
+
 @pytest.mark.parametrize("event", ["safe", "tick"])
 def test_safe_and_tick_self_report_are_identical(tmp_path, event):
     srv, (l1, l2) = _srv_two_links(tmp_path)
