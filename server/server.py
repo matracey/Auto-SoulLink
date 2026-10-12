@@ -1678,6 +1678,10 @@ class SLinkServer:
                 if not isinstance(msg, dict) or not isinstance(msg.get("player", ""), str):
                     await self._respond(writer, [{"cmd": "noop", "refused": "malformed"}])
                     continue
+                if "seq" in msg and type(msg["seq"]) is not int:
+                    log.warning("Rejected non-integer seq from %s", peer)
+                    await self._respond(writer, [{"cmd": "noop", "refused": "malformed"}])
+                    continue
 
                 player_id = msg.get("player", "")
                 if player_id not in VALID_PLAYERS:

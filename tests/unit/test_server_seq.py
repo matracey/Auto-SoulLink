@@ -123,6 +123,46 @@ async def test_a_repeated_seq_on_one_connection_is_still_a_duplicate(srv, port):
     assert [d[2] for d in srv.dispatched] == [1, 2], srv.dispatched
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize("seq", ["2", None, [], {}, True, False, 2.0])
+@pytest.mark.parametrize("event", ["hello", "tick"])
+async def test_malformed_seq_is_refused_without_losing_the_connection(srv, port, caplog, seq, event):
+    async with _Conn(port) as conn:
+        await conn.send(dict(HELLO_A, seq=1))
+        generation = srv._conn_gen["a"]
+        msg = dict(HELLO_A, seq=seq) if event == "hello" else dict(_tick(2), seq=seq)
+        assert (await conn.send(msg))["commands"] == [{"cmd": "noop", "refused": "malformed"}]
+        assert srv._conn_gen["a"] == generation
+        accepted = await conn.send(_tick(2))
+        assert not any(cmd.get("refused") for cmd in accepted["commands"])
+    assert srv.dispatched == [("a", "hello", 1), ("a", "tick", 2)]
+    assert "non-integer seq" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_malformed_first_hello_does_not_claim_the_connection(srv, port):
+    async with _Conn(port) as conn:
+        assert (await conn.send(dict(HELLO_A, seq="1")))["commands"] == [
+            {"cmd": "noop", "refused": "malformed"},
+        ]
+        assert srv.dispatched == []
+        assert srv._conn_gen.get("a", 0) == 0
+        await conn.send(dict(HELLO_A, seq=1))
+        await conn.send(_tick(2))
+    assert srv.dispatched == [("a", "hello", 1), ("a", "tick", 2)]
+
+
+@pytest.mark.asyncio
+async def test_legacy_messages_without_seq_still_bypass_the_duplicate_guard(srv, port):
+    async with _Conn(port) as conn:
+        await conn.send(HELLO_A)
+        for _ in range(2):
+            tick = _tick(0)
+            del tick["seq"]
+            assert not any(cmd.get("refused") for cmd in (await conn.send(tick))["commands"])
+    assert srv.dispatched == [("a", "hello", None), ("a", "tick", None), ("a", "tick", None)]
+
+
 # ── INV-SERVER x INV-CLIENT: a line the server did not process says so (`refused`) ──────────────
 # The client retires an owed report only on a reply WITHOUT a `refused` command.
 
