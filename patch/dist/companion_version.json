@@ -27,13 +27,13 @@
     "polished": {
       "mode": "as-built",
       "provenance": "data/polished/overlay_provenance.json",
-      "provenance_sha256": "dbce96cd5d73fcae9e3f98a6ae467dd44ae7602be0f6df7ea1ca0956e8d6a254",
+      "provenance_sha256": "22f00e55524434a82fba2a40e9735c24e71905be80f9e638591324a5dc3547c1",
       "files": {
-        "SLink-Polished.ups": "1c16c1559fa85253e52b1e0592e9c727fa1f721ef5bab2cd2f92061fb6472e30"
+        "SLink-Polished.ups": "7bc9f0116db551667a423c3ba953c006ee24217a4d6bdc99785582aa94d6203c"
       }
     }
   },
-  "stamped": "2026-10-09",
+  "stamped": "2026-10-12",
   "files": {
     "SLink-RR.ups": "17adade6ecfadada15b49b4ed7319146035f64bc9ee674d0d53c3d9202be25d2",
     "SLink-RB-Red.ups": "13272994e70291aefe501902aac75a7d3ad663c54929af621365cd1e981c4d8f",
@@ -49,6 +49,6 @@
     "SLink-Emerald.ups": "2bc228869690ac9eeb171c4990ba32eec0171c0fae7b985f1a133408b19bd77d",
     "gen3_companions.json": "62a993243cf90aaedde47dd4891543b1256d198b1b0762c98794b6d8b29abb11",
     "companion_pins.json": "f48cd9c119bebadca20cbe4a230046f22091c29c7f767785a43e1f884612b81a",
-    "SLink-Polished.ups": "1c16c1559fa85253e52b1e0592e9c727fa1f721ef5bab2cd2f92061fb6472e30"
+    "SLink-Polished.ups": "7bc9f0116db551667a423c3ba953c006ee24217a4d6bdc99785582aa94d6203c"
   }
 }
