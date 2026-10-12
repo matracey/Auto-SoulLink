@@ -129,3 +129,14 @@ def test_version_commands_missing_ngrams_and_expanded_overflow_are_rejected():
         with pytest.raises(ValueError):
             expand_version(field, ngrams)
     assert expand_version(bytes([0x80]) * 19, {}) == bytes([0x80]) * 19
+
+
+def test_version_field_offset_comes_from_the_overlay_sym():
+    # A rebuilt overlay moves SlinkVersionText; a hardcoded ROM offset read code bytes instead
+    # (freeze #3 title FAIL: "unsupported version text command or ngram").
+    from tools.polished_live import title_check
+
+    start = title_check.sym_offset("SlinkVersionText.text")
+    end = title_check.sym_offset("SlinkVersionText.end")
+    assert 0 < end - start <= 20
+    assert start == 0x7E * 0x4000 + 0x4183 - 0x4000

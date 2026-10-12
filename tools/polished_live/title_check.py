@@ -34,6 +34,17 @@ CLEAN_SHA1 = "6930b48af5844d373e3c9130f26d6dd1084cf4ed"
 BAND_X, BAND_Y, WIDTH = 6, 10, 9
 FIRST = 0x60
 PALETTE = bytes.fromhex("0000ff7fba026278")
+SYM = REPO / "data/polished/polished_slink.sym"
+
+
+def sym_offset(name: str, sym: Path = SYM) -> int:
+    """Flat ROM offset of an overlay label from the committed .sym (a rebuilt overlay moves labels)."""
+    for line in sym.read_text(encoding="utf-8").splitlines():
+        parts = line.split()
+        if len(parts) == 2 and parts[1] == name:
+            bank, addr = (int(v, 16) for v in parts[0].split(":"))
+            return addr if bank == 0 else bank * 0x4000 + addr - 0x4000
+    raise ValueError(f"{name} not in {sym}")
 
 
 def tile_pixels(tile: bytes) -> list[list[int]]:
@@ -241,7 +252,10 @@ def main() -> int:
     rows = [bytes(int(v, 16) for v in re.findall(r"\$([0-9A-F]{2})", line))
             for line in (REPO / "patch/gen2/src/title_rows_crystal.inc").read_text().splitlines()
             if line.strip().startswith("db ")]
-    field = overlay[0x1F8170:0x1F817D - 1]  # excludes Polished's $53 terminator
+    start, end = sym_offset("SlinkVersionText.text"), sym_offset("SlinkVersionText.end")
+    field = overlay[start:end - 1]  # excludes Polished's $53 terminator
+    if overlay[end - 1] != 0x53:
+        raise ValueError("version field does not end in the $53 terminator")
     ngrams = {}
     for char in set(field):
         if 0x0A <= char < 0x52:
