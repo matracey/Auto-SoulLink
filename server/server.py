@@ -5573,6 +5573,8 @@ class SLinkServer:
         if b_key in self.party_details.get("b", {}):
             s.party_keys["b"].add(b_key)
 
+        for pid in ("a", "b"):
+            s._queue_resolved_areas(pid)
         s._save()
         a_name = a_det.get("nickname") or a_key[:8]
         b_name = b_det.get("nickname") or b_key[:8]

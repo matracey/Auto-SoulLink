@@ -2304,23 +2304,7 @@ class SoulLinkState:
 
         # Send resolved areas to the client so the encounter HUD doesn't re-fire
         # after a script reload or reconnect.
-        resolved = set()
-        for area_id, status in self.area_states.items():
-            if status in (AreaStatus.LINKED, AreaStatus.DEAD_ZONE):
-                resolved.add(area_id)
-        # Areas where THIS player already has a pending capture are also resolved.
-        for area_id, players in self.pending_captures.items():
-            if player_id in players:
-                resolved.add(area_id)
-        if resolved:
-            self.queued_commands[player_id].append({
-                "cmd": "resolved_areas", "areas": sorted(resolved)
-            })
-        else:
-            # Always send (even if empty) so client knows seeding is complete
-            self.queued_commands[player_id].append({
-                "cmd": "resolved_areas", "areas": []
-            })
+        self._queue_resolved_areas(player_id)
 
         # Tell the client the run's patch-feature config. overworld_presence: when OFF, the
         # companion patch's Pokémon-Center trade NPC becomes the trade entry point (the peer
@@ -2381,6 +2365,23 @@ class SoulLinkState:
         if self.adapter.supports_trade_recovery() and not error:
             for record in records:
                 self._queue_trade_final(player_id, record["token"], record["epoch"])
+
+    def _queue_resolved_areas(self, player_id: str) -> None:
+        """Replace one client's resolved-area set from authoritative server state."""
+        resolved = {
+            area_id
+            for area_id, status in self.area_states.items()
+            if status in (AreaStatus.LINKED, AreaStatus.DEAD_ZONE)
+        }
+        resolved.update(
+            area_id
+            for area_id, players in self.pending_captures.items()
+            if player_id in players
+        )
+        self.queued_commands[player_id].append({
+            "cmd": "resolved_areas",
+            "areas": sorted(resolved),
+        })
 
     def _adapter_for(self, player_id: str):
         return self.player_adapter_for(player_id) if self.player_adapter_for else self.adapter
@@ -2852,6 +2853,8 @@ class SoulLinkState:
             self._index_entry(entry)
             self._set_area_state(area_id, AreaStatus.LINKED, player=player_id, reason="both_captured")
             del self.pending_captures[area_id]
+            for pid in ("a", "b"):
+                self._queue_resolved_areas(pid)
             log.debug(f"[PENDING] {area_id}  removed  (link formed)")
             log.info(f"Linked {a_mon.key} ↔ {b_mon.key} in {area_id}")
             # Notify both players with success sound + link info HUD
