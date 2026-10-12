@@ -2210,6 +2210,7 @@ class SLinkServer:
         # Snapshot area state before the event so we can detect outcome transitions.
         _pre_area_state = self.state.area_states.get(msg.get("area_id", ""))
         _pre_battle = self.battle_state[player_id]["in_battle"]
+        _pre_run_over = self.state.run_over
         _pre_memorial_status = None
         if event == "memorialize_done":
             _pre_memorial_link = self.state.entry_for(player_id, msg.get("key", ""))
@@ -2769,12 +2770,12 @@ class SLinkServer:
                         self._log_event(player_id, _kind,
                                         f"{'⚠' if _kind == 'violation' else '🔁'} {_prompt_text}", _area_id)
 
-        self._emit_obs_triggers(player_id, msg, cmds, _pre_area_state, _pre_battle)
+        self._emit_obs_triggers(player_id, msg, cmds, _pre_area_state, _pre_battle, _pre_run_over)
         return self._with_run_identity(cmds)
 
 
     def _emit_obs_triggers(self, player_id: str, msg: dict, cmds: list,
-                           pre_area_state, pre_battle: bool):
+                           pre_area_state, pre_battle: bool, pre_run_over: bool):
         """Collect all game events that fired this dispatch cycle and submit them
         to OBSController.submit_fired() for priority-ordered scene resolution.
 
@@ -2849,7 +2850,7 @@ class SLinkServer:
                     fired.append(("dead_zone", player_id, {}))
                     fired.append(("dead_zone", _partner, {}))
 
-        if self.state.run_over:
+        if self.state.run_over and not pre_run_over:
             fired.append(("run_over", player_id, {}))
 
         if fired:
