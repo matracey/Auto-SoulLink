@@ -668,7 +668,7 @@ export function getStatDescriptionText(
 // pureRGB is active for a Generation when it's Gen 1 and its type table carries pureRGB's own
 // Crystal type (data/purergb.ts's useDex('purergb') swaps Gen 1's species/moves/type chart in and
 // out at runtime; no module-scope flag needed since gen.types already reflects the live swap, and
-// mechanics/ imports nothing from data/purergb - the two compiled bundles don't share module scope).
+// mechanics/ imports nothing from data/purergb; the bundles don't share module scope).
 export function isPureRGB(gen: Generation): boolean {
   return gen.num === 1 && !!gen.types.get('crystal' as ID);
 }

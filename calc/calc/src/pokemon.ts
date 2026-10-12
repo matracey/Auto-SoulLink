@@ -73,7 +73,7 @@ export class Pokemon implements State.Pokemon {
     this.nature = options.nature || ('Serious' as I.NatureName);
     this.ivs = Pokemon.withDefault(gen, options.ivs, 31);
     // Gen 1/2 `evs` is raw stat experience (0-65535); default to max so an unset value
-    // reproduces the old hard-coded "always max stat exp" behavior (see stats.ts calcStatRBYFromDV).
+    // preserves the old "always max stat exp" behavior (stats.ts calcStatRBYFromDV).
     this.evs = Pokemon.withDefault(gen, options.evs, gen.num >= 3 ? 0 : 65535);
     this.boosts = Pokemon.withDefault(gen, options.boosts, 0, false);
 

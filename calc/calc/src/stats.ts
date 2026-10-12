@@ -17,8 +17,8 @@ export const STATS: Array<Array<StatID | 'spc'> | StatID[]> =
 // pureRGB's 6 extra Gen 1 types (docs/calc_multigen/PURERGB_MECHANICS.md) are excluded here too -
 // Hidden Power doesn't exist until Gen 2, and none of pureRGB's types apply there.
 type HPTypeName = Exclude<TypeName,
-  'Normal' | 'Fairy' | 'Stellar' | '???' |
-  'Crystal' | 'Bonemerang' | 'Tri' | 'Floating' | 'Magma' | 'Typeless'>;
+'Normal' | 'Fairy' | 'Stellar' | '???' |
+'Crystal' | 'Bonemerang' | 'Tri' | 'Floating' | 'Magma' | 'Typeless'>;
 
 const HP_TYPES = [
   'Fighting', 'Flying', 'Poison', 'Ground', 'Rock', 'Bug', 'Ghost', 'Steel',

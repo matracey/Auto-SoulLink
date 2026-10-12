@@ -10030,7 +10030,7 @@ const RR_PATCH: {[name: string]: DeepPartial<SpeciesData>} = {
   'Altaria-Mega': {bs: {hp: 85}},
   'Ampharos-Mega': {abilities: {0: 'Thick Fat'}},
   'Appletun': {otherFormes: ['Appletun-Mega']},
-  'Arbok': {types: ['Poison', 'Dark'],bs: {hp: 75, df: 75}},
+  'Arbok': {types: ['Poison', 'Dark'], bs: {hp: 75, df: 75}},
   'Arcanine-Hisui': {bs: {at: 125, sa: 85}},
   'Arctovish': {bs: {sa: 55, sp: 80}},
   'Ariados': {bs: {at: 95, sp: 70}},
@@ -10054,7 +10054,7 @@ const RR_PATCH: {[name: string]: DeepPartial<SpeciesData>} = {
   'Braviary-Hisui': {bs: {hp: 115, at: 58, df: 80, sd: 80}},
   'Butterfree': {bs: {sa: 95}, otherFormes: ['Butterfree-Mega']},
   'Cacturne': {bs: {at: 120, sa: 120}},
-  'Camerupt' : {bs: {hp: 90}},
+  'Camerupt': {bs: {hp: 90}},
   'Camerupt-Mega': {bs: {hp: 90, at: 100, df: 110, sd: 115}},
   'Capsakid': {bs: {hp: 52}},
   'Carnivine': {bs: {hp: 89, df: 82, sd: 82, sa: 55}, otherFormes: ['Carnivine-Sevii']},
@@ -10106,7 +10106,10 @@ const RR_PATCH: {[name: string]: DeepPartial<SpeciesData>} = {
   'Eldegoss': {bs: {hp: 75, sa: 90}},
   'Electrode': {bs: {at: 55, sa: 100}},
   'Electrode-Hisui': {bs: {at: 55, sa: 95}},
-  'Eternatus-Eternamax': {bs: {hp: 140, at: 105, df: 110, sa: 185, sd: 110, sp: 140}, weightkg: 950, abilities: {0: 'Levitate'}},
+  'Eternatus-Eternamax': {
+    bs: {hp: 140, at: 105, df: 110, sa: 185, sd: 110, sp: 140},
+    weightkg: 950, abilities: {0: 'Levitate'},
+  },
   'Emolga': {bs: {at: 55, sa: 95}},
   'Exploud': {bs: {at: 81, sp: 73}},
   'Falinks': {types: ['Fighting', 'Bug'], bs: {hp: 75, sa: 60}},
@@ -10205,7 +10208,12 @@ const RR_PATCH: {[name: string]: DeepPartial<SpeciesData>} = {
   'Perrserker': {bs: {hp: 90, sa: 30}},
   'Persian': {bs: {at: 80, sa: 60}},
   'Persian-Alola': {bs: {sa: 55}},
-  'Pikachu': {otherFormes: ['Pikachu-Belle','Pikachu-Cosplay','Pikachu-Libre','Pikachu-PhD','Pikachu-Pop-Star','Pikachu-Rock-Star','Pikachu-Flying','Pikachu-Surfing']},
+  'Pikachu': {
+    otherFormes: [
+      'Pikachu-Belle', 'Pikachu-Cosplay', 'Pikachu-Libre', 'Pikachu-PhD',
+      'Pikachu-Pop-Star', 'Pikachu-Rock-Star', 'Pikachu-Flying', 'Pikachu-Surfing',
+    ],
+  },
   'Pikachu-Belle': {types: ['Electric', 'Ice']},
   'Pikachu-Rock-Star': {types: ['Electric', 'Steel']},
   'Pikachu-Pop-Star': {types: ['Electric', 'Fairy']},
@@ -10241,24 +10249,60 @@ const RR_PATCH: {[name: string]: DeepPartial<SpeciesData>} = {
   'Seviper': {bs: {hp: 83, df: 83, sd: 83, sp: 85}},
   'Shiftry': {bs: {at: 120, sa: 110}},
   'Shiinotic': {bs: {hp: 75}},
-  'Silvally': {bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'}},
-  'Silvally-Bug': {bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'}},
-  'Silvally-Dark': {bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'}},
-  'Silvally-Dragon': {bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'}},
-  'Silvally-Electric': {bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'}},
-  'Silvally-Fairy': {bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'}},
-  'Silvally-Fighting': {bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'}},
-  'Silvally-Fire': {bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'}},
-  'Silvally-Flying': {bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'}},
-  'Silvally-Ghost': {bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'}},
-  'Silvally-Grass': {bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'}},
-  'Silvally-Ground': {bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'}},
-  'Silvally-Ice': {bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'}},
-  'Silvally-Poison': {bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'}},
-  'Silvally-Psychic': {bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'}},
-  'Silvally-Rock': {bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'}},
-  'Silvally-Steel': {bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'}},
-  'Silvally-Water': {bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'}},
+  'Silvally': {
+    bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'},
+  },
+  'Silvally-Bug': {
+    bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'},
+  },
+  'Silvally-Dark': {
+    bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'},
+  },
+  'Silvally-Dragon': {
+    bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'},
+  },
+  'Silvally-Electric': {
+    bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'},
+  },
+  'Silvally-Fairy': {
+    bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'},
+  },
+  'Silvally-Fighting': {
+    bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'},
+  },
+  'Silvally-Fire': {
+    bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'},
+  },
+  'Silvally-Flying': {
+    bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'},
+  },
+  'Silvally-Ghost': {
+    bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'},
+  },
+  'Silvally-Grass': {
+    bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'},
+  },
+  'Silvally-Ground': {
+    bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'},
+  },
+  'Silvally-Ice': {
+    bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'},
+  },
+  'Silvally-Poison': {
+    bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'},
+  },
+  'Silvally-Psychic': {
+    bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'},
+  },
+  'Silvally-Rock': {
+    bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'},
+  },
+  'Silvally-Steel': {
+    bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'},
+  },
+  'Silvally-Water': {
+    bs: {hp: 100, at: 100, df: 100, sa: 100, sd: 100, sp: 100}, abilities: {0: 'Battle Armor'},
+  },
   'Sirfetch\u2019d': {bs: {hp: 82}},
   'Sizzlipede': {otherFormes: ['Sizzlipede-Sevii']},
   'Skuntank': {bs: {sa: 91}},
@@ -10311,7 +10355,10 @@ const RR_PATCH: {[name: string]: DeepPartial<SpeciesData>} = {
   'Wailord': {bs: {hp: 150, at: 50, df: 80, sa: 105, sd: 80, sp: 50}},
   'Walrein': {bs: {hp: 90}},
   'Watchog': {bs: {hp: 85, at: 100}},
-  'Wishiwashi': {bs: {hp: 55}, otherFormes: ['Wishiwashi-School', 'Wishiwashi-Sevii', 'Wishiwashi-Sevii-School']},
+  'Wishiwashi': {
+    bs: {hp: 55},
+    otherFormes: ['Wishiwashi-School', 'Wishiwashi-Sevii', 'Wishiwashi-Sevii-School'],
+  },
   'Wishiwashi-School': {bs: {hp: 55}},
   'Wormadam-Sandy': {bs: {at: 59, sa: 79}},
   'Wormadam-Trash': {bs: {at: 59, sa: 79}},
@@ -10662,17 +10709,17 @@ export class Species implements I.Species {
   private readonly gen: I.GenerationNum;
 
   constructor(gen: I.GenerationNum) {
-this.gen = gen;
+    this.gen = gen;
   }
 
   get(id: I.ID) {
-return SPECIES_BY_ID[this.gen][id];
+    return SPECIES_BY_ID[this.gen][id];
   }
 
   *[Symbol.iterator]() {
-for (const id in SPECIES_BY_ID[this.gen]) {
-  yield this.get(id as I.ID)!;
-}
+    for (const id in SPECIES_BY_ID[this.gen]) {
+      yield this.get(id as I.ID)!;
+    }
   }
 }
 
@@ -10692,24 +10739,24 @@ class Specie implements I.Specie {
   private static readonly EXCLUDE = new Set(['bs', 'otherFormes']);
 
   constructor(name: string, data: SpeciesData) {
-this.kind = 'Species';
-this.id = toID(name);
-this.name = name as I.SpeciesName;
+    this.kind = 'Species';
+    this.id = toID(name);
+    this.name = name as I.SpeciesName;
 
-const baseStats: Partial<I.StatsTable> = {};
-baseStats.hp = data.bs.hp;
-baseStats.atk = data.bs.at;
-baseStats.def = data.bs.df;
-baseStats.spa = gen >= 2 ? data.bs.sa : data.bs.sl;
-baseStats.spd = gen >= 2 ? data.bs.sd : data.bs.sl;
-baseStats.spe = data.bs.sp;
-this.baseStats = baseStats as I.StatsTable;
-// Hack for getting Gmax pokemon out of existence in Gen 9+
-if (data.otherFormes) {
-  this.otherFormes = data.otherFormes as I.SpeciesName[];
-  if (gen >= 9 && !['toxtricity', 'urshifu'].includes(this.id)) {
-this.otherFormes = this.otherFormes.filter(f => !f.endsWith('-Gmax'));
-if (!this.otherFormes.length) this.otherFormes = undefined;
+    const baseStats: Partial<I.StatsTable> = {};
+    baseStats.hp = data.bs.hp;
+    baseStats.atk = data.bs.at;
+    baseStats.def = data.bs.df;
+    baseStats.spa = gen >= 2 ? data.bs.sa : data.bs.sl;
+    baseStats.spd = gen >= 2 ? data.bs.sd : data.bs.sl;
+    baseStats.spe = data.bs.sp;
+    this.baseStats = baseStats as I.StatsTable;
+    // Hack for getting Gmax pokemon out of existence in Gen 9+
+    if (data.otherFormes) {
+      this.otherFormes = data.otherFormes as I.SpeciesName[];
+      if (gen >= 9 && !['toxtricity', 'urshifu'].includes(this.id)) {
+        this.otherFormes = this.otherFormes.filter(f => !f.endsWith('-Gmax'));
+        if (!this.otherFormes.length) this.otherFormes = undefined;
         if (this.otherFormes) this.otherFormes = [...new Set(this.otherFormes)];
       }
     }
