@@ -1636,6 +1636,7 @@ class SLinkServer:
         hello_players = set()
         conn_gen: dict[str, int] = {}   # player -> the generation this connection's hello was given
         no_hello_warned = False
+        dropping_oversized_line = False
         try:
             while not writer.is_closing():
                 try:
@@ -1643,20 +1644,14 @@ class SLinkServer:
                 except asyncio.IncompleteReadError:
                     break  # peer closed cleanly
                 except asyncio.LimitOverrunError as e:
-                    # A single line exceeded the configured 4 MiB limit. Drain
-                    # the overrun bytes so the next readuntil starts at a fresh
-                    # line, log a warning, and keep the connection alive instead
-                    # of letting asyncio tear it down.
-                    log.warning(f"Oversized line from {peer} ({e.consumed} bytes consumed before limit) — dropping")
-                    try:
-                        # Drain until next newline so the buffer is realigned.
-                        await reader.readexactly(e.consumed)
-                        while True:
-                            chunk = await reader.read(65536)
-                            if not chunk or b"\n" in chunk:
-                                break
-                    except (asyncio.IncompleteReadError, asyncio.LimitOverrunError):
-                        break
+                    if not dropping_oversized_line:
+                        log.warning("Oversized line from %s (%s bytes before limit) - dropping", peer, e.consumed)
+                    # Leave the newline and any later frames for readuntil.
+                    await reader.readexactly(e.consumed)
+                    dropping_oversized_line = True
+                    continue
+                if dropping_oversized_line:
+                    dropping_oversized_line = False
                     continue
                 # A reset may close this socket while readuntil is suspended. Buffered
                 # events (including hello) must not enter the replacement run.

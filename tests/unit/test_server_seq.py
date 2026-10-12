@@ -17,6 +17,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 import pytest_asyncio
@@ -161,6 +162,50 @@ async def test_legacy_messages_without_seq_still_bypass_the_duplicate_guard(srv,
             del tick["seq"]
             assert not any(cmd.get("refused") for cmd in (await conn.send(tick))["commands"])
     assert srv.dispatched == [("a", "hello", None), ("a", "tick", None), ("a", "tick", None)]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("limit", [256, 4 * 1024 * 1024])
+@pytest.mark.parametrize("framing", ["buffered", "chunked", "repeated", "eof"])
+async def test_oversized_frame_preserves_following_messages(srv, caplog, limit, framing):
+    hello = (json.dumps(dict(HELLO_A, seq=1)) + "\n").encode()
+    tick = (json.dumps(_tick(2)) + "\n").encode()
+    oversized = b"x" * (limit + 1)
+    assert len(hello) <= limit
+    chunks = {
+        "buffered": [oversized + b"\n" + hello + tick],
+        "chunked": [oversized, oversized, b"tail\n" + hello + tick],
+        "repeated": [oversized + b"\n" + oversized + b"\n" + hello + tick],
+        "eof": [hello, oversized, oversized],
+    }[framing]
+    reader = asyncio.StreamReader(limit=limit)
+    writer = Mock(spec=asyncio.StreamWriter)
+    writer.get_extra_info.return_value = ("127.0.0.1", 12345)
+    writer.is_closing.return_value = False
+    writer.drain = AsyncMock()
+    writer.wait_closed = AsyncMock()
+
+    async def feed():
+        for chunk in chunks:
+            reader.feed_data(chunk)
+            await asyncio.sleep(0)
+        reader.feed_eof()
+
+    feeder = asyncio.create_task(feed())
+    try:
+        await asyncio.wait_for(srv.handle_client(reader, writer), 3)
+    finally:
+        await feeder
+    expected = [("a", "hello", 1)]
+    if framing != "eof":
+        expected.append(("a", "tick", 2))
+    assert srv.dispatched == expected
+    replies = [json.loads(call.args[0]) for call in writer.write.call_args_list]
+    assert len(replies) == len(expected)
+    assert not any(cmd.get("refused") for reply in replies for cmd in reply["commands"])
+    assert "Oversized line" in caplog.text
+    writer.close.assert_called_once()
+    writer.wait_closed.assert_awaited_once()
 
 
 # ── INV-SERVER x INV-CLIENT: a line the server did not process says so (`refused`) ──────────────
