@@ -129,6 +129,38 @@ def test_verified_four_rom_build_publishes_only_symbols_and_observed_provenance(
     assert json.loads((case.out / "linker_slack.json").read_text())["allocation_status"] == "CANDIDATE"
 
 
+def test_shell_probe_uses_portable_execution_instead_of_gnu_help(build_case):
+    assert run(build_case) == 0
+    commands = [cmd[1:] for cmd in build_case.commands if Path(cmd[0]).stem == "sh"]
+    assert commands == [["-c", "printf gen2-shell-ready"]]
+
+
+@pytest.mark.parametrize("drift", ["", "address", "bank", "missing", "unpinned"])
+def test_native_artifact_formatting_requires_an_equivalent_hash_pinned_reference(build_case, drift):
+    case = build_case
+    pinned = MAP.replace(b"\n", b"\r\n")
+    aliases = b"\t         $0000 = Header\r\n\t         $0000 = Header.alias\r\n"
+    pinned = pinned.replace(b"    EMPTY:", aliases + b"    EMPTY:")
+    native = pinned.replace(b"\r\n", b"\n").replace(
+        aliases.replace(b"\r\n", b"\n"), b"\t         $0000 = Header.alias\n\t         $0000 = Header\n")
+    if drift == "address":
+        native = native.replace(b"$0000 = Header.alias", b"$0001 = Header.alias")
+    elif drift == "bank":
+        native = native.replace(b"ROM0 bank #0:", b"ROM0 bank #1:")
+    elif drift == "missing":
+        native = native.replace(b"\t         $0000 = Header.alias\n", b"")
+    case.out.mkdir()
+    for name in NAMES:
+        case.artifacts[name]["map"] = native
+        case.lock["outputs"][name]["map_sha256"] = hashlib.sha256(pinned).hexdigest()
+        (case.out / f"{name}.map").write_bytes(pinned + (b"tampered" if drift == "unpinned" else b""))
+        (case.out / f"{name}.sym").write_bytes(case.artifacts[name]["sym"])
+    case.lock_path.write_text(json.dumps(case.lock) + "\n")
+    before = {path.name: path.read_bytes() for path in case.out.iterdir()}
+    assert run(case, "--check") == (1 if drift else 0)
+    assert {path.name: path.read_bytes() for path in case.out.iterdir()} == before
+
+
 def test_source_changed_while_other_title_builds_refuses_publication(build_case):
     case = build_case
 

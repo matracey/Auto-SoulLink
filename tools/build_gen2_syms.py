@@ -18,6 +18,7 @@ import subprocess
 import sys
 import tempfile
 from datetime import UTC, datetime
+from itertools import groupby
 from pathlib import Path
 
 if __package__:
@@ -39,6 +40,18 @@ def _json_bytes(value: dict) -> bytes:
 
 def _digest(data: bytes, algorithm: str = "sha256") -> str:
     return hashlib.new(algorithm, data).hexdigest()
+
+
+def _artifact_text(data: bytes) -> bytes:
+    def alias_address(line: bytes):
+        match = re.match(rb"^\s+\$([0-9a-fA-F]+) = ", line)
+        return match[1] if match else None
+
+    # RGBDS's equal-address alias order differs across C runtimes.
+    lines = []
+    for address, group in groupby(data.replace(b"\r\n", b"\n").splitlines(keepends=True), alias_address):
+        lines.extend(sorted(group) if address is not None else group)
+    return b"".join(lines)
 
 
 def _is_digest(value: object, length: int) -> bool:
@@ -147,7 +160,8 @@ def _toolchains(rgbds: Path, devkit: Path, lock: dict) -> tuple[dict, dict]:
               "w64devkit_requested_version": lock["w64devkit_version"]}
     for name in (*RGBDS_BINARIES, "make", "gcc", "sh"):
         binary = _path_binary(rgbds if name in RGBDS_BINARIES else devkit, name, env)
-        observed = _run([str(binary), "--help" if name == "sh" else "--version"],
+        probe = ["-c", "printf gen2-shell-ready"] if name == "sh" else ["--version"]
+        observed = _run([str(binary), *probe],
                         env=env, timeout=10).strip()
         if name in RGBDS_BINARIES:
             if not re.fullmatch(rf"{name}\s+{re.escape(lock['rgbds_version'])}", observed):
@@ -156,13 +170,12 @@ def _toolchains(rgbds: Path, devkit: Path, lock: dict) -> tuple[dict, dict]:
         else:
             if not observed or (name == "make" and not observed.startswith("GNU Make ")):
                 raise RuntimeError(f"{name}: missing or unsupported tool version: {observed!r}")
+            if name == "sh" and observed != "gen2-shell-ready":
+                raise RuntimeError("build shell cannot execute commands")
             group = "build_tools"
         record[group]["binaries"][name] = {
             "version": observed.splitlines()[0], "sha256": _digest(binary.read_bytes()),
         }
-    shell = _binary(devkit, "sh")
-    if _run([str(shell), "-c", "printf gen2-shell-ready"], env=env, timeout=10).strip() != "gen2-shell-ready":
-        raise RuntimeError("build shell cannot execute commands")
     # GNU make can export the original environment SHELL to recursive make even
     # when the top-level command overrides SHELL. Bind it only after verification.
     env["SHELL"] = "sh"
@@ -249,7 +262,12 @@ def _build(args: argparse.Namespace) -> int:
             observed = _digest(data)
             expected = spec[f"{ext}_sha256"]
             if expected is not None and observed != expected:
-                raise RuntimeError(f"{filename}: sha256 {observed} != locked {expected}")
+                published = args.out_dir / filename
+                pinned = published.read_bytes() if published.is_file() else b""
+                if _digest(pinned) != expected or _artifact_text(data) != _artifact_text(pinned):
+                    raise RuntimeError(f"{filename}: sha256 {observed} != locked {expected}")
+                data = pinned
+                observed = expected
             if ext == "map":
                 maps[name] = _parse_map(data)
             artifacts[filename], symbols[filename] = data, observed
