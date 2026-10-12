@@ -21,6 +21,7 @@ from pathlib import Path
 
 from . import gen2_codec, gen2_rom_scan
 from .base import GameAdapter, companion_required_reason, gb_status_token, humanize_area_id
+from .gen2_encounter_presentation import present_encounters
 
 _DATA = Path(__file__).resolve().parents[2] / "data" / "games"
 _ARTIFACT = {"crystal": "pokecrystal", "gold": "pokegold", "silver": "pokesilver"}
@@ -532,100 +533,17 @@ class Gen2GSCAdapter(GameAdapter):
         return {"gift_daycare": "Egg Hatch", "national_park_contest": "Bug-Catching Contest"}.get(
             area_id, self._area_names.get(area_id, humanize_area_id(area_id)))
 
+    def _encounter_mon_fields(self, entry):
+        species = entry["species"]
+        _require(_integer(species, 1, 251), "unresolved encounter species")
+        return {"species_id": species, "name": self.species_name(species)}
+
     def _presentation_tables(self):
-        """Keep maps, times and slot rows distinct; rates are table probabilities."""
-        grouped = {}
-
-        def emit(key, label, slots, weights, **metadata):
-            map_row = self._areas.get(str(key))
-            _require(map_row is not None, "encounter refers to missing map")
-            # A selected swarm table replaces normal lookup; it is not another
-            # set of slots in the same distribution (C wildmons.asm:384-393,
-            # G:401-410). Keep table identity until presentation labels exist.
-            target = grouped.setdefault((map_row["area_id"], label, key,
-                                         metadata.get("source_table")), [])
-            for slot, (entry, weight) in enumerate(zip(slots, weights, strict=True)):
-                species = entry["species"]
-                _require(_integer(species, 1, 251), "unresolved encounter species")
-                level = entry.get("level")
-                target.append({"species_id": species, "name": self.species_name(species), "rate": weight,
-                               "min_level": entry.get("min_level", level),
-                               "max_level": entry.get("max_level", level), "slot": slot,
-                               "map_group": map_row["map_group"], "map_number": map_row["map_number"],
-                               "map_name": map_row["map_name"], **metadata})
-
-        wild = self._encounters["wild"]
-        for kind in ("grass", "water"):
-            thresholds = [row["threshold"] for row in wild[f"{kind}_probabilities"]]
-            _require(thresholds == sorted(set(thresholds)) and thresholds[-1] == 100, "wild slot probabilities invalid")
-            weights = [high - low for low, high in zip([0, *thresholds[:-1]], thresholds, strict=True)]
-            for row in wild[kind]:
-                label = "Surf" if kind == "water" else {"morning": "Morn", "day": "Day", "night": "Nite"}[row["time"]]
-                emit(row["map_group"] * 256 + row["map_number"], label, row["slots"], weights,
-                     encounter_rate_byte=row["rate"], time=row["time"], source_table=row["table"])
-        tree = self._encounters["tree"]
-        sets = {row["set_id"]: row for row in tree["sets"]}
-        limit = tree.get("enabled_set_limit")
-        _require(_integer(limit, 2, 255) and sorted(sets) == list(range(1, limit)), "tree set gate invalid")
-        for kind, maps in (("Headbutt", tree["headbutt_maps"]), ("Rock Smash", tree["rock_smash_maps"])):
-            for row in maps:
-                # GetTreeMons refuses set 0 and sets >= the generated bound
-                # (C engine/events/treemons.asm:100-105, G :98-102: G/S UNUSED, CITY).
-                if not 0 < row["set_id"] < limit:
-                    continue
-                _require(row["set_id"] in sets, "unknown encounter tree set")
-                source = sets[row["set_id"]]
-                for rarity in ("common", "rare"):
-                    slots = source[rarity]
-                    if slots:
-                        emit(row["map_group"] * 256 + row["map_number"],
-                             kind + (f" {rarity.title()}" if kind == "Headbutt" else ""),
-                             slots, [entry["weight"] for entry in slots], set_id=row["set_id"])
-        fishing = self._encounters["fishing"]
-        groups = {row["group_id"]: row for row in fishing["groups"]}
-        times = {row["group_id"]: row for row in fishing["time_groups"]}
-        for key, area in self._areas.items():
-            group = groups.get(area["fishing_group"])
-            if group is None:
-                _require(area["fishing_group"] == 0, "unknown map fishing group")
-                continue
-            # A rod needs a water quadrant it can stand beside: header fish groups alone
-            # reach indoor maps that hold no water at all (review F3, OMP N7). The flag is
-            # source/ROM-derived by tools/gen_gen2_area_map.py; the obligation stays OPEN
-            # until a fixture actually fishes, so the rows keep UNQUALIFIED below.
-            _require(isinstance(area.get("fishing_water"), bool), "missing fishing_water flag")
-            if not area["fishing_water"]:
-                continue
-            for rod in ("old", "good", "super"):
-                # fish.asm .loop accepts <= threshold. Random spans 0..255;
-                # rates below are conditional on a bite, whose threshold is separate.
-                thresholds = [entry["threshold"] for entry in group[rod]]
-                _require(thresholds == sorted(set(thresholds)) and thresholds[-1] == 255, "fish thresholds invalid")
-                weights = [(high - low) * 100 / 256 for low, high in zip([-1, *thresholds[:-1]], thresholds, strict=True)]
-                for daytime, label in (("day", "Morn/Day"), ("night", "Nite")):
-                    slots = [entry if entry["species"] else times[entry["level"]][daytime] for entry in group[rod]]
-                    emit(int(key), f"{rod.title()} Rod ({label})", slots, weights,
-                         fish_group=group["group_id"], bite_threshold=group["bite_threshold"],
-                         selection_scope="base_group; runtime swarm selection OPEN",
-                         # ponytail: known limitation, not a catchable-set claim. Rod rows are
-                         # gated on the source/ROM-derived fishing_water flag, but
-                         # fishing_map_association (gen2_rom_scan OPEN_OBLIGATIONS) stays OPEN
-                         # until a fixture fishes: connection strips, walkable-region
-                         # connectivity and runtime swarm selection are not modelled.
-                         map_association="UNQUALIFIED")
-        tables, maps_by_method, tables_by_map = {}, {}, {}
-        for area, label, key, source_table in grouped:
-            maps_by_method.setdefault((area, label), set()).add(key)
-            tables_by_map.setdefault((area, label, key), set()).add(source_table)
-        for (area, label, key, source_table), slots in grouped.items():
-            method = label
-            if source_table is not None and len(tables_by_map[area, method, key]) > 1:
-                label += " (Swarm)" if source_table.startswith("Swarm") else " (Normal)"
-            if len(maps_by_method[area, method]) > 1:
-                label += f" ({self._areas[str(key)]['map_name']})"
-            target = tables.setdefault(area, {})
-            _require(label not in target, "encounter presentation variants collide")
-            target[label] = slots
+        tables = present_encounters(
+            self._areas, self._encounters, self._encounter_mon_fields,
+            tree_set_limit=self._encounters["tree"]["enabled_set_limit"],
+            fishing_time_groups={row["group_id"]: row for row in self._encounters["fishing"]["time_groups"]},
+            fishing_water_required=True)
         contest = self._encounters["contest"]
         tables["national_park_contest"] = {"Contest": [
             {"species_id": row["species"], "name": self.species_name(row["species"]), "rate": row["weight"],

@@ -15,7 +15,7 @@ Formats (polishedcrystal@3fa43192, tag v3.2.3; docs/polished/UPR_HANDLER.md §3)
   TreeMons        10 set pointers; a set is a common then a rare (chance, dp, level) list each ended
                   by $FF, the last set (ROCK) has only one (data/wild/treemons.asm).
   ContestMons     12 x (chance, dp, min, max), no terminator (data/wild/bug_contest_mons.asm).
-  script sites    data/polished/script_sites.json: the species LOW byte of each resolved givepoke ($2F) /
+  script sites    data/games/polished_crystal/script_sites.json: the species LOW byte of each resolved givepoke ($2F) /
                   loadwildmon ($5C) command (macros/scripts/events.asm), then its form byte and level byte.
   NPCTrades       9 x 33 bytes (NPCTRADE_STRUCT_LENGTH): dialog, dp wanted, dp given, nickname x11, DVs x3,
                   personality, ball, item, dw OT id, OT name x8, one skipped byte (constants/npc_trade_constants.asm).
@@ -26,7 +26,7 @@ A dp species is (LOW, HIGH << 5 | form): 9-bit species, form in bits 0-4 (macros
 ruling 2026-10-04): a variant form (forms_index.json, records 292..337) is its own mon, a cosmetic form is its
 species; ``placed()`` lists every randomizable dp with its effective species (polished_codec.effective_species).
 
-Offsets come from the generated UPR INI (data/polished/upr_polished_entries.ini, from the release
+Offsets come from the generated UPR INI (data/games/polished_crystal/upr_polished_entries.ini, from the release
 .sym). The SLink overlay (patch/dist/SLink-Polished.ups) touches only ROM0 $0070, the DelayFrame
 lead-in, bank $7E and the header, so the same offsets hold on the overlay and on UPR's output of it.
 ``pinned=True`` (the default) admits only those two pinned artifacts; ``pinned=False`` exists for
@@ -45,8 +45,8 @@ from server.adapters.polished_codec import effective_species, is_variant_form
 
 REPO = Path(__file__).resolve().parents[2]
 TRAINERS = REPO / "data" / "games" / "polished_crystal" / "trainers.json"
-INI = REPO / "data" / "polished" / "upr_polished_entries.ini"
-SCRIPT_SITES = REPO / "data" / "polished" / "script_sites.json"
+INI = REPO / "data" / "games" / "polished_crystal" / "upr_polished_entries.ini"
+SCRIPT_SITES = REPO / "data" / "games" / "polished_crystal" / "script_sites.json"
 SCRIPT_OPCODES = {"givepoke": 0x2F, "loadwildmon": 0x5C}
 STARTER_SOURCES = ("maps/ElmsLab.asm:215", "maps/ElmsLab.asm:255", "maps/ElmsLab.asm:293")   # UPR's order
 NPC_TRADES, NPC_TRADE_LENGTH = 9, 33           # NUM_NPC_TRADES, NPCTRADE_STRUCT_LENGTH
@@ -98,11 +98,17 @@ def offsets() -> dict[str, int]:
 
 @functools.cache
 def pinned_sha1s() -> dict[str, str]:
-    """sha1 -> kind for the two pinned artifacts: the v3.2.3 release ("clean") and the SLink
-    companion overlay ("overlay", data/polished/overlay_provenance.json)."""
-    lock = json.loads((REPO / "data" / "polished_sources.lock.json").read_text(encoding="utf-8"))
-    prov = json.loads((REPO / "data" / "polished" / "overlay_provenance.json").read_text(encoding="utf-8"))
-    return {lock["outputs"]["polishedcrystal"]["sha1"].lower(): "clean", prov["output"]["sha1"].lower(): "overlay"}
+    """SHA1 -> kind for the generated runtime pins in the Polished game pack."""
+    path = REPO / "data" / "games" / "polished_crystal" / "companion_abi.json"
+    try:
+        pins = json.loads(path.read_text(encoding="utf-8"))["rom_sha1"]
+        clean, overlay = pins["clean"], pins["overlay"]
+        if (not all(isinstance(pin, str) and re.fullmatch(r"[0-9a-f]{40}", pin)
+                    for pin in (clean, overlay)) or clean == overlay):
+            raise ValueError("invalid clean/overlay SHA1 pins")
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise RomScanError(f"invalid Polished companion runtime pack {path}: {exc}") from exc
+    return {clean: "clean", overlay: "overlay"}
 
 
 @functools.cache

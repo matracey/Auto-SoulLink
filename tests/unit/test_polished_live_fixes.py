@@ -5,19 +5,15 @@
     site, no battle-end signal, no PC events, read_current_box_num -1). compose_polished now passes
     `rescan_every=1800`: a battle end (wBattleMode nonzero -> 0) or the periodic interval re-arms the census, checked
     once per tick. Vanilla passes nothing, so the block is never entered there.
-(2) Observation S2-a: a solo party catch queued `box_mon` to a client with no box executor, which answered
-    `box_mon_failed` ("unknown event" on the server). The adapter capability `supports_box_mon()` (base default True,
-    gen2_polished False) is checked at every quarantine site: server.py's memorial-box relocation here, and the two
-    server/state.py sites the live run hit (the capture quarantine, the hello re-quarantine) once the staged
-    state.py patch lands (NEEDS_STATE_GATE, strict xfail until then). The quarantine rule is unconditional (no
-    nuzlocke option gates it): any non-gift, non-box catch with another mon in the party.
+(2) Observation S2-a originally queued box_mon before Polished had a box executor. Party sync is now ON,
+    and every admitted client composes that executor. The obsolete supports_box_mon capability and its
+    three shared guards are retired; the tests below pin capture/reconnect quarantine and memorial relocation.
 
 RED CONTROLS (each mutation must turn the named test red):
   battle end       drop `(mode == 0 and (self.census_mode or 0) ~= 0) or` from client.lua  -> test_a_battle_end_refreshes_the_census
   periodic         drop the `math.abs(...) >= self.rescan_every` arm from client.lua       -> test_the_periodic_interval_refreshes_the_census
   composition      delete `rescan_every=1800,` from entry.lua compose_polished             -> both refresh tests
-  capability       make Gen2PolishedAdapter.supports_box_mon return False                  -> the three test_a_polished_* quarantine
-                                                                                              tests (party sync flipped ON 2026-10-08)
+  obsolete guard   reintroduce a supports_box_mon call -> test_box_paths_do_not_consult_an_obsolete_capability
 
 UNPROVEN without a live run: that a native catch-to-box leaves the SRAM census complete at the next trigger (the
 census checksum covers sGameData only; the live run read the box mon only after a reboot), and the on-cartridge cost
@@ -164,14 +160,13 @@ def _solo_catch(adapter, tmp_path, monkeypatch, key):
 
 
 # Party sync is ON for Polished (owner 2026-10-08, after the live write driver passed on overlay cf03f53a:
-# docs/polished/LIVE_RESULTS.md): supports_box_mon() is True, so Polished now behaves like vanilla Gen 2 below.
+# docs/polished/LIVE_RESULTS.md): Polished now behaves like vanilla Gen 2 below.
 
 POLISHED_KEY = "AE7343:D1C2:010:00"  # the live run's party Pidgey
 
 
 def test_a_polished_solo_catch_is_quarantined(tmp_path, monkeypatch):
     adapter = Gen2PolishedAdapter()
-    assert adapter.supports_box_mon() is True
     state, cmds = _solo_catch(adapter, tmp_path, monkeypatch, POLISHED_KEY)
     assert "route_29" in state.pending_captures  # still the pending (unlinked) capture
     assert any(c.get("cmd") == "box_mon" and c.get("key") == POLISHED_KEY for c in cmds), cmds
@@ -179,7 +174,6 @@ def test_a_polished_solo_catch_is_quarantined(tmp_path, monkeypatch):
 
 def test_a_vanilla_solo_catch_still_quarantines(tmp_path, monkeypatch):
     adapter = Gen2GSCAdapter("crystal")
-    assert adapter.supports_box_mon() is True
     _, cmds = _solo_catch(adapter, tmp_path, monkeypatch, "4E73:D1C2:10")
     assert any(c.get("cmd") == "box_mon" and c.get("key") == "4E73:D1C2:10" for c in cmds), cmds
 
@@ -224,3 +218,23 @@ def test_a_polished_memorial_relocation_queues_like_vanilla(tmp_path, caplog):
 
 def test_a_vanilla_memorial_relocation_still_queues(tmp_path):
     assert _memorial_relocation(Gen2GSCAdapter("crystal"), tmp_path, "4E73:D1C2:10")[:2] == ["party_mon", "box_mon"]
+
+
+@pytest.mark.parametrize("path", ["capture", "reconnect", "memorial"],
+                         ids=["capture", "reconnect", "memorial"])
+def test_box_paths_do_not_consult_an_obsolete_capability(tmp_path, monkeypatch, path):
+    adapter = Gen2PolishedAdapter()
+
+    def obsolete():
+        pytest.fail("obsolete supports_box_mon consulted")
+
+    if path != "reconnect":
+        monkeypatch.setattr(adapter, "supports_box_mon", obsolete, raising=False)
+    if path == "memorial":
+        assert _memorial_relocation(adapter, tmp_path, POLISHED_KEY)[:2] == ["party_mon", "box_mon"]
+    else:
+        state, cmds = _solo_catch(adapter, tmp_path, monkeypatch, POLISHED_KEY)
+        if path == "reconnect":
+            monkeypatch.setattr(adapter, "supports_box_mon", obsolete, raising=False)
+            cmds = _rehello(state, POLISHED_KEY, "4A9D3C:D1C2:0A9:00")
+        assert any(c.get("cmd") == "box_mon" and c.get("key") == POLISHED_KEY for c in cmds)
