@@ -2771,12 +2771,15 @@ function Client.new(p)
         if self.last_frame ~= nil and now ~= self.last_frame + 1 then self:abandon_timeline("savestate load") end
         self.last_frame, self.frame = now, now
         net.pump()
+        if not net.connected() and self.hello_session:status().connected then
+            self.hello_session:invalidate("disconnected")
+        end
         -- Gen 2 (gen2-hello-flap): frame end can land mid-routine with WRAMX switched away (battle
         -- animations select SVBK = BANK(wBGPals1) = 5: C engine/battle_anims/anim_commands.asm:1413,
         -- bg_effects.asm:2562,2589). Every frame-end read below would find its bank unmapped; the old
         -- nil identity made HelloSession invalidate (identity_unavailable) and re-hello every few frames
-        -- in battle. Such a frame is skipped whole, as if it never ran: no hello step, no invalidation,
-        -- nothing published from a half-read; the next mapped frame catches up (signals stay latched).
+        -- in battle. Skip game reads, not transport invalidation; the next mapped frame
+        -- catches up without publishing a half-read (signals stay latched).
         if io.bank_valid(profile.ram_bank.wPlayerID, profile.ram.wPlayerID, 1) ~= true then return end
         -- P4.1f panel: every mapped frame, before the hello step (the player may sit in START).
         if panel then
