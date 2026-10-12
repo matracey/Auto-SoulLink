@@ -522,7 +522,7 @@ def link_ev():
     wb = [_rec("meta", {"event": "_connect"}), _rec("c2s", {"event": "hello", "party": []}),
           _rec("c2s", {"event": "capture", "key": KB, "area_id": AREA}),
           _rec("s2c", {"commands": [{"cmd": "msgbox"}, {"cmd": "play_sound", "sound": 25}]})]
-    return {"scenario": "link", "box_capable": False, "wire": {"a": wa, "b": wb}, "marks": {}, "log": "",
+    return {"scenario": "link", "wire": {"a": wa, "b": wb}, "marks": {}, "log": "",
             "steps": {"a": {"catch_a": _catch(KA, A_OWN)}, "b": {"catch_b": _catch(KB, B_OWN)}},
             "status": {"linked": _link_status(), "after": _link_status()}}
 
@@ -551,7 +551,7 @@ def faint_ev(whole_party=False):
 
 def box_ev():
     ev = link_ev()
-    ev["scenario"], ev["box_capable"] = "boxsync", True
+    ev["scenario"] = "boxsync"
     ev["wire"]["a"] += [_rec("s2c", {"commands": [{"cmd": "box_mon", "key": KA}]}),
                         _rec("s2c", {"commands": [{"cmd": "party_mon", "key": KA}]})]
     ev["steps"]["a"]["boxed"] = {"ok": True, "op": "await_cmd", "snapshot": _snapshot(A_OWN, box=[KA])}
@@ -972,14 +972,9 @@ def test_whiteout_oracle_reports_a_real_whiteout_event_when_one_is_sent():
     assert duo.oracle_whiteout(ev)[2]["server_path"] == "whiteout_event"
 
 
-def test_boxsync_is_skipped_never_passed_while_the_capability_is_off():
-    ev = link_ev()
-    verdict, reasons, _ = duo.oracle_boxsync(ev)
-    assert verdict == "SKIPPED" and reasons == [duo.BOX_CAPABILITY_OFF]
-    assert duo.oracle_boxsync({"box_capable": False, "wire": {}})[0] == "SKIPPED"   # the not-launched path
-    ev = box_ev()
-    ev["box_capable"] = False                         # capability off but the server sent box commands anyway
-    assert duo.oracle_boxsync(ev)[:2] == ("FAIL", ["box_command_sent_while_capability_false"])
+def test_boxsync_missing_metadata_is_a_failure():
+    verdict, reasons, _ = duo.oracle_boxsync({})
+    assert verdict == "FAIL" and reasons
 
 
 BOX_DEFECTS = [
@@ -990,12 +985,14 @@ BOX_DEFECTS = [
     ("box_mon_not_received", lambda e: e["steps"]["a"]["boxed"].update(ok=False), "a:box_mon_not_received_by_client"),
     ("deposit_not_executed", lambda e: e["steps"]["a"]["boxed"].update(snapshot=_snapshot(A_OWN + [KA])), "a:box_mon_not_executed"),
     ("deposit_lost_the_mon", lambda e: e["steps"]["a"]["boxed"].update(snapshot=_snapshot(A_OWN)), "a:boxed_mon_not_in_census"),
+    ("deposit_readback_missing", lambda e: e["steps"]["a"]["boxed"].pop("snapshot"), "a:boxed_mon_not_in_census"),
     ("deposit_took_two", lambda e: e["steps"]["a"]["boxed"].update(snapshot=_snapshot(A_OWN[:1], box=[KA])),
      "a:party_count_not_decremented"),
     ("no_party_mon", lambda e: _wire_cmds(e, "a", lambda c: c["cmd"] != "party_mon"), "a:party_mon_missing"),
     ("withdraw_not_received", lambda e: e["steps"]["a"]["withdrawn"].update(ok=False), "a:party_mon_not_received_by_client"),
     ("withdraw_not_executed", lambda e: e["steps"]["a"]["withdrawn"].update(snapshot=_snapshot(A_OWN, box=[KA])),
      "a:party_mon_not_executed"),
+    ("withdraw_readback_missing", lambda e: e["steps"]["a"]["withdrawn"].pop("snapshot"), "a:party_mon_not_executed"),
     ("withdraw_duplicated", lambda e: e["steps"]["a"]["withdrawn"].update(snapshot=_snapshot(A_OWN + [KA], box=[KA])),
      "a:withdrawn_mon_still_in_box"),
     ("server_model_lost_it", lambda e: e["status"]["after"]["players"]["a"].update(party_keys=A_OWN),
@@ -1011,20 +1008,15 @@ def test_boxsync_oracle_red_controls(name, mutate, reason):
     assert verdict == "FAIL" and reason in reasons, reasons
 
 
-def test_play_names_steps_and_step_lines():
+def test_play_names_and_step_lines():
     assert duo.play_names("all") == ["link", "boxsync", "faint", "whiteout", "faint-natural", "whiteout-natural"]
     assert duo.play_names("faint") == ["faint"]
     with pytest.raises(ValueError):
         duo.play_names("trade")
     assert duo.parse_args(["--scenario", "whiteout"]).scenario == "whiteout"
-    assert duo.play_steps("link", False) == [("a", "catch_a"), ("b", "catch_b")]
-    assert duo.play_steps("faint", True) == [("a", "catch_a"), ("a", "boxed"), ("b", "catch_b"), ("a", "withdrawn"),
-                                             ("b", "pre"), ("a", "stage"), ("b", "await")]
     for name in ("faint-natural", "whiteout-natural"):
         assert duo.parse_args(["--scenario", name]).scenario == name
         assert duo.play_names(name) == [name]
-        assert duo.play_steps(name, True) == [("a", "catch_a"), ("a", "boxed"), ("b", "catch_b"), ("a", "withdrawn"),
-                                              ("b", "pre"), ("a", "stage"), ("a", "battle"), ("b", "await")]
     text = ('x\nPLAY_STEP {"k":1,"op":"catch","label":"catch_a","ok":true,"battles":{}}\nPLAY_STEP not json\n'
             'PLAY_STEP {"k":2,"op":"idle","ok":true}\n')
     got = duo.play_step_lines(text)
@@ -1095,9 +1087,10 @@ def test_play_waits_for_server_readiness_before_starting_both_sides(tmp_path, mo
     monkeypatch.setattr(duo, "read_jsonl", wire)
     monkeypatch.setattr(duo, "play_step_lines", lambda text: {
         "catch_a": _catch(KA, A_OWN), "catch_b": _catch(KB, B_OWN),
+        "boxed": box_ev()["steps"]["a"]["boxed"], "withdrawn": box_ev()["steps"]["a"]["withdrawn"],
         "stop_a": {"ok": True}, "stop_b": {"ok": True},
     })
-    verdict, reasons, _ = duo.play_run(_args(True), "link", fixtures, identities, False)
+    verdict, reasons, _ = duo.play_run(_args(True), "link", fixtures, identities)
     assert (verdict, reasons) == ("PASS", [])
     assert len(processes) == 3 and all(p.returncode == 0 for p in processes)
 
@@ -1288,6 +1281,10 @@ def test_f7_unaffected_native_slot_movement_is_allowed():
         mon["address"] = 0xD000 + slot * 48
     assert duo.oracle_faint_natural(ev)[:2] == ("PASS", [])
 
-def test_box_capability_does_not_call_the_retired_adapter_method():
-    # supports_box_mon was removed from the adapters; the S3 launch path must not raise AttributeError.
-    assert duo.adapter_box_capability() is True
+def test_boxsync_not_launched_exits_nonzero(monkeypatch):
+    # Exercise the real empty-observation oracle at the launch boundary; no emulator is started.
+    def not_launched(*args):
+        return duo.oracle_boxsync({})
+
+    monkeypatch.setattr(duo, "play_run", not_launched)
+    assert duo.play_main(duo.parse_args(["--scenario", "boxsync"]), {}, {}) == 1

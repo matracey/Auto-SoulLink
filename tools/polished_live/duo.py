@@ -25,7 +25,7 @@ PLAY (`--scenario link|boxsync|faint|whiteout|faint-natural|whiteout-natural|all
 fresh run (lane play-<name>/) driven by duo_play.lua through numbered step files, and judged by a server-side oracle
 that FAILS when the specified rule and reporting path did not fire:
   S1 link      both sides catch natively on Route 29 -> /api/status holds an ALIVE link of exactly those two keys.
-  S3 boxsync   box capability is always on (supports_box_mon retired; False -> SKIPPED, never PASS); A's
+  S3 boxsync   mandatory box quarantine/restore proof; missing or incomplete observations FAIL. A's
                first catch is quarantined (box_mon, executed + read back on A), then party_mon brings it back.
   S2 faint     after S1: SYNTH HP 0 on A's linked mon + a dropped TCP session -> the server's hello reconcile kills the
                link -> force_faint on B's wire -> B's own client writes it -> B's cartridge reads HP 0, nothing else.
@@ -40,10 +40,10 @@ Native post-stage multiplicities are counted before key deduplication: one linke
 expected partner. A copyback witness must itself contain that key at HP0. Unaffected B records are compared by key,
 including all 48 record bytes and both 11-byte name arrays; absent raw evidence fails, and only slot/address movement
 is ignored. An HP-only snapshot cannot establish collateral safety.
-Evidence: <lane>/play-<name>/evidence.json; one `RESULT: PASS|FAIL|SKIPPED polished-duo-play-<name>` line per scenario.
+Evidence: <lane>/play-<name>/evidence.json; one `RESULT: PASS|FAIL polished-duo-play-<name>` line per scenario.
 PLAY startup HTTP readiness has a 40-second bound; a child not listening yet is not a rule failure.
 The native disclosure lists scenario paths, not evidence that every path ran; steps and PLAY_FINAL
-are the witnesses (S1 without box capability can finish with zero client writes).
+are the witnesses; all PLAY scenarios require the quarantine and restore steps.
 """
 from __future__ import annotations
 
@@ -367,8 +367,7 @@ def evaluate_distinct(sides: dict, staged_sha1: str, expected: dict) -> tuple[bo
 # Each scenario is its own run (fresh lane, fresh server state) driven by duo_play.lua. Every oracle below reads
 # SERVER evidence (wire transcript, /api/status, slink.log) plus the CARTRIDGE read-backs the Lua side took from
 # WRAM/CartRAM, and each has a red control in tests/unit/test_polished_duo_driver.py: it FAILS on a transcript where
-# the rule did not fire. Verdicts are PASS, FAIL or SKIPPED (S3 only, when the adapter capability is off): never a
-# PASS for a rule the run did not observe.
+# the rule did not fire. Verdicts are PASS or FAIL: never a PASS for a rule the run did not observe.
 PLAY_ORDER = ("link", "boxsync", "faint", "whiteout", "faint-natural", "whiteout-natural")
 PLAY_SCENARIOS = {
     "link": "S1 encounter linking: both players catch in one area -> the server pairs the two keys",
@@ -392,8 +391,6 @@ SYNTH_SETUP = {
 }
 # Natural scenarios exercise the production faint observer and guarded LoseMoney whiteout hook. The original
 # SYNTH HP0 scenarios deliberately retain their reconnect path as separate controls; they are not native-loss proof.
-BOX_CAPABILITY_OFF = ("adapter gen2_polished supports_box_mon() is False: the server skips quarantine ('client has no "
-                      "box executor') and sends no box_mon/party_mon, so S3 cannot be observed")
 
 
 def play_names(arg: str) -> list[str]:
@@ -880,15 +877,10 @@ def oracle_whiteout_natural(ev: dict) -> tuple[str, list[str], dict]:
 
 
 def oracle_boxsync(ev: dict) -> tuple[str, list[str], dict]:
-    """S3. Capability off -> SKIPPED (and FAIL if a box command was sent anyway). On: A's first catch is quarantined
-    (box_mon on A's wire, no box_mon_failed), A's cartridge shows it left the party and sits in the box census; after
-    the link the server's party_mon brings it back and A's cartridge shows it in the party, out of the box."""
-    wa, wb = (ev.get("wire") or {}).get("a", []), (ev.get("wire") or {}).get("b", [])
-    box_cmds = [c for c in s2c_commands(wa) + s2c_commands(wb) if c.get("cmd") in ("box_mon", "party_mon")]
-    if not ev.get("box_capable"):
-        if box_cmds:
-            return "FAIL", ["box_command_sent_while_capability_false"], {}
-        return "SKIPPED", [BOX_CAPABILITY_OFF], {}
+    """S3. A's first catch must be quarantined (box_mon on A's wire, no box_mon_failed),
+    A's cartridge must show it left the party and sits in the box census, and after the link
+    party_mon must restore it to the party, out of the box. Missing evidence is a failure."""
+    wa = (ev.get("wire") or {}).get("a", [])
     reasons, facts = _link_reasons(ev)
     reasons = [f"link:{r}" for r in reasons]
     ka = _caught_key(ev, "a")
@@ -929,27 +921,6 @@ def oracle_boxsync(ev: dict) -> tuple[str, list[str], dict]:
 
 ORACLES = {"link": oracle_link, "boxsync": oracle_boxsync, "faint": oracle_faint, "whiteout": oracle_whiteout,
            "faint-natural": oracle_faint_natural, "whiteout-natural": oracle_whiteout_natural}
-
-
-def play_steps(name: str, box_capable: bool) -> list[tuple[str, str]]:
-    """The (role, label) sequence play_main drives for a scenario (the oracles read these labels)."""
-    steps = [("a", "catch_a")]
-    if box_capable:
-        steps.append(("a", "boxed"))
-    steps.append(("b", "catch_b"))
-    if box_capable:
-        steps.append(("a", "withdrawn"))
-    if name in ("faint", "whiteout"):
-        steps += [("b", "pre"), ("a", "stage"), ("b", "await")]
-    elif name in ("faint-natural", "whiteout-natural"):
-        steps += [("b", "pre"), ("a", "stage"), ("a", "battle"), ("b", "await")]
-    return steps
-
-
-def adapter_box_capability() -> bool:
-    """Always True: the supports_box_mon capability was retired (every admitted client composes a box_mon
-    executor, so the server always queues quarantine). BOX_CAPABILITY_OFF stays for an explicit False."""
-    return True
 
 
 def play_step_lines(text: str) -> dict:
@@ -1194,22 +1165,17 @@ def main(argv=None) -> int:
 
 # ── PLAY runner (`--scenario NAME|all`) ────────────────────────────────────────────────────────────
 def play_main(args, fixtures: dict, ident: dict) -> int:
-    """Run each selected scenario as its own fresh run; one RESULT line per scenario, rc 0 only if none FAILED."""
-    box_capable = adapter_box_capability()
+    """Run each selected scenario as its own fresh run; rc 0 requires every scenario to PASS."""
     verdicts = {}
     for name in play_names(args.scenario):
-        if name == "boxsync" and not box_capable:
-            verdict, reasons, facts = oracle_boxsync({"box_capable": False, "wire": {}})
-            print(f"[play] {name}: not launched -- {reasons[0]}", flush=True)
-        else:
-            verdict, reasons, facts = play_run(args, name, fixtures, ident, box_capable)
+        verdict, reasons, facts = play_run(args, name, fixtures, ident)
         verdicts[name] = verdict
         tail = "" if verdict == "PASS" else f" -- {reasons}"
         print(f"RESULT: {verdict} polished-duo-play-{name}{tail}", flush=True)
-    return 1 if any(v == "FAIL" for v in verdicts.values()) else 0
+    return 0 if verdicts and all(v == "PASS" for v in verdicts.values()) else 1
 
 
-def play_run(args, name: str, fixtures: dict, ident: dict, box_capable: bool) -> tuple[str, list[str], dict]:
+def play_run(args, name: str, fixtures: dict, ident: dict) -> tuple[str, list[str], dict]:
     sys.path[:0] = [str(REPO / "tools"), str(REPO)]
     from dataclasses import replace
 
@@ -1230,7 +1196,7 @@ def play_run(args, name: str, fixtures: dict, ident: dict, box_capable: bool) ->
     for r, p in paths.items():
         if stage_side(p, rom, fixtures[r]) != ident[r]["sha256"]:
             raise SystemExit(f"side {r}: private SaveRAM copy differs from its fixture {fixtures[r]}")
-    print(f"[play] {name}: {PLAY_SCENARIOS[name]}; overlay sha1 {sha1}; box capability {box_capable}; lane {run}",
+    print(f"[play] {name}: {PLAY_SCENARIOS[name]}; overlay sha1 {sha1}; lane {run}",
           flush=True)
     port, http = harness.free_port(), harness.free_port()
     srv_log = open(run / "server.log", "w", encoding="utf-8")  # noqa: SIM115 - closed in finally
@@ -1238,7 +1204,7 @@ def play_run(args, name: str, fixtures: dict, ident: dict, box_capable: bool) ->
                             "--http-port", str(http), "--data-dir", str(srv_dir), "--verbose", "--wire-log", str(wire_dir)],
                            cwd=str(REPO), stdout=srv_log, stderr=subprocess.STDOUT)
     procs: dict[str, subprocess.Popen] = {}
-    ev: dict = {"scenario": name, "box_capable": box_capable, "steps": {"a": {}, "b": {}}, "wire": {"a": [], "b": []},
+    ev: dict = {"scenario": name, "steps": {"a": {}, "b": {}}, "wire": {"a": [], "b": []},
                 "marks": {}, "status": {}, "log": ""}
     nstep = {"a": 0, "b": 0}
     finished: set[str] = set()      # sides that ran their stop step: their exit is expected, not an early death
@@ -1307,8 +1273,7 @@ def play_run(args, name: str, fixtures: dict, ident: dict, box_capable: bool) ->
         a = step("a", "catch_a", {"op": "catch", "attempts": attempts}, 1200)
         ka = (a.get("capture") or {}).get("key")
         if a.get("ok") and ka:
-            if box_capable:
-                step("a", "boxed", {"op": "await_cmd", "cmd": "box_mon", "key": ka, "frames": 3600}, 300)
+            step("a", "boxed", {"op": "await_cmd", "cmd": "box_mon", "key": ka, "frames": 3600}, 300)
             b = step("b", "catch_b", {"op": "catch", "attempts": attempts}, 1200)
             kb = (b.get("capture") or {}).get("key")
             if b.get("ok") and kb:
@@ -1319,8 +1284,7 @@ def play_run(args, name: str, fixtures: dict, ident: dict, box_capable: bool) ->
                     wait("link on the server", linked, 60)
                 except RuntimeError as exc:
                     print(f"[play] {exc}", flush=True)
-                if box_capable:
-                    step("a", "withdrawn", {"op": "await_cmd", "cmd": "party_mon", "key": ka, "frames": 3600}, 300)
+                step("a", "withdrawn", {"op": "await_cmd", "cmd": "party_mon", "key": ka, "frames": 3600}, 300)
                 snap_status("linked")
                 if name in ("faint", "whiteout"):
                     step("b", "pre", {"op": "snapshot"}, 120)
