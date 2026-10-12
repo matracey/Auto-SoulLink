@@ -15,7 +15,6 @@ from pathlib import Path
 
 import pytest
 
-from tests.unit import gen3_world as gw
 from tests.unit.gen3_world import World, key_of, mon_record
 from tests.unit.test_gen3_client import OT, party
 
@@ -82,7 +81,10 @@ def test_r2_control_two_new_boxed_mons_in_one_frame_stay_ambiguous(monkeypatch, 
     w.fire("mon_given")
     w.step(5)
     assert w.events("capture") == []
-    assert any("new boxed keys, none reported (ambiguous)" in line for line in w.logs)
+    assert any("acquisition retained: incomplete baseline or ambiguous PC identity" in line
+               for line in w.logs)
+    w.step(60)
+    assert w.events("capture") == []
 
 
 @pytest.mark.parametrize("pack,title", TITLES)

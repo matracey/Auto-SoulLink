@@ -225,6 +225,7 @@ function Client.new(p)
         party_prev = {},   -- key -> { slot, level, max_hp } at the last settle (PC diff baseline)
         carried = {},      -- keys that left the party into the PC cursor, not yet placed
         box_cache = {}, boxes_ok = false, box_generation = 0,
+        box_baselined=false, pending_box_acq={}, acquisition_loaded=false,
         battle = nil,      -- battle_begin .. battle_end lifecycle
         frozen = false,    -- a borrowed party is in RAM
         flags = {},        -- what the signals of this frame said changed
@@ -398,7 +399,7 @@ function Client.new(p)
     end
     -- ACQ diagnostics (log only; no decision reads them): one line per call that marked keys known, naming the path (`via`; no argument = the quiet-count observe path)
     local function seed_known(party, via)
-        if st.held_acq then       -- a held acquisition is pending: seeding now would absorb its key as known
+        if st.held_acq or #st.pending_box_acq>0 then
             log("ACQ seed skipped via=" .. (via or "observe") .. " (a held acquisition is pending)")
             return
         end
@@ -411,13 +412,14 @@ function Client.new(p)
                 st.known[k] = true
             end
         end
-        for _, e in ipairs(st.box_cache) do
+        for _, e in ipairs(st.boxes_ok and st.box_cache or {}) do
             if e.is_egg == 1 then st.eggs[e.key] = true
             elseif not st.eggs[e.key] then
                 if not st.known[e.key] then fresh[#fresh + 1] = e.key end
                 st.known[e.key] = true
             end
         end
+        if st.boxes_ok then st.box_baselined=true end
         if #fresh > 0 then
             log(string.format("ACQ known via=seed:%s new=%d keys=%s%s", via or "observe", #fresh,
                               table.concat(fresh, ",", 1, math.min(#fresh, 6)), #fresh > 6 and ",..." or ""))
@@ -499,6 +501,7 @@ function Client.new(p)
             end
         end
         rescan_boxes()
+        if not st.box_baselined or not st.boxes_ok then return fresh end
         for _, e in ipairs(st.box_cache) do
             if not seen[e.key] and not st.known[e.key] and not st.eggs[e.key] and e.is_egg == 0 then
                 fresh, seen[e.key] = fresh + 1, true
@@ -507,23 +510,35 @@ function Client.new(p)
         return fresh
     end
 
-    local function settle_acquisitions(party, area_id, caught)
+    local function save_acquisitions()
+        if io.report_outbox then io.report_outbox:save_acquisitions(st.pending_box_acq) end
+    end
+    local function load_acquisitions()
+        if st.acquisition_loaded then return end
+        if io.report_outbox then
+            local t=trainer()
+            if not t or not t.ot_id or t.ot_id==0 then return end
+            io.report_outbox:load(string.format("%08X",t.ot_id))
+            st.pending_box_acq=io.report_outbox:acquisitions()
+        end
+        st.acquisition_loaded=true
+    end
+    local function settle_acquisitions(party, area_id, caught, evidence)
         local gift = not caught
         local function resolve_area()
             if area_id ~= "" and not gift_area(area_id) and not gift then session.resolved_areas[area_id] = true end
         end
         local found = false
-        for _, m in ipairs(party) do
+        for _, m in ipairs(not evidence and party or {}) do
             local k = key(m)
             if m.is_egg == 1 then st.eggs[k] = true end
             -- O-15: eggs are acquired at native hatch, never at GiveEgg.
             if not st.known[k] and not st.eggs[k] and m.is_egg == 0 and m.is_bad_egg == 0 then
-                st.known[k], found = true, true
-                resolve_area()
                 local sent = send("capture", { key = k, area_id = area_id, species_id = m.species, level = m.level,
                                   hp = m.hp, maxHP = m.max_hp, nickname = m.nickname,
                                   held_item_id = m.held_item, is_egg = m.is_egg == 1,
                                   stats = stats_of(m), gift = gift or nil })
+                if sent then st.known[k],found=true,true; resolve_area() end
                 log(string.format("ACQ capture via=settle:party key=%s species=%s gift=%s sent=%s", k, tostring(m.species),
                                   tostring(gift), tostring(sent)))
             end
@@ -535,33 +550,90 @@ function Client.new(p)
         rescan_boxes()
         log(string.format("acquisition boxes: cache before=%d (known %d) now=%d ok=%s gen=%d",
                           before_n, known_boxed, #st.box_cache, tostring(st.boxes_ok), st.box_generation))
+        if not evidence then
+            local sources={}
+            local b=battle_now()
+            for _,m in ipairs(b and b.enemy_party or {}) do
+                if m.personality and m.species and m.species~=0 then sources[#sources+1]=m end
+            end
+            if #sources==0 and st.battle then sources=st.battle.acq_sources or {} end
+            local known={}; for k in pairs(st.known) do known[k]=true end
+            evidence={area=area_id,caught=caught==true,baseline=st.box_baselined,known=known,sources=sources,
+                need_stable=not st.boxes_ok or not st.box_baselined,
+                id=io.report_outbox and io.report_outbox:acquisition_id() or tostring(io.framecount())}
+            -- SendMonToPC can follow capture_wild while its census is still unavailable.
+            local prev=st.pending_box_acq[#st.pending_box_acq]
+            if not (prev and prev.area==area_id and not caught) then
+                assert(#st.pending_box_acq<64,"acquisition recovery capacity exceeded")
+                st.pending_box_acq[#st.pending_box_acq+1]=evidence
+                save_acquisitions()
+            else return end
+        end
+        if not st.boxes_ok then
+            log("acquisition retained: incomplete PC census area="..tostring(area_id))
+            hud.show("SLINK CAPTURE RECOVERY PENDING - SEE LOG",255,160,60,600)
+            return
+        end
+        local fingerprint={}
+        for _,e in ipairs(st.box_cache) do fingerprint[#fingerprint+1]=e.key..":"..e.box..":"..e.slot end
+        table.sort(fingerprint)
+        local census=table.concat(fingerprint,"|")
+        if evidence.need_stable and (evidence.census~=census or evidence.census_frame==io.framecount()) then
+            evidence.census,evidence.census_frame=census,io.framecount()
+            save_acquisitions()
+            return
+        end
         local fresh = {}
         for _, e in ipairs(st.box_cache) do
             if e.is_egg == 1 then st.eggs[e.key] = true end
-            if not st.known[e.key] and not st.eggs[e.key] and e.is_egg == 0 then fresh[#fresh + 1] = e end
+            if not evidence.known[e.key] and not st.known[e.key] and not st.eggs[e.key] and e.is_egg == 0 then
+                fresh[#fresh+1]=e
+            end
         end
-        for _, e in ipairs(fresh) do st.known[e.key] = true end
-        if #fresh == 1 then
-            local e = fresh[1]
-            resolve_area()
+        local matches={}
+        if caught then
+            for _,e in ipairs(fresh) do
+                for _,m in ipairs(evidence.sources) do
+                    local pid=tonumber(e.key:sub(1,8),16)
+                    if pid==m.personality and e.species_id==m.species then matches[#matches+1]=e; break end
+                end
+            end
+        end
+        local e=(#matches==1 and matches[1]) or (evidence.baseline and #fresh==1 and fresh[1])
+        if e then
             -- a boxed record has no party tail: the caught mon's stats and PP are still in the
             -- enemy party record it was copied from (old client :3950-3985 read the same foe)
             local src
-            local b = battle_now()
-            for _, m in ipairs(b and b.enemy_party or {}) do if key(m) == e.key then src = m end end
+            for _,m in ipairs(evidence.sources) do
+                if m.personality==tonumber(e.key:sub(1,8),16) then src=m; break end
+            end
             local stats = src and stats_of(src) or nil
             local sent = send("capture", { key = e.key, area_id = area_id, in_box = true, species_id = e.species_id,
                               nickname = e.nickname, held_item_id = e.held_item_id,
                               level = stats and stats.level or nil, maxHP = stats and stats.maxHP or nil,
-                              stats = stats, is_egg = e.is_egg == 1, gift = gift or nil })
+                              stats = stats, is_egg = e.is_egg == 1, gift = gift or nil,
+                              _acquisition_id=io.report_outbox and evidence.id or nil })
+            if sent then
+                st.known[e.key]=true; resolve_area()
+                for i,h in ipairs(st.pending_box_acq) do
+                    if h==evidence then table.remove(st.pending_box_acq,i); break end
+                end
+                save_acquisitions()
+                if not st.box_baselined and #st.pending_box_acq==0 then seed_known(party,"recovered census") end
+            end
             log(string.format("ACQ capture via=settle:box key=%s species=%s gift=%s sent=%s", e.key, tostring(e.species_id),
                               tostring(gift), tostring(sent)))
-        elseif #fresh == 0 then
+        elseif #fresh == 0 and evidence.baseline then
             -- the signal named an acquisition but every party and boxed key was already known: nothing is reported
             log(string.format("ACQ none via=settle caught=%s party=%d known_already=all (no capture sent)", tostring(not gift), #party))
-        elseif #fresh > 1 then
-            -- more than one unknown boxed key cannot be attributed to this acquisition
-            log("acquisition: " .. #fresh .. " new boxed keys, none reported (ambiguous)")
+            for i,h in ipairs(st.pending_box_acq) do if h==evidence then table.remove(st.pending_box_acq,i); break end end
+            save_acquisitions()
+        else
+            if not evidence.uncertain then
+                evidence.uncertain=true; save_acquisitions()
+                log("acquisition retained: incomplete baseline or ambiguous PC identity area="..tostring(area_id))
+                hud.show("SLINK CAPTURE UNCERTAIN - SEE LOG",255,60,60,1800)
+            end
         end
     end
 
@@ -674,6 +746,7 @@ function Client.new(p)
         if not (bt and b) then return end
         if b.is_trainer ~= nil then bt.is_trainer = b.is_trainer end
         if num(a.BATTLE_TYPE_ADDR) then bt.type_flags = io.read_u32(a.BATTLE_TYPE_ADDR) end
+        bt.acq_sources=b.enemy_party or bt.acq_sources
         if not bt.foe then
             for _, m in ipairs(b.enemy_party or {}) do
                 if m.species and m.species ~= 0 then bt.foe = { species = m.species, level = m.level }; break end
@@ -724,7 +797,15 @@ function Client.new(p)
     end
 
     local function settle()
+        load_acquisitions()
         local f = st.flags
+        if #st.pending_box_acq>0 and io.framecount()%30==0 and not recovery_hidden() and not st.trading_now() then
+            local party=party_read(true)
+            if party then
+                local h=st.pending_box_acq[1]
+                settle_acquisitions(party,h.area,h.caught,h)
+            end
+        end
         local h = st.held_acq
         if h then
             local hidden = recovery_hidden()                     -- re-reads the journal: refreshes journal.busy
@@ -1318,6 +1399,7 @@ function Client.new(p)
     end
     -- No wire side effect here (no area_enter, no banner): hello is the connection's first line.
     function drv.hello_fields()
+        load_acquisitions()
         if not trade_connected and p.net.connected() then
             trade_epoch, trade_connected = trade_epoch + 1, true
         end
@@ -1663,7 +1745,8 @@ function Client.new(p)
     -- hook next frame) is still settled as an acquisition, not absorbed. A signalled frame
     -- belongs to settle, which runs after this hook.
     local function observe_known()
-        if next(st.flags) or st.held_acq then st.observe_at = nil; return end   -- a held acquisition's key is never absorbed as known
+        load_acquisitions()
+        if next(st.flags) or st.held_acq or #st.pending_box_acq>0 then st.observe_at = nil; return end
         local f = io.framecount()
         local count = num(a.PARTY_COUNT_ADDR) and io.read_u8(a.PARTY_COUNT_ADDR) or -1
         -- the quiet interval belongs to one candidate count: a change inside it restarts it

@@ -135,3 +135,43 @@ def test_disconnected_capture_persists_area_and_replays_only_after_binding():
     assert event["key"] == KC and event["area_id"] == "route_1"
     ack(w, event)
     assert rows(disk)["reports"] == []
+
+def test_partial_baseline_retains_real_pc_catch_and_excludes_old_resident():
+    w = World()
+    w.set_party([mon_record(A, OT), mon_record(B, OT)])
+    w.set_box(12, 0, mon_record(0x88888888, OT, species=25))
+    original = w.parts.reads.read_box
+    w.parts.reads.read_box = lambda box: (None, "scan interrupted") if box == 1 else original(box)
+    w.step_to(60)
+    assert not w.client.state.box_baselined
+    w.enter_battle([mon_record(C, OT, species=19)])
+    w.set_box(10, 0, mon_record(C, OT, species=19))
+    w.fire("capture_wild")
+    w.fire("pc_move")
+    w.step()
+    assert not w.events("capture")
+    assert len(w.client.state.pending_box_acq) == 1
+    w.parts.reads.read_box = original
+    w.leave_battle(outcome=7)
+    w.step(90)
+    captures = w.events("capture")
+    assert len(captures) == 1 and captures[0]["key"] == KC
+    assert captures[0]["area_id"] == "route_1"
+    assert w.client.state.known[key_of(0x88888888, OT)]
+
+
+def test_partial_baseline_without_attribution_remains_visible_uncertainty():
+    w = World()
+    w.set_party([mon_record(A, OT), mon_record(B, OT)])
+    w.set_box(12, 0, mon_record(0x88888888, OT, species=25))
+    original = w.parts.reads.read_box
+    w.parts.reads.read_box = lambda box: (None, "scan interrupted") if box == 1 else original(box)
+    w.step_to(60)
+    w.fire("mon_given")
+    w.step()
+    w.parts.reads.read_box = original
+    w.step(90)
+    assert not w.events("capture")
+    assert len(w.client.state.pending_box_acq) == 1
+    assert any("CAPTURE UNCERTAIN" in str(h) for h in w.hud)
+    assert not w.client.state.known[key_of(0x88888888, OT)]
