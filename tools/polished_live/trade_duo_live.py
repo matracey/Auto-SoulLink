@@ -158,31 +158,95 @@ def _record_reasons(role, label, snapshot, expected, identity):
     return reasons
 
 
-def _milestone_reasons(role, rows, sites=None):
-    required = (*NATIVE_SITES[:5], "SlinkTradeExit" if role == "a" else "SlinkTradeResponderExit")
+def _milestone_reasons(role, rows, sites=None, *, expected_token=None):
+    """Count native saves/DONE inside their protocol phases, never across a whole visit."""
     rows = rows if isinstance(rows, list) else []
-    last_index, last_frame = -1, -1
-    reasons = []
-    for name in required:
-        matches = [(i, row) for i, row in enumerate(rows) if isinstance(row, dict)
-                   and row.get("kind") == "native" and row.get("detail") == name]
+    reasons, permitted = [], set()
+    last_frame = -1
+    for row in rows:
+        frame = row.get("frame") if isinstance(row, dict) else None
+        if type(frame) is not int or frame < last_frame or frame < 0:
+            return [f"{role}: native timeline invalid"]
+        last_frame = frame
+
+    def boundary(kind, field, name):
+        matches = [(i, row) for i, row in enumerate(rows) if row.get("kind") == kind
+                   and isinstance(row.get("detail"), dict) and row["detail"].get(field) == name]
         if len(matches) != 1:
-            reasons.append(f"{role}: native milestone not exactly one: {name}")
-            continue
+            reasons.append(f"{role}: phase boundary not exactly one: {name}")
+            return None
+        return matches[0]
+
+    apply = boundary("receive", "cmd", "apply_trade")
+    done = boundary("send", "event", "trade_done")
+    if apply is None or done is None:
+        return reasons
+    apply_index, apply_row = apply
+    done_index, done_row = done
+    token = apply_row["detail"].get("token")
+    if not token or done_row["detail"].get("token") != token or (
+            expected_token is not None and token != expected_token):
+        reasons.append(f"{role}: APPLY token differs")
+    if apply_index >= done_index:
+        return reasons + [f"{role}: APPLY phase boundaries out of order"]
+
+    def native(name, start, end):
+        return [(i, row) for i, row in enumerate(rows) if start < i < end
+                and row.get("kind") == "native" and row.get("detail") == name]
+
+    def qualified(phase, name, matches, *, optional=False):
+        permitted.update(i for i, _ in matches)
+        if (optional and len(matches) > 1) or (not optional and len(matches) != 1):
+            count = "at most one" if optional else "exactly one"
+            reasons.append(f"{role}: {phase} native milestone not {count}: {name}")
+            return None
+        if not matches:
+            return None
         index, row = matches[0]
-        frame = row.get("frame")
-        if (row.get("qualified") is not True or type(frame) is not int
-                or type(row.get("pc")) is not int or type(row.get("bank")) is not int
-                or not isinstance(row.get("expected_hex"), str)
+        if (row.get("qualified") is not True or type(row.get("pc")) is not int
+                or type(row.get("bank")) is not int or not isinstance(row.get("expected_hex"), str)
                 or not re.fullmatch(r"(?:[0-9a-fA-F]{2})+", row["expected_hex"])):
-            reasons.append(f"{role}: native milestone unqualified: {name}")
-            continue
+            reasons.append(f"{role}: {phase} native milestone unqualified: {name}")
         if sites is not None and any(row.get(field) != (sites.get(name) or {}).get(field)
                                      for field in ("pc", "bank", "expected_hex")):
-            reasons.append(f"{role}: native milestone differs from staged site: {name}")
-        if index <= last_index or frame < last_frame:
-            reasons.append(f"{role}: native milestone out of order: {name}")
-        last_index, last_frame = index, frame
+            reasons.append(f"{role}: {phase} native milestone differs from staged site: {name}")
+        return index
+
+    if role == "a":
+        query = boundary("send", "event", "trade_query")
+        if query is None:
+            return reasons
+        if query[0] >= apply_index:
+            reasons.append(f"{role}: pre-query boundary out of order")
+        qualified("pre-query", "ForceGameSave", native("ForceGameSave", -1, query[0]), optional=True)
+    else:
+        prompt = boundary("receive", "cmd", "show_menu")
+        consent = boundary("send", "event", "menu_result")
+        if prompt is None or consent is None:
+            return reasons
+        if not prompt[0] < consent[0] < apply_index:
+            return reasons + [f"{role}: PROMPT phase boundaries out of order"]
+        if (prompt[1]["detail"].get("token") != token or consent[1]["detail"].get("token") != token
+                or consent[1]["detail"].get("choice") != 1):
+            reasons.append(f"{role}: PROMPT token or consent differs")
+        saved = qualified("PROMPT", "ForceGameSave", native("ForceGameSave", prompt[0], consent[0]))
+        published = qualified("PROMPT", "SlinkTradePublishDone",
+                              native("SlinkTradePublishDone", prompt[0], consent[0]))
+        if saved is not None and published is not None and saved >= published:
+            reasons.append(f"{role}: PROMPT native milestones out of order")
+
+    last_index = apply_index
+    for name in NATIVE_SITES[:5]:
+        index = qualified("APPLY", name, native(name, apply_index, done_index))
+        if index is not None:
+            if index <= last_index:
+                reasons.append(f"{role}: APPLY native milestone out of order: {name}")
+            last_index = index
+    exit_name = "SlinkTradeExit" if role == "a" else "SlinkTradeResponderExit"
+    qualified("RELEASE", exit_name, native(exit_name, done_index, len(rows)))
+    for i, row in enumerate(rows):
+        if row.get("kind") == "native" and row.get("detail") in NATIVE_SITES and i not in permitted:
+            reasons.append(f"{role}: native milestone outside its phase: {row['detail']}")
     return reasons
 
 
@@ -207,7 +271,8 @@ def judge(wire, before, cold, state, *, milestones=None, durable=None, sites=Non
             reasons.append(r+": trade_done not one exact received key")
         if any(m.get("event") in ("faint", "whiteout") for m in events):
             reasons.append(r+": false death")
-        reasons.extend(_milestone_reasons(r, milestones.get(r), sites))
+        reasons.extend(_milestone_reasons(r, milestones.get(r), sites,
+                                         expected_token=applies[0].get("token") if len(applies) == 1 else None))
         identity = duo.fixture_identity(before[r])
         expected = dict(_blob(mon) for mon in original[r][1:])
         received_key, incoming = _blob(original[other][0])

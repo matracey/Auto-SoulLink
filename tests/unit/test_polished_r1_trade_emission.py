@@ -212,3 +212,154 @@ def test_r1_jar_controls_fail_closed_on_untrusted_or_wrong_capability(tmp_path, 
     else:
         with pytest.raises(ValueError, match="allowlist|polished_offsets.ini"):
             manager_r1._check_jar(jar, mode)
+
+
+def observed_trade_schedule(role, *, historical=False):
+    """Literal schedules from shipped-launch and shipped-f2; not release witnesses."""
+    sites = {
+        "ForceGameSave": (5, 18158, "cdf946cd"),
+        "SlinkTradeApplyCommit": (126, 22235, "f805462b"),
+        "SlinkTradeCommit": (126, 21248, "c5d5e54f"),
+        "SlinkTradeCommit.CheckSave": (126, 22150, "d7844a05"),
+        "SlinkTradePublishDone": (126, 19438, "f80977ea"),
+        "SlinkTradeExit": (126, 19357, "cd7145cd"),
+        "SlinkTradeResponderExit": (126, 20890, "cd7145cd"),
+    }
+    if role == "a":
+        schedule = [
+            (1184, "native", "ForceGameSave"), (1263, "send", "trade_query"),
+            (1392, "send", "trade_offer"), (1394, "receive", "trade_offer_ack"),
+            (1657, "receive", "apply_trade"), (1658, "native", "SlinkTradeApplyCommit"),
+            (1658, "native", "SlinkTradeCommit"), (4289, "native", "ForceGameSave"),
+            (4351, "native", "SlinkTradeCommit.CheckSave"), (4354, "native", "SlinkTradePublishDone"),
+            (4355, "send", "trade_done"), (4355, "native", "SlinkTradeExit"),
+        ]
+    else:
+        schedule = [
+            (1022, "receive", "show_menu"), (1123, "native", "ForceGameSave"),
+            (1215, "native", "SlinkTradePublishDone"), (1216, "send", "menu_result"),
+            (1233, "receive", "apply_trade"), (1234, "native", "SlinkTradeApplyCommit"),
+            (1234, "native", "SlinkTradeCommit"), (3728, "native", "ForceGameSave"),
+            (3789, "native", "SlinkTradeCommit.CheckSave"), (3792, "native", "SlinkTradePublishDone"),
+            (3793, "send", "trade_done"), (3793, "native", "SlinkTradeResponderExit"),
+        ]
+    if historical:
+        # Freeze #2 did not record saves/CheckSave or native qualification. Keep
+        # those gaps: this row tests phase classification, not historical PASS.
+        schedule = ([
+            (1247, "send", "trade_query"), (1376, "send", "trade_offer"),
+            (1378, "receive", "trade_offer_ack"), (1656, "receive", "apply_trade"),
+            (1657, "native", "SlinkTradeApplyCommit"), (1657, "native", "SlinkTradeCommit"),
+            (4354, "native", "SlinkTradePublishDone"), (4355, "send", "trade_done"),
+            (4355, "native", "SlinkTradeExit"),
+        ] if role == "a" else [
+            (1262, "receive", "show_menu"), (1455, "native", "SlinkTradePublishDone"),
+            (1456, "send", "menu_result"), (1473, "receive", "apply_trade"),
+            (1474, "native", "SlinkTradeApplyCommit"), (1474, "native", "SlinkTradeCommit"),
+            (4032, "native", "SlinkTradePublishDone"), (4033, "send", "trade_done"),
+            (4033, "native", "SlinkTradeResponderExit"),
+        ])
+    rows = []
+    for frame, kind, name in schedule:
+        row = {"frame": frame, "kind": kind}
+        if kind == "native":
+            row["detail"] = name
+            if not historical:
+                bank, pc, expected = sites[name]
+                row.update(qualified=True, bank=bank, pc=pc, expected_hex=expected)
+        else:
+            row["detail"] = {"cmd" if kind == "receive" else "event": name}
+            if name != "trade_query":
+                row["detail"]["token"] = "t1"
+            if name == "menu_result":
+                row["detail"]["choice"] = 1
+        rows.append(row)
+    return rows
+
+
+@pytest.mark.parametrize("role", ["a", "b"])
+def test_observed_native_trade_saves_and_done_are_counted_in_their_actual_phases(role):
+    assert trade_duo_live._milestone_reasons(role, observed_trade_schedule(role)) == []
+
+
+def test_proposer_may_have_no_native_save_before_its_query():
+    rows = observed_trade_schedule("a")
+    rows.pop(0)  # already-saved fixture: no pre-query save callback
+    assert trade_duo_live._milestone_reasons("a", rows) == []
+
+
+@pytest.mark.parametrize("role", ["a", "b"])
+def test_native_phase_token_must_match_the_wire_apply_visit(role):
+    from tests.unit.test_polished_trade_duo_live import strict_evidence
+
+    wire, before, cold, state, milestones, durable = strict_evidence()
+    for row in milestones[role]:
+        detail = row["detail"]
+        if isinstance(detail, dict) and "token" in detail:
+            detail["token"] = "a-consistent-but-different-visit"
+    verdict, reasons = trade_duo_live.judge(wire, before, cold, state,
+                                          milestones=milestones, durable=durable)
+    assert verdict == "FAIL"
+    assert f"{role}: APPLY token differs" in reasons
+
+
+def test_historical_responder_consent_done_is_not_a_duplicate_apply_done():
+    reasons = trade_duo_live._milestone_reasons("b", observed_trade_schedule("b", historical=True))
+    assert not any("not exactly one: SlinkTradePublishDone" in reason for reason in reasons)
+    assert any("unqualified" in reason for reason in reasons)  # never upgrade old evidence
+
+
+@pytest.mark.parametrize("role,name,occurrence,phase", [
+    ("a", "ForceGameSave", 0, "pre-query"), ("a", "ForceGameSave", 1, "APPLY"),
+    ("b", "ForceGameSave", 0, "PROMPT"), ("b", "ForceGameSave", 1, "APPLY"),
+    ("b", "SlinkTradePublishDone", 0, "PROMPT"), ("b", "SlinkTradePublishDone", 1, "APPLY"),
+])
+def test_duplicate_save_or_done_inside_one_phase_is_still_rejected(role, name, occurrence, phase):
+    rows = observed_trade_schedule(role)
+    index = [i for i, row in enumerate(rows) if row["kind"] == "native" and row["detail"] == name][occurrence]
+    rows.insert(index + 1, dict(rows[index]))
+    count = "at most one" if phase == "pre-query" else "exactly one"
+    assert any(f"{phase} native milestone not {count}: {name}" in reason
+               for reason in trade_duo_live._milestone_reasons(role, rows))
+
+
+@pytest.mark.parametrize("fault", ["missing-prompt-done", "unqualified-prompt-done", "missing-prompt-save",
+                                   "consent-token", "apply-token", "missing-apply", "missing-done",
+                                   "after-done-save", "frame-reversal", "unknown-phase-publish"])
+def test_phase_boundary_or_prompt_evidence_cannot_hide_an_invalid_trade(fault):
+    rows = observed_trade_schedule("b")
+    if fault.startswith(("missing-prompt", "unqualified-prompt")):
+        name = "ForceGameSave" if fault == "missing-prompt-save" else "SlinkTradePublishDone"
+        index = next(i for i, row in enumerate(rows) if row["kind"] == "native" and row["detail"] == name)
+        if fault == "unqualified-prompt-done":
+            rows[index]["qualified"] = False
+        else:
+            rows.pop(index)
+    elif fault in ("consent-token", "apply-token", "missing-apply", "missing-done"):
+        name = {"consent-token": "menu_result", "apply-token": "apply_trade",
+                "missing-apply": "apply_trade", "missing-done": "trade_done"}[fault]
+        index = next(i for i, row in enumerate(rows) if isinstance(row["detail"], dict)
+                     and name in row["detail"].values())
+        if fault.startswith("missing"):
+            rows.pop(index)
+        else:
+            rows[index]["detail"]["token"] = "another-visit"
+    elif fault == "frame-reversal":
+        rows[3]["frame"] = 1000
+    elif fault == "unknown-phase-publish":
+        rogue = dict(rows[2], frame=1021)
+        rows.insert(0, rogue)
+    else:
+        rows.append(dict(rows[7], frame=3794))
+    expected = {
+        "missing-prompt-done": "PROMPT native milestone not exactly one: SlinkTradePublishDone",
+        "unqualified-prompt-done": "PROMPT native milestone unqualified: SlinkTradePublishDone",
+        "missing-prompt-save": "PROMPT native milestone not exactly one: ForceGameSave",
+        "consent-token": "PROMPT token or consent differs", "apply-token": "APPLY token differs",
+        "missing-apply": "phase boundary not exactly one: apply_trade",
+        "missing-done": "phase boundary not exactly one: trade_done",
+        "after-done-save": "native milestone outside its phase: ForceGameSave",
+        "frame-reversal": "native timeline invalid",
+        "unknown-phase-publish": "native milestone outside its phase: SlinkTradePublishDone",
+    }[fault]
+    assert any(expected in reason for reason in trade_duo_live._milestone_reasons("b", rows)), fault
