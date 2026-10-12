@@ -1292,7 +1292,7 @@ function Client.new(p)
     local memorial_box = boxes and boxes.memorial_box or ((num(d.BOXES_PER_STORE) or 1) - 1)
 
     -- ── the driver ─────────────────────────────────────────────────────────────────
-    local drv = { commands = {} }
+    local drv = { commands = {}, inventory_protocol = true }
     drv.frame = function() return io.framecount() end
     drv.read_party = party_read
     function drv.report_ot()
@@ -1398,6 +1398,22 @@ function Client.new(p)
         return content_cache.payload
     end
     -- No wire side effect here (no area_enter, no banner): hello is the connection's first line.
+    local census_frame = -300
+    local function qualify_inventory(fields, hidden, scanned)
+        if hidden or not drv.checkpoint_ok() then
+            fields.inventory_complete = false
+            return
+        end
+        if scanned or io.framecount() - census_frame >= 300 then
+            if not scanned then rescan_boxes() end
+            census_frame = io.framecount()
+            fields.inventory_complete = st.boxes_ok
+            if st.boxes_ok then
+                fields.inventory_generation = st.box_generation
+                fields.pc_boxes, fields.pc_boxes_generation = pc_boxes_wire(), st.box_generation
+            end
+        end
+    end
     function drv.hello_fields()
         load_acquisitions()
         if not trade_connected and p.net.connected() then
@@ -1464,12 +1480,14 @@ function Client.new(p)
         if outstanding and #outstanding > 0 then f.trade_outstanding = outstanding end
         f.trade_prepare = not awaiting_trade_run and trade ~= nil and trade:capable() == true
         f.rom_content = rom_content()
+        f.inventory_protocol = 1
+        qualify_inventory(f, hidden, true)
         return f
     end
 
     function drv.tick_fields()
         local party = party_read(true)
-        if not party then return nil end
+        if not party then return {inventory_complete = false} end
         update_frozen(party)
         if not st.frozen and not recovery_hidden() then observe_hp(party) end
         local area_id, loc = check_area()
@@ -1489,6 +1507,7 @@ function Client.new(p)
         if gen_ok and not hidden then
             f.pc_boxes, f.pc_boxes_generation = pc_boxes_wire(), gen
         end
+        qualify_inventory(f, hidden, false)
         local t = trainer()
         if t then f.trainer_name, f.player_gender = t.name, t.player_gender end
         return f

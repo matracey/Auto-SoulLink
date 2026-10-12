@@ -938,6 +938,7 @@ def test_acknowledged_unsaved_uncertainty_keeps_reset_barrier_across_epochs():
 
 def test_client_reconnect_reuses_token_only_after_old_report_is_acknowledged(monkeypatch):
     world, carrier, _blob = durable_client(monkeypatch)
+    world.auto_recovery_control = False
     world.command(cmd="apply_prepare", token="t", slot=1, old_key=KB)
     world.step()
     world.command(cmd="withdraw_trade", token="t")
@@ -948,7 +949,10 @@ def test_client_reconnect_reuses_token_only_after_old_report_is_acknowledged(mon
     before_reconnect = len(world.sent)
     world.step()
     carrier.visit["id"] += 1
-    world.command(cmd="apply_prepare", token="t", slot=1, old_key=KB)
+    world.replies.append(json.dumps({"commands": [
+        {"cmd": "recovery_control", "paused": [], "cancelled": {}},
+        {"cmd": "apply_prepare", "token": "t", "slot": 1, "old_key": KB},
+    ]}))
     world.step()
     assert world.events("apply_ready")[-1]["ok"] is False
     connection_lines = world.sent[before_reconnect:]
@@ -979,7 +983,8 @@ def test_a_briefly_unauthorized_native_prepare_is_held_not_refused():
     world.native.trade_authorized = lambda *_: ready["ok"]
     world.native.prepare_trade = lambda _, cmd, done, valid: pending.append((cmd, done, valid)) or world.lua.table()
     world.prepare()
-    world.tick(); world.tick()
+    world.tick()
+    world.tick()
     assert world.events == [] and pending == []
     ready["ok"] = True
     world.tick()

@@ -143,6 +143,7 @@ class World:
         self.sent: list[dict] = []
         self.lines: list[str] = []
         self.replies: list[str] = []
+        self.auto_recovery_control = True
         self.hud: list[tuple] = []
         self.logs: list[str] = []
         self.writes: list[tuple[int, int, int]] = []
@@ -295,6 +296,8 @@ class World:
         problems = ps.validate_event(msg)
         assert problems == [], (msg, problems)
         self.sent.append(msg)
+        if msg["event"] == "hello" and self.auto_recovery_control:
+            self.command(cmd="recovery_control", paused=[], cancelled={})
 
     # -- memory helpers ------------------------------------------------------------------
     def poke(self, addr: int, data: bytes) -> None:

@@ -39,10 +39,12 @@ EVENTS: dict[str, tuple[dict[str, str], dict[str, str]]] = {
                "party_hidden": "bool", "trade_outstanding": "list",
                # card C5-10b capability declaration
                "battle_identity": "bool", "report_delivery": "int", "report_backlog": "int",
+               "inventory_protocol": "int", "inventory_complete": "bool", "inventory_generation": "int",
                # Gen 3 companion evidence (owner 2026-10-02): the pinned mailbox ABI, present only when the
                # cartridge's own companion mailbox is live (lua/gen3/native.lua companion_live)
                "companion_abi": "int"}),
     "tick": ({}, {"has_pokeballs": "bool", "party": "list", "area_id": "str", "loc_name": "str",
+                  "inventory_complete": "bool", "inventory_generation": "int",
                   "party_hidden": "bool", "report_backlog": "int",
                   "trade_blocked": "bool", "awaiting_save": "bool",
                   "in_battle": "bool", "is_trainer_battle": "bool", "trainer_id": "int",
@@ -118,6 +120,7 @@ KEY_CHANGE_REASONS = ("nature_change", "evolution", "npc_trade", "trade_undo", "
 
 # cmd -> (required fields, optional fields); docs/protocol.md §5
 COMMANDS: dict[str, tuple[dict[str, str], dict[str, str]]] = {
+    "recovery_control": ({"paused": "list", "cancelled": "dict"}, {}),
     "report_binding": ({"binding": "dict"}, {}),
     "report_ack": ({"stream": "str", "number": "int"}, {}),
     "sync_cancel": ({"key": "key", "intent_revision": "int"}, {}),
