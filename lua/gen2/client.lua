@@ -578,10 +578,10 @@ function Client.new(p)
                     self.pending_battle_writes[#self.pending_battle_writes + 1] = entry
                     self.bench_owed = true
                     -- p.battle_release_poll: the composition cannot land an active faint at the hold (it is handed to the
-                    -- checkpoint after the battle), so the player gets the same held-KO cue as the no-hold branch below
+                    -- checkpoint after the battle); retain a diagnostic without a speculative KO banner
                     if p.battle_release_poll and c_ == "force_faint" and battle.active_slot == slot then
                         log("[SLink-gen2] " .. c_ .. " held for the checkpoint: no in-battle active faint composed " .. cmd.key)
-                        hud.show("KO held: " .. nick_label(cmd.key, mon and mon.nickname) .. " is battling", 255, 160, 64, 300)
+                        -- Hold diagnostics stay in the log; only a proved KO gets a player banner.
                     end
                     return
                 end
@@ -979,6 +979,20 @@ function Client.new(p)
             if not ok then return nil, "UNCERTAIN", tostring(a) end
             return a, b, why
         end
+        local poll_failures = {}
+        local function poll_request(name)
+            local request, disposition, reason = call(name)
+            if not request and (disposition ~= nil or reason ~= nil) then
+                local diagnostic = tostring(disposition) .. ": " .. tostring(reason)
+                if poll_failures[name] ~= diagnostic then
+                    log("[SLink-gen2] trade " .. name .. " refused (will retry): " .. diagnostic)
+                    poll_failures[name] = diagnostic
+                end
+                return nil, true -- read failure is not an absent request or an APPLY outcome
+            end
+            poll_failures[name] = nil
+            return request, false
+        end
         local function report(event, fields) owe(event, fields) end
         local function finish(why, uncertain, after_reset)
             local v = visit
@@ -1003,6 +1017,15 @@ function Client.new(p)
                 report("menu_result", {token=v.server_token, choice=0,
                                       withdraw=v.role == "proposer" or nil})
             end
+        end
+        -- A poisoned published APPLY cannot use live RAM as recovery evidence. Retire only
+        -- after reporting the same reset-only contract used by native DONE result 2.
+        local function finish_poison(why)
+            local v = visit
+            if not v or v.terminal then return end
+            if v.attempted then hud.show("TRADE UNCERTAIN - CHECK PARTY", 255, 64, 64, 600) end
+            finish(why, v.attempted, v.attempted)
+            v.retired = true
         end
         function D.forget(why, after_reset)
             finish(why, true, after_reset)
@@ -1159,8 +1182,7 @@ function Client.new(p)
                 if kind == "UNCERTAIN" or (done and done.disposition == "UNCERTAIN") then
                     -- MAJOR-5 parity (trade_uncertain): after APPLY a native result 2 / poison holds until a
                     -- reset and its RAM party was never saved; evidence comes only from the post-reset hello.
-                    if v.attempted then hud.show("TRADE UNCERTAIN - CHECK PARTY", 255, 64, 64, 600) end
-                    finish(why or (done and done.reason) or kind, v.attempted, v.attempted); v.retired = true; return
+                    finish_poison(why or (done and done.reason) or kind); return
                 end
                 if done and v.phase == "prompt" and role == "responder"
                    and (phase == "consented" or phase == "declined") then
@@ -1221,14 +1243,16 @@ function Client.new(p)
                         local gen, state, problem = call("arm", APPLY, v.slot, v.token, data)
                         v.attempted = gen ~= nil or state == "UNCERTAIN" -- no proof of non-publication stays held
                         if gen == nil then
-                            finish(problem or state, v.attempted); v.retired = v.retired or state == "UNCERTAIN"
+                            if state == "UNCERTAIN" then finish_poison(problem or state)
+                            else finish(problem or state, v.attempted) end
                         else v.gen, v.phase = gen, "apply" end
                     end
                     return
                 end
             end
             if stopped or (visit and visit.terminal) then return end
-            local q = call("poll_query")
+            local q, failed = poll_request("poll_query")
+            if failed then return end
             if q and not visit then
                 v = begin("proposer")
                 v.phase, v.gen = "query", q.gen
@@ -1237,7 +1261,8 @@ function Client.new(p)
                 end
                 return
             end
-            local offer = call("poll_offer")
+            local offer, failed_offer = poll_request("poll_offer")
+            if failed_offer then return end
             v = visit
             if offer and v and v.phase == "picking" then
                 v.phase, v.gen, v.slot, v.old_key = "offer", offer.gen, offer.slot, slot_key(offer.slot)
@@ -1461,10 +1486,7 @@ function Client.new(p)
             if settle.attempted_since(mark) == false then -- a proved zero-write refusal: still owed
                 note_once(ob, "refused", "[SLink-gen2] " .. ob.cmd .. " refused by the write gate (retained): " .. tostring(err)
                           .. " " .. tostring(ob.key))
-                if not ob.quiet and not FS.logged[ob.id .. ":hud"] then
-                    FS.logged[ob.id .. ":hud"] = true
-                    hud.show("X KO refused: " .. nick_of(ob, mon), 255, 80, 80, 300)
-                end
+                -- Keep the obligation pending without presenting a refusal as a player outcome.
                 return FS.requeue(ob, entry)
             end
             return FS.quarantine(ob, "partial", "overworld", err)
@@ -2603,6 +2625,9 @@ function Client.new(p)
             local reply = r.callback_reply
             r.callback_reply, r.pending = nil, nil
             rival_reply(reply.cmd, reply.ids, reply.error) -- network stays outside the exec callback
+            if not reply.error then
+                pcall(log, "[SLink-gen2] Polished rival team written: " .. #reply.ids .. " mon(s)")
+            end
         end
     end
     if native_rival_window then

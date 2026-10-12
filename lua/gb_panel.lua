@@ -171,7 +171,7 @@ function G.new(spec, io, writes, sanitize)
 
     --- Forget the held rows and any queued sounds (WRAM clear / rejected hello — the caller
     --- owns that policy).
-    function self:clear() self.pages, self.tiles, self.sfx_queue = nil, nil, {} end
+    function self:clear() self.pages, self.tiles, self.text_rows, self.sfx_queue = nil, nil, nil, {} end
 
     --- Drop queued sounds only: the run switched native sounds off, so nothing accepted
     --- under the old setting may still post after it.
@@ -196,7 +196,7 @@ function G.new(spec, io, writes, sanitize)
         if n == 0 then self:clear() return true end   -- nothing to show; never open on blanks
 
         local pages = math.ceil(n / PAGE_ROWS)
-        local tiles = {}
+        local tiles, text_rows = {}, text and {} or nil
         for p = 1, pages do
             local page = {}
             for r = 0, PAGE_ROWS - 1 do
@@ -207,8 +207,18 @@ function G.new(spec, io, writes, sanitize)
                 end
             end
             tiles[p] = page
+            if text then
+                local rows = {}
+                for line = 0, text.lines - 1 do
+                    local bytes = {}
+                    for c = 1, text.line_max do bytes[c] = page[line * COLS + c] end
+                    bytes[text.line_max + 1] = text.terminator
+                    rows[line + 1] = bytes
+                end
+                text_rows[p] = rows
+            end
         end
-        self.pages, self.tiles = pages, tiles
+        self.pages, self.tiles, self.text_rows = pages, tiles, text_rows
         return true
     end
 
@@ -220,12 +230,9 @@ function G.new(spec, io, writes, sanitize)
         local page = u8(PAGE) or 0
         if page >= self.pages then page = self.pages - 1 end   -- never index past the end
         if text then
-            local rows = self.tiles[page + 1]
+            local rows = self.text_rows[page + 1]
             for line = 0, text.lines - 1 do
-                local bytes = {}
-                for c = 1, text.line_max do bytes[c] = rows[line * COLS + c] end
-                bytes[text.line_max + 1] = text.terminator   -- the game's own string terminator
-                writes:write_bytes(text.base + line * text.stride, bytes)
+                writes:write_bytes(text.base + line * text.stride, rows[line + 1])
             end
         else
             writes:write_bytes(tilemap, self.tiles[page + 1])

@@ -852,3 +852,26 @@ def test_completed_explosion_still_suppresses_its_delayed_native_faint():
     tick(rig)
     assert rig.sent("faint") == [], "completed commanded Explosion echoed as a new natural faint"
     assert len(ko(rig)) == 1 and len(rig.writes()) == 5
+
+
+def test_held_death_keeps_diagnostics_out_of_hud():
+    rig, mons = build(interface=False)
+    order(rig, "force_faint", mons)
+    assert shown(rig) == []
+    assert len(lines(rig, "held for the checkpoint")) == 1
+    assert len(rig.client.pending_battle_writes) == 1 and rig.writes() == []
+
+
+def test_refused_pending_death_logs_once_and_only_completion_has_ko_hud():
+    rig, mons = overworld_rig()
+    writes = rig.parts.battle.rival.writes
+    original = writes.faint_party_slot
+    writes.faint_party_slot = rig.lua.eval('function() error("fixture guard refusal") end')
+    order(rig, "force_faint", mons)
+    rig.frame(3)
+    assert owner(rig).state == "pending" and rig.writes() == []
+    assert shown(rig) == []
+    assert len(lines(rig, "refused by the write gate (retained)")) == 1
+    writes.faint_party_slot = original
+    rig.frame(3)
+    assert len(ko(rig)) == 1 and owed(rig) == 0
