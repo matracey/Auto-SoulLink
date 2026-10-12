@@ -205,7 +205,7 @@ def build_moves_data(moves: list[dict], calc_names: dict[str, str]) -> tuple[dic
     """{display name: {bp, type, category, drain?}} - the same MoveData shape every other gen's
     hand-written table uses. `name` is renamed through calc_names first (see load_calc_move_names)
     so the id the calc looks moves up by (toID(name)) matches what the server actually sends."""
-    out: dict[str, dict] = {}
+    out: dict[str, dict] = {"(No Move)": {"bp": 0, "type": "Normal", "category": "Status"}}
     warnings: list[str] = []
     for m in moves:
         name = calc_names.get(m["name"], m["name"])

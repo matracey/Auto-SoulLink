@@ -11,6 +11,7 @@
 //   stat = floor(((base + 15) * 2 + 63) * level / 100) + 5
 
 import {useDex} from '../data/purergb';
+import {MOVES} from '../data/moves';
 import {inGen} from './helper';
 
 afterEach(() => {
@@ -18,6 +19,25 @@ afterEach(() => {
 });
 
 describe('pureRGB Gen 1 patch (prototype)', () => {
+  describe('empty move slots', () => {
+    inGen(1, ({calculate, Pokemon, Move}) => {
+      test('retain the sentinel across dex swaps without changing other generations', () => {
+        const gen2Empty = MOVES[2]['(No Move)'];
+        for (const dex of ['purergb', 'vanilla', 'purergb'] as const) {
+          useDex(dex);
+          expect(MOVES[1]['(No Move)']).toEqual({
+            bp: 0, type: 'Normal', category: 'Status',
+          });
+          const move = Move('(No Move)');
+          expect(move.bp).toBe(0);
+          expect(move.category).toBe('Status');
+          expect(calculate(Pokemon('Mew'), Pokemon('Mew'), move).range()).toEqual([0, 0]);
+          expect(MOVES[2]['(No Move)']).toBe(gen2Empty);
+        }
+      });
+    });
+  });
+
   describe('new-type effectiveness: Fighting vs Crystal/Ground (Hardened Onix)', () => {
     // data/types/type_matchups.asm: `db FIGHTING, CRYSTAL, SUPER_EFFECTIVE` (2x); Fighting vs
     // Ground has no entry, so it's neutral (1x) - total type multiplier 2x.

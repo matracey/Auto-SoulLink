@@ -122,7 +122,18 @@ def test_purergb_calc_moves_resolve_for_every_move(purergb):
     for mid, row in purergb._moves.items():
         calc_name = purergb.calc_name("move", purergb.move_name(mid))
         assert calc_name in PURERGB_MOVE_KEYS, (mid, row["name"], calc_name)
-    assert len(purergb._moves) == len(PURERGB_MOVE_KEYS) == 165
+    assert len(purergb._moves) == len(PURERGB_MOVE_KEYS - {"(No Move)"}) == 165
+
+
+def test_empty_move_sentinel_matches_the_generator_and_generated_table():
+    from tools import gen_purergb_calc_patch as gen
+
+    moves, warnings = gen.build_moves_data(gen.load_json("moves.json")["moves"], gen.load_calc_move_names())
+    assert not warnings
+    assert moves["(No Move)"] == {"bp": 0, "type": "Normal", "category": "Status"}
+    assert set(moves) == PURERGB_MOVE_KEYS
+    block = "\n".join(gen.build_table_ts(moves))
+    assert gen.MIDDLE_MOVES + block + "\n" + gen.MIDDLE_TYPES in PURERGB_TS.read_text(encoding="utf-8")
 
 
 def test_purergb_calc_profile_uses_the_purergb_dex():

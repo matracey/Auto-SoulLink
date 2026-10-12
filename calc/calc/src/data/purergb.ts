@@ -181,6 +181,7 @@ const SPECIES_DATA: {[name: string]: SpeciesData} = {
 export const PURERGB_SPECIES = SPECIES_DATA;
 
 const MOVES_DATA: {[name: string]: MoveData} = {
+  "(No Move)": {"bp": 0, "type": "Normal", "category": "Status"},
   "Pound": {"bp": 40, "type": "Normal", "category": "Physical"},
   "Karate Chop": {"bp": 50, "type": "Fighting", "category": "Physical"},
   "Double Slap": {"bp": 15, "type": "Normal", "category": "Physical"},
