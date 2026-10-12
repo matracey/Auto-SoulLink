@@ -32,3 +32,6 @@ openpyxl
 # tests/unit/test_nds_*.py). Undeclared until now, so a clean clone aborted collection of
 # test_nds_image.py.
 ndspy==4.2.0
+
+# Pillow reads screenshots for the Polished title oracle and its unit tests.
+Pillow
