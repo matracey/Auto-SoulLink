@@ -14,6 +14,8 @@ hard-codes -flto, which w64devkit's gcc lacks, so `make CFLAGS=-O2` is passed
 and a space would split it). Only the host helper tools are affected, never
 the ROM. The build dir must be space-free (the repo path under Google Drive
 is not), so it defaults to $SLINK_WORK_ROOT/cache/polished/build.
+The export must not overlap the source repo in either direction. An existing
+build directory is replaced only when it contains this tool's .slink-export marker.
 
 Usage:
     python tools/build_polished_syms.py                      # clone (if absent) + build + publish
@@ -123,8 +125,15 @@ def remove_tree(path: pathlib.Path, attempts: int = 6, delay: float = 0.5) -> No
 
 
 def export_source(repo: pathlib.Path, commit: str, build_dir: pathlib.Path) -> None:
+    """Export outside the source tree, replacing only a previously marked SLink export."""
     if " " in str(build_dir):
         raise RuntimeError(f"build dir {build_dir} contains a space; make cannot cope. Use --build-dir")
+    source = repo.resolve()
+    destination = build_dir.resolve()
+    if destination.is_relative_to(source) or source.is_relative_to(destination):
+        raise RuntimeError(f"build dir {build_dir} overlaps the source repo {repo}; use a separate --build-dir")
+    if build_dir.exists() and (not build_dir.is_dir() or not (build_dir / EXPORT_MARKER).is_file()):
+        raise RuntimeError(f"build dir {build_dir} is not an owned SLink export; choose a fresh --build-dir")
     remove_tree(build_dir)
     build_dir.mkdir(parents=True)
     # A stale tree that survived a delete would still carry the previous run's marker.

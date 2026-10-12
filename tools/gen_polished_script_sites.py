@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Resolve Polished Crystal's givepoke / loadwildmon script sites against the release ROM.
 
-data/polished/upr_polished_entries.ini lists 63 script sites that are all `Unresolved` because a
+data/games/polished_crystal/upr_polished_entries.ini lists 63 script sites that are all `Unresolved` because a
 script position is not in a .sym: only the enclosing script LABEL is. This generator closes that
 gap by reading the release ROM and decoding each macro expansion in place.
 
@@ -29,6 +29,10 @@ reason. Nothing is guessed, and an unresolved site's `offset` is null -- the lab
 separately as `label_offset` so it can never be mistaken for a resolved position.
 
 --check re-renders the JSON and exits 1 on drift (the convention of tools/gen_upr_polished_ini.py).
+
+Inputs default to $SLINK_WORK_ROOT/cache/polished/{src,release}.
+Use --src DIR and --roms DIR to select another source/ROM directory; the ROM and
+.sym identity pins still apply. Output: data/games/polished_crystal/script_sites.json.
 """
 from __future__ import annotations
 
@@ -40,13 +44,15 @@ import re
 import sys
 from collections import defaultdict
 
+from slink_space import work_root
+
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-INI = ROOT / "data" / "polished" / "upr_polished_entries.ini"
-OUT = ROOT / "data" / "polished" / "script_sites.json"
+INI = ROOT / "data" / "games" / "polished_crystal" / "upr_polished_entries.ini"
+OUT = ROOT / "data" / "games" / "polished_crystal" / "script_sites.json"
 SPECIES_PACK = ROOT / "data" / "games" / "polished_crystal" / "species_index.json"
 LOCK = ROOT / "data" / "polished_sources.lock.json"
-RELEASE = pathlib.Path(r"F:/slink-work/cache/polished/release")
-SRC = pathlib.Path(r"F:/slink-work/cache/polished/src")
+RELEASE = work_root("cache") / "polished" / "release"
+SRC = work_root("cache") / "polished" / "src"
 
 ROM_SHA1 = "6930b48af5844d373e3c9130f26d6dd1084cf4ed"
 ROM_NAME = "polishedcrystal-3.2.3.gbc"
@@ -109,9 +115,9 @@ def load_species() -> dict[str, int]:
     return table
 
 
-def load_forms() -> dict[str, int]:
+def load_forms(src: pathlib.Path = SRC) -> dict[str, int]:
     """Form constant -> value, from the pinned source (constants/pokemon_constants.asm)."""
-    text = (SRC / "constants" / "pokemon_constants.asm").read_text(encoding="utf-8")
+    text = (src / "constants" / "pokemon_constants.asm").read_text(encoding="utf-8")
     # `DEF NAME EQU n` for the plain forms (PLAIN_FORM EQU 1, GALARIAN_FORM EQU 3,
     # constants/pokemon_constants.asm:346,:463) and `ext_const NAME ; n` for the variant forms
     # that widen the species byte (e.g. MAGIKARP_MASK1_FORM, :418). Both name a form byte.
@@ -121,7 +127,7 @@ def load_forms() -> dict[str, int]:
                   for m in re.finditer(r"^\s*ext_const\s+(\w+)\s*;\s*(\d+)", text, re.M)})
     # MALE / FEMALE are gender bits OR'd into a form argument (`FEMALE | PLAIN_FORM`,
     # constants/pokemon_data_constants.asm:273-274), written as %binary literals.
-    data = (SRC / "constants" / "pokemon_data_constants.asm").read_text(encoding="utf-8")
+    data = (src / "constants" / "pokemon_data_constants.asm").read_text(encoding="utf-8")
     forms.update({m.group(1): int(m.group(2), 2)
                   for m in re.finditer(r"^DEF\s+(MALE|FEMALE)\s+EQU\s+%([01]+)\s*$", data, re.M)})
     _require(forms, "no form constants found in pokemon_constants.asm")
@@ -235,7 +241,7 @@ def resolve(sites: list[dict], rom: bytes, syms: list[tuple[int, str]], species:
             for member in members:
                 member["reason"] = why
             continue
-        for member, at in zip(sorted(members, key=lambda s: s["order"]), hits):
+        for member, at in zip(sorted(members, key=lambda s: s["order"]), hits, strict=True):
             member["offset"] = at + 1                      # the species LOW byte
             member["level"] = rom[at + 3]
             if not 1 <= member["level"] <= 100:
@@ -275,17 +281,19 @@ def render(sites: list[dict]) -> dict:
     }
 
 
-def build() -> dict:
-    rom = load_rom(RELEASE / ROM_NAME)
-    syms = load_syms(RELEASE / SYM_NAME)
-    return render(resolve(parse_ini(INI), rom, syms, load_species(), load_forms()))
+def build(src: pathlib.Path = SRC, roms: pathlib.Path = RELEASE) -> dict:
+    rom = load_rom(roms / ROM_NAME)
+    syms = load_syms(roms / SYM_NAME)
+    return render(resolve(parse_ini(INI), rom, syms, load_species(), load_forms(src)))
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--src", default=str(SRC), help="Polished source checkout (constants/*.asm)")
+    ap.add_argument("--roms", default=str(RELEASE), help="directory containing the pinned release ROM and .sym")
     ap.add_argument("--check", action="store_true", help="exit 1 if the committed JSON has drifted")
     args = ap.parse_args()
-    document = json.dumps(build(), indent=2, sort_keys=True) + "\n"
+    document = json.dumps(build(pathlib.Path(args.src), pathlib.Path(args.roms)), indent=2, sort_keys=True) + "\n"
     if args.check:
         current = OUT.read_text(encoding="utf-8") if OUT.is_file() else ""
         if current != document:

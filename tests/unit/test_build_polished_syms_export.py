@@ -89,10 +89,45 @@ def test_export_source_stamps_the_commit_into_a_fresh_tree(tmp_path, monkeypatch
     tree = tmp_path / "tree"
     tree.mkdir()
     (tree / "leftover.bin").write_bytes(b"stale")
+    (tree / bps.EXPORT_MARKER).write_text("previous-commit\n", encoding="utf-8")
     monkeypatch.setattr(bps.subprocess, "run", lambda *a, **k: subprocess_result(b""))
     bps.export_source(repo, "cafe1234", tree)
     assert (tree / bps.EXPORT_MARKER).read_text(encoding="utf-8").strip() == "cafe1234"
     assert not (tree / "leftover.bin").exists()
+
+
+@pytest.mark.parametrize("location", ["same", "inside", "ancestor"])
+def test_export_source_refuses_any_tree_overlapping_the_source(tmp_path, monkeypatch, location):
+    repo = tmp_path / "parent" / "repo"
+    repo.mkdir(parents=True)
+    source = repo / "source.asm"
+    source.write_bytes(b"source must survive")
+    tree = {"same": repo, "inside": repo / "build", "ancestor": repo.parent}[location]
+    tree.mkdir(exist_ok=True)
+    (tree / bps.EXPORT_MARKER).write_text("previous-commit\n", encoding="utf-8")
+    monkeypatch.setattr(bps.subprocess, "run", lambda *a, **k: subprocess_result(b""))
+
+    with pytest.raises(RuntimeError, match="overlaps the source"):
+        bps.export_source(repo, "cafe1234", tree)
+
+    assert source.read_bytes() == b"source must survive"
+    assert (tree / bps.EXPORT_MARKER).read_text(encoding="utf-8") == "previous-commit\n"
+
+
+def test_export_source_preserves_an_existing_unowned_directory(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    tree = tmp_path / "unowned"
+    tree.mkdir()
+    unrelated = tree / "user-data.bin"
+    unrelated.write_bytes(b"do not delete")
+    monkeypatch.setattr(bps.subprocess, "run", lambda *a, **k: subprocess_result(b""))
+
+    with pytest.raises(RuntimeError, match="not an owned SLink export"):
+        bps.export_source(repo, "cafe1234", tree)
+
+    assert unrelated.read_bytes() == b"do not delete"
+    assert not (tree / bps.EXPORT_MARKER).exists()
 
 
 def subprocess_result(stdout: bytes):
