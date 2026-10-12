@@ -1238,8 +1238,15 @@ def _transport_sha1(rom: dict[int, bytes]) -> str:
 def rom_title(rom: dict[int, bytes]) -> str:
     """The one title whose five table heads the report covers. The payload
     names no title and the run adapter may be the partner's title (an FR+LG pair)."""
+    reader = gen3_rom_tables._Rom(rom)
+
     def covered(addr, size):
-        return any(a <= addr and addr + size <= a + len(raw) for a, raw in rom.items())
+        try:
+            reader.read(addr, size, "title table head")
+        except ValueError:
+            return False
+        return True
+
     titles = [t for t in ("firered", "leafgreen", "emerald")
               if all(covered(*_symbol(t, name)) for name in _CONTENT_HEADS)]
     if len(titles) != 1:
