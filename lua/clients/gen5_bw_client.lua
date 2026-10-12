@@ -424,6 +424,12 @@ local function exec_memorialize(key)
         return false
     end
 
+    if found_in == "party" and count <= 1 then
+        console.log("[SLink]   ↳ memorialize held: last party mon")
+        hud_show("!! Only mon!", 255, 200, 60, 240)
+        return "held"
+    end
+
     -- Find memorial slot: try MEMORIAL_BOX first, then overflow backwards
     local mem_box = nil
     local empty = nil
@@ -453,11 +459,6 @@ local function exec_memorialize(key)
     local expected_pid = mem_u32(found_addr)
     if verify_pid == expected_pid and verify_pid ~= 0 then
         if found_in == "party" then
-            if count <= 1 then
-                console.log("[SLink]   ↳ memorialize: last party mon — leaving in party")
-                hud_show("!! Only mon!", 255, 200, 60, 240)
-                return
-            end
             local found_slot = nil
             for slot = 0, count - 1 do
                 if M.partyAddr(slot) == found_addr then found_slot = slot; break end
@@ -994,7 +995,12 @@ local function on_frame()
             if q_count <= 1 then
                 for q_s = 0, q_count - 1 do
                     local addr = M.partyAddr(q_s)
-                    if addr and M.monKey(addr) == cmd.key then
+                    local party_key
+                    if addr then
+                        local species, ot_id = M.decrypt_block_a(addr)
+                        if species and ot_id then party_key = fmt("%08X:%08X", mem_u32(addr), ot_id) end
+                    end
+                    if party_key == cmd.key then
                         if game_over_flag then
                             table.remove(pending_sync_cmds, 1)
                             blocked = true
@@ -1051,6 +1057,8 @@ local function on_frame()
                 send({event="sync_retrieve_failed", key=cmd.key},
                      "sync_retrieve_failed:"..(cmd.key or "?"):sub(1,8), true, true)
             end
+        elseif cmd.cmd == "memorialize" and exec_result == "held" then
+            table.insert(pending_sync_cmds, cmd)
         elseif cmd.cmd == "memorialize" and exec_result == false then
             cmd._retries = (cmd._retries or 0) + 1
             if cmd._retries <= 5 then
