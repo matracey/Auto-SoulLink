@@ -374,6 +374,88 @@ def producer_completion(item, row, bound, snap):
     return proven
 
 
+def producer_labels(value):
+    requested = [value] if isinstance(value, str) else value
+    require(
+        isinstance(requested, list)
+        and requested
+        and all(
+            isinstance(label, str)
+            and label
+            and label == label.strip()
+            and "\n" not in label
+            and "\r" not in label
+            and not summary_text(label)
+            for label in requested
+        ),
+        "producer_check requires a label or non-empty label list",
+    )
+    require(len(set(requested)) == len(requested), "duplicate label inside producer_check list")
+    return tuple(sorted(requested))
+
+
+def static_check_labels(raw):
+    """Lex Lua without executing it; decode only isolated literal first arguments.
+
+    Comments and string contents are opaque tokens. A comma/close-paren must
+    follow the first literal, so concatenation and fmt expressions cannot pass.
+    Lua itself decodes the isolated literal, including decimal/hex/long strings.
+    """
+    from lupa.lua55 import LuaRuntime
+
+    text, tokens, i = raw.decode("utf-8"), [], 0
+    bracket = re.compile(r"\[(=*)\[")
+
+    def long_end(at):
+        opening = bracket.match(text, at)
+        if not opening:
+            return None
+        closing = "]" + opening[1] + "]"
+        end = text.find(closing, opening.end())
+        require(end >= 0, "unterminated Lua long string/comment")
+        return end + len(closing)
+
+    while i < len(text):
+        if text[i].isspace():
+            i += 1
+        elif text.startswith("--", i):
+            end = long_end(i + 2)
+            if end is None:
+                end = text.find("\n", i + 2)
+                end = len(text) if end < 0 else end
+            i = end
+        elif text[i] in "\"'":
+            start, quote = i, text[i]
+            i += 1
+            while i < len(text) and text[i] != quote:
+                i += 2 if text[i] == "\\" else 1
+            require(i < len(text), "unterminated Lua string")
+            i += 1
+            tokens.append(("string", text[start:i]))
+        elif (end := long_end(i)) is not None:
+            tokens.append(("string", text[i:end]))
+            i = end
+        elif text[i].isalpha() or text[i] == "_":
+            end = i + 1
+            while end < len(text) and (text[end].isalnum() or text[end] == "_"):
+                end += 1
+            tokens.append(("id", text[i:end]))
+            i = end
+        else:
+            tokens.append(("symbol", text[i]))
+            i += 1
+    call = [("id", "L"), ("symbol", "."), ("id", "check"), ("symbol", "(")]
+    lua, labels = LuaRuntime(unpack_returned_tuples=True), set()
+    for at in range(len(tokens) - 5):
+        if (
+            tokens[at : at + 4] == call
+            and tokens[at + 4][0] == "string"
+            and tokens[at + 5] in (("symbol", ","), ("symbol", ")"))
+        ):
+            labels.add(lua.eval(tokens[at + 4][1]))
+    return labels
+
+
 def producer_checks(row, records, root, snap, used_labels):
     """HYBRID: exact observational L.check echoes from a launch-bound source.
 
@@ -381,7 +463,20 @@ def producer_checks(row, records, root, snap, used_labels):
     are alternative recordings, not two independent checks. Duplicate echoes
     within either matching recording refuse; labels cannot be reused per receipt.
     """
-    proofs, labels, fingerprints = {}, set(), set()
+    proofs, labels, fingerprints, parsed = {}, set(), set(), {}
+    if not any(c.get("covered_by") == "producer_check" for c in row["checks"]):
+        return proofs
+    all_outputs = {exact_path(row["primary"]["path"])}
+    for specification in row["launches"]:
+        all_outputs.add(exact_path(snap.read(exact_path(specification["path"]))["console"]))
+    for output in all_outputs:
+        require(output in records, "unbound producer output")
+        require(
+            not re.search(
+                r"^\s*\[FAIL\]|^RESULT:\s+FAIL\b", snap.raw(output).decode("utf-8"), re.I | re.M
+            ),
+            "producer_check output contains a FAIL check",
+        )
     for check in row["checks"]:
         if check.get("covered_by") != "producer_check":
             continue
@@ -389,22 +484,19 @@ def producer_checks(row, records, root, snap, used_labels):
             set(check) == {"name", "covered_by", "producer_check"},
             "producer_check exact fields required",
         )
-        name, label = check["name"], check["producer_check"]
+        name, requested = check["name"], producer_labels(check["producer_check"])
         require(name not in WRITE_CHECKS, "WRITE criterion cannot use producer_check")
         require(
-            name not in PRODUCER_COMPLETION and label not in PRODUCER_COMPLETION,
+            name not in PRODUCER_COMPLETION
+            and not any(label in PRODUCER_COMPLETION for label in requested),
             "generic verdict belongs to producer_completion",
         )
+        require(not (set(requested) & labels), "producer_check label reused for different checks")
         require(
-            isinstance(label, str) and label.strip() and "\n" not in label and "\r" not in label,
-            "producer_check requires one literal label",
-        )
-        require(label not in labels, "producer_check label reused for different checks")
-        require(
-            label not in used_labels or used_labels[label] == name,
+            all(label not in used_labels or used_labels[label] == name for label in requested),
             "producer_check label reused for different checks across receipts",
         )
-        prefix = "  [ok] " + label
+        prefixes = ["  [ok] " + label for label in requested]
         matches = []
         primary = exact_path(row["primary"]["path"])
         for specification in row["launches"]:
@@ -415,22 +507,22 @@ def producer_checks(row, records, root, snap, used_labels):
             if exact_path(records[primary]["run_witness"]["path"]) == witness:
                 outputs.add(primary)
             counts = {}
-            lines_by_path = {}
             for output in sorted(outputs):
                 require(output in records, "unbound producer output")
-                lines = snap.raw(output).decode("utf-8").splitlines()
-                lines_by_path[output] = lines
-                counts[output] = sum(
-                    line == prefix or line.startswith(prefix + "  -- ") for line in lines
-                )
-            if not any(counts.values()):
+                # L.log terminates physical records with LF (CRLF on Windows).
+                # Unicode separators in detail are data, not new check records.
+                lines = [
+                    line.removesuffix("\r") for line in snap.raw(output).decode("utf-8").split("\n")
+                ]
+                counts[output] = [
+                    sum(line == prefix or line.startswith(prefix + "  -- ") for line in lines)
+                    for prefix in prefixes
+                ]
+            if not any(all(n > 0 for n in group) for group in counts.values()):
                 continue
             require(
-                all(n <= 1 for n in counts.values()), "producer_check label appears more than once"
-            )
-            require(
-                not any("  [FAIL] " in line for lines in lines_by_path.values() for line in lines),
-                "producer_check output contains a FAIL check",
+                all(n <= 1 for group in counts.values() for n in group),
+                "producer_check label appears more than once",
             )
             checkout = exact_path(launch["source_checkout"])
             sources = []
@@ -445,18 +537,25 @@ def producer_checks(row, records, root, snap, used_labels):
                     raw == snap.raw(source_path),
                     "producer_check driver differs from checked source",
                 )
-                if label.encode("utf-8") in raw:
+                if source_path.suffix.lower() != ".lua":
+                    continue
+                key = (str(source_path), driver["sha256"])
+                if key not in parsed:
+                    parsed[key] = static_check_labels(raw)
+                if set(requested) <= parsed[key]:
                     sources.append((driver["sha256"], str(source_path)))
-            require(sources, "producer_check literal absent from launch-hashed driver source")
-            source_hash, source_path = sorted(sources)[0]
-            output = (
-                primary if counts.get(primary) else next(p for p in sorted(outputs) if counts[p])
+            require(
+                sources,
+                "producer_check absent static L.check first argument; dynamic label not admissible",
             )
+            source_hash, source_path = sorted(sources)[0]
+            complete = [p for p in sorted(outputs) if all(n == 1 for n in counts[p])]
+            output = primary if primary in complete else complete[0]
             matches.append(
                 {
                     "driver_sha256": source_hash,
                     "driver": source_path,
-                    "label": label,
+                    "labels": list(requested),
                     "output": str(output),
                     "output_sha256": digest(snap.raw(output)),
                     "launch": str(launch_path),
@@ -464,11 +563,13 @@ def producer_checks(row, records, root, snap, used_labels):
             )
         require(len(matches) == 1, "producer_check missing or ambiguous across launches")
         proof = matches[0]
-        fingerprint = (proof["driver_sha256"], label)
+        if isinstance(check["producer_check"], str):
+            proof["label"] = requested[0]  # retain the original single-label report field
+        fingerprint = (proof["driver_sha256"], requested)
         require(fingerprint not in fingerprints, "producer_check blanket observation")
         fingerprints.add(fingerprint)
-        labels.add(label)
-        used_labels[label] = name
+        labels.update(requested)
+        used_labels.update(dict.fromkeys(requested, name))
         proofs[name] = proof
     return proofs
 
@@ -486,6 +587,14 @@ def has_summary(value, *, in_container=False):
     return isinstance(value, list) and (
         not value or any(has_summary(v, in_container=True) for v in value)
     )
+
+
+def has_summary_keys(value):
+    if isinstance(value, dict):
+        return any(
+            str(k).casefold() in SUMMARY_KEYS or has_summary_keys(v) for k, v in value.items()
+        )
+    return isinstance(value, list) and any(has_summary_keys(v) for v in value)
 
 
 def summary_text(text):
@@ -513,7 +622,8 @@ def assertions(checks, expected, bound, snap, *, item, proven, producer_observat
             if engine == "producer_check":
                 proof = producer_observations.get(check["name"])
                 require(
-                    proof is not None and proof["label"] == check["producer_check"],
+                    proof is not None
+                    and tuple(proof["labels"]) == producer_labels(check["producer_check"]),
                     "producer_check not proved",
                 )
                 result.append(
@@ -550,21 +660,20 @@ def assertions(checks, expected, bound, snap, *, item, proven, producer_observat
             "reviewed raw assertions required",
         )
         facts, observations, positive = [], set(), False
+        structural, scalar_positive = False, False
         for a in check["assertions"]:
             path = exact_path(a["artifact"])
             require(path in bound, f"unbound raw observation: {path}")
             op = a["op"]
-            if op == "eq":
-                require(
-                    set(a) == {"artifact", "pointer", "op", "expected"}, "unknown assertion fields"
-                )
+            if op in {"eq", "len", "keys"}:
                 segments = [
                     s.replace("~1", "/").replace("~0", "~").casefold()
                     for s in a["pointer"].split("/")
                 ]
+                require(not (set(segments) & SUMMARY_KEYS), "generic completion is not raw proof")
+            if op == "eq":
                 require(
-                    not (set(segments) & SUMMARY_KEYS),
-                    "generic completion is not raw proof",
+                    set(a) == {"artifact", "pointer", "op", "expected"}, "unknown assertion fields"
                 )
                 observed = pointer(snap.read(path), a["pointer"])
                 require(
@@ -585,6 +694,39 @@ def assertions(checks, expected, bound, snap, *, item, proven, producer_observat
                     )
                 )
                 positive = True
+                scalar_positive = scalar_positive or not isinstance(observed, (dict, list))
+            elif op in {"len", "keys"}:
+                require(
+                    set(a) == {"artifact", "pointer", "op", "expected"},
+                    "unknown structural assertion fields",
+                )
+                container = pointer(snap.read(path), a["pointer"])
+                require(
+                    not has_summary_keys(container), "summary keys cannot support structural proof"
+                )
+                if op == "len":
+                    require(
+                        isinstance(container, (dict, list))
+                        and type(a["expected"]) is int
+                        and a["expected"] >= 0,
+                        "len requires a container and nonnegative integer",
+                    )
+                    observed = len(container)
+                else:
+                    require(
+                        isinstance(container, dict)
+                        and isinstance(a["expected"], list)
+                        and all(isinstance(k, str) for k in a["expected"])
+                        and a["expected"] == sorted(set(a["expected"]))
+                        and not any(k.casefold() in SUMMARY_KEYS for k in a["expected"]),
+                        "keys requires an object and sorted unique nonsummary keys",
+                    )
+                    observed = sorted(container)
+                require(observed == a["expected"], f"raw {op} mismatch: {check['name']}")
+                observations.add(
+                    (str(path), a["pointer"], op, json.dumps(observed, sort_keys=True))
+                )
+                structural = True
             elif op == "regex_count":
                 fields = {"artifact", "pattern", "op", "expected"}
                 absence = a["expected"] == 0
@@ -620,6 +762,7 @@ def assertions(checks, expected, bound, snap, *, item, proven, producer_observat
                 observed = len(matches)
                 require(observed == a["expected"], f"raw count mismatch: {check['name']}")
                 positive = positive or observed > 0
+                scalar_positive = scalar_positive or observed > 0
             else:
                 raise ValueError(f"unknown raw assertion operation: {op}")
             facts.append(
@@ -631,6 +774,9 @@ def assertions(checks, expected, bound, snap, *, item, proven, producer_observat
                 }
             )
         require(positive, "each raw check requires a positive observation")
+        require(
+            not structural or scalar_positive, "len/keys need scalar eq or positive regex support"
+        )
         fingerprint = tuple(sorted(observations))
         require(fingerprint not in fingerprints, "blanket check replacement forbidden")
         fingerprints.add(fingerprint)

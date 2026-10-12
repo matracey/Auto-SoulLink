@@ -26,7 +26,11 @@ function L.log(s)
 end
 function L.check(what, ok, detail)
     if not ok then L.failures = L.failures + 1 end
-    L.log(fmt("  [%s] %s%s", ok and "ok" or "FAIL", what, detail ~= nil and ("  -- " .. tostring(detail)) or ""))
+    -- One check is one physical line; raw detail cannot forge another check.
+    local function one_line(value)
+        return (tostring(value):gsub("\r\n", "\n"):gsub("[\r\n]", "\\n"))
+    end
+    L.log(fmt("  [%s] %s%s", ok and "ok" or "FAIL", one_line(what), detail ~= nil and ("  -- " .. one_line(detail)) or ""))
     return ok
 end
 function L.finish(tag)

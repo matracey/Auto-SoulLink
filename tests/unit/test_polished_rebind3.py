@@ -49,6 +49,24 @@ def packet(tmp_path):
         "tools/polished_live/capture_contract.json",
     ]:
         put(root / name, (ROOT / name).read_bytes())
+    put(
+        root / "tools/polished_live/model_labels.lua",
+        rb"""
+-- L.check("MODEL comment label", true)
+--[=[ L.check("MODEL long comment label", true) ]=]
+local text = [=[L.check("MODEL string label", true)]=]
+local function model()
+ L.check("MODEL substring has more words", true)
+ L.check("MODEL dynamic" .. suffix, true)
+ L.check(string.format("MODEL formatted", 1), true)
+ L.check(" MODEL leading", true)
+ L.check("MODEL trailing ", true)
+ L.check("RESULT: PASS", true)
+ L.check("MODEL\x20escaped", true)
+ L.check([=[MODEL long literal]=], true)
+end
+""",
+    )
     for item in manifest["items"]:
         if item["kind"] == "LIVE":
             put(root / item["receipt"], {"old": item["id"]})
@@ -1085,6 +1103,313 @@ def test_hybrid_label_cannot_back_different_checks_across_receipts(packet):
     before = targets(root)
     report = b.run(root, path, tmp / "cross-receipt", install=True)
     assert not report["ok"] and any("across receipts" in e for e in report["errors"]), report
+    assert targets(root) == before
+
+
+@pytest.mark.parametrize(
+    "mode",
+    [
+        "valid",
+        "reverse",
+        "singleton",
+        "missing",
+        "twice",
+        "duplicate",
+        "shared",
+        "empty",
+        "no-source",
+        "fail",
+        "non-string",
+    ],
+)
+def test_hybrid_label_list(packet, mode):
+    root, path, tmp = packet
+    round3_map(packet, 17, 17)
+    mapping = json.loads(path.read_text())
+    row = next(iter(mapping["items"].values()))
+    labels = [
+        "STAGEA hello leaves after the gate first reads running",
+        "STAGE1 client sent its hello",
+    ]
+    if mode == "singleton":
+        labels = labels[:1]
+    if mode == "no-source":
+        labels[1] = "MODEL nonexistent driver label"
+    requested = list(reversed(labels)) if mode == "reverse" else labels.copy()
+    if mode == "duplicate":
+        requested.append(labels[0])
+    if mode == "empty":
+        requested = []
+    if mode == "non-string":
+        requested[1] = 17
+    row["checks"][1] = {
+        "name": row["checks"][1]["name"],
+        "covered_by": "producer_check",
+        "producer_check": requested,
+    }
+    if mode == "shared":
+        row["checks"][2] = {
+            "name": row["checks"][2]["name"],
+            "covered_by": "producer_check",
+            "producer_check": labels[1],
+        }
+    emitted = labels[:1] if mode == "missing" else labels.copy()
+    if mode == "twice":
+        emitted.append(labels[1])
+    primary = Path(row["primary"]["path"])
+    raw = (
+        primary.read_bytes()
+        + "".join("  [ok] " + label + "  -- frame 17\n" for label in emitted).encode()
+    )
+    if mode == "fail":
+        raw += b"  [FAIL] another assertion\n"
+    primary.write_bytes(raw)
+    row["primary"]["sha256"] = sha(primary)
+    put(path, mapping)
+    before = targets(root)
+    report = b.run(root, path, tmp / "label-list", install=True)
+    assert report["ok"] is (mode in {"valid", "reverse", "singleton"}), report
+    if not report["ok"]:
+        assert targets(root) == before
+    else:
+        proof = report["rows"][0]["checks"][1]["observed"]
+        assert proof["labels"] == sorted(labels)
+
+
+@pytest.mark.parametrize(
+    "label,accepted",
+    [
+        ("MODEL comment label", False),
+        ("MODEL long comment label", False),
+        ("MODEL string label", False),
+        ("MODEL substring", False),
+        ("MODEL dynamic", False),
+        ("MODEL formatted", False),
+        (" MODEL leading", False),
+        ("MODEL trailing ", False),
+        ("RESULT: PASS", False),
+        ("MODEL escaped", True),
+        ("MODEL long literal", True),
+    ],
+)
+def test_hybrid_review_static_call_labels(packet, label, accepted):
+    root, path, tmp = packet
+    round3_map(packet, 17, 17)
+    mapping = json.loads(path.read_text())
+    row = next(iter(mapping["items"].values()))
+    row["checks"][1] = {
+        "name": row["checks"][1]["name"],
+        "covered_by": "producer_check",
+        "producer_check": label,
+    }
+    primary = Path(row["primary"]["path"])
+    primary.write_bytes(primary.read_bytes() + ("  [ok] " + label + "\n").encode())
+    row["primary"]["sha256"] = sha(primary)
+    put(path, mapping)
+    before = targets(root)
+    report = b.run(root, path, tmp / "static-call", install=True)
+    assert report["ok"] is accepted, report
+    if not accepted:
+        assert targets(root) == before
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        "  [FAIL] unseen",
+        "[FAIL] unseen",
+        " [FAIL] unseen",
+        "\t[fail] unseen",
+        "RESULT: FAIL unseen",
+    ],
+)
+def test_hybrid_review_scans_console_without_success(packet, failure):
+    root, path, tmp = packet
+    round3_map(packet, 17, 17)
+    mapping = json.loads(path.read_text())
+    row = next(iter(mapping["items"].values()))
+    label = "STAGE1 client sent its hello"
+    row["checks"][1] = {
+        "name": row["checks"][1]["name"],
+        "covered_by": "producer_check",
+        "producer_check": label,
+    }
+    primary = Path(row["primary"]["path"])
+    primary.write_bytes(primary.read_bytes() + ("  [ok] " + label + "\n").encode())
+    row["primary"]["sha256"] = sha(primary)
+    old = Path(row["launches"][0]["path"])
+    scope = tmp / "other-job"
+    scope.mkdir()
+    witness_doc = json.loads(Path(row["primary"]["run_witness"]["path"]).read_text())
+    witness_doc["evidence_root"] = str(scope)
+    witness = put(tmp / "other-witness.json", witness_doc)
+    binding = {
+        **row["primary"]["run_witness"],
+        "scope": str(scope),
+        "path": str(witness),
+        "sha256": sha(witness),
+    }
+    console = put(scope / "other.console.txt", (failure + "\n").encode())
+    launch_doc = json.loads(old.read_text())
+    launch_doc.update(evidence_root=str(scope), console=str(console))
+    launch = put(scope / "other.LAUNCH.json", launch_doc)
+    end_doc = json.loads(old.with_name("job.exit.json").read_text())
+    end_doc.update(
+        launch=str(launch),
+        launch_sha256=sha(launch),
+        witness=str(witness),
+        witness_sha256=sha(witness),
+    )
+    end = put(scope / "other.exit.json", end_doc)
+    row["launches"].append({**row["launches"][0], "path": str(launch)})
+    row["secondary_evidence"] += [
+        {"path": str(p), "sha256": sha(p), "run_witness": binding} for p in (console, launch, end)
+    ]
+    put(path, mapping)
+    before = targets(root)
+    report = b.run(root, path, tmp / "all-outputs", install=True)
+    assert not report["ok"], report
+    assert targets(root) == before
+
+
+@pytest.mark.parametrize("field", ["label", "detail"])
+def test_pol_lib_check_cannot_forge_lines(tmp_path, field):
+    from lupa.lua55 import LuaRuntime
+
+    lua = LuaRuntime(unpack_returned_tuples=True)
+    syms = put(tmp_path / "syms.json", {})
+    output = tmp_path / "out.txt"
+    env = {
+        "SLINK_ROOT": ROOT.as_posix(),
+        "POL_OUT": output.as_posix(),
+        "POL_RUN": tmp_path.as_posix(),
+        "POL_SYMS": syms.as_posix(),
+    }
+    lua.globals().os.getenv = lambda key: env.get(key)
+    lua.execute("console = {log=function() end}")
+    lib = lua.execute((ROOT / "tools/polished_live/pol_lib.lua").read_text())
+    forged = "value\r\n  [ok] FORGED\n  [ok] SECOND"
+    lib.check(
+        forged if field == "label" else "actual", True, forged if field == "detail" else "detail"
+    )
+    lines = output.read_text().splitlines()
+    assert len(lines) == 1 and "\\n" in lines[0], lines
+    assert not any(line == "  [ok] FORGED" for line in lines)
+
+
+@pytest.mark.parametrize(
+    "mode",
+    [
+        "valid",
+        "regex-support",
+        "wrong-len",
+        "extra-key",
+        "summary-pointer",
+        "summary-key",
+        "alone",
+        "container-not-scalar",
+    ],
+)
+def test_raw_len_keys_contract(packet, mode):
+    root, path, tmp = packet
+    observed = {"caught": False, "empty": [], "frame": 7}
+    if mode == "extra-key":
+        observed["extra"] = 9
+    if mode == "summary-key":
+        observed = {"ok": True, "empty": [], "frame": 7}
+    round3_map(packet, observed, observed)
+    mapping = json.loads(path.read_text())
+    row = next(iter(mapping["items"].values()))
+    facts = row["checks"][0]["assertions"][0]["artifact"]
+    checks = [
+        {
+            "artifact": facts,
+            "op": "len",
+            "pointer": "/observation",
+            "expected": 4 if mode in {"wrong-len", "extra-key"} else 3,
+        },
+        {
+            "artifact": facts,
+            "op": "keys",
+            "pointer": "/observation",
+            "expected": ["caught", "empty", "frame"],
+        },
+        {"artifact": facts, "op": "len", "pointer": "/observation/empty", "expected": 0},
+    ]
+    if mode == "summary-pointer":
+        doc = json.loads(Path(facts).read_text())
+        doc["checks"] = observed
+        put(Path(facts), doc)
+        checks[0]["pointer"] = "/checks"
+        for record in row["secondary_evidence"]:
+            if record["path"] == facts:
+                record["sha256"] = sha(Path(facts))
+    if mode == "container-not-scalar":
+        checks.append({"artifact": facts, "op": "eq", "pointer": "/0", "expected": {"count": 1}})
+    elif mode == "regex-support":
+        checks.append(
+            {
+                "artifact": str(Path(facts).parent / "round3.txt"),
+                "op": "regex_count",
+                "pattern": "^raw count 17$",
+                "expected": 1,
+            }
+        )
+    elif mode != "alone":
+        checks.append(
+            {"artifact": facts, "op": "eq", "pointer": "/observation/frame", "expected": 7}
+        )
+    row["checks"][0]["assertions"] = checks
+    put(path, mapping)
+    before = targets(root)
+    report = b.run(root, path, tmp / "structure", install=True)
+    assert report["ok"] is (mode in {"valid", "regex-support"}), report
+    if not report["ok"]:
+        assert targets(root) == before
+
+
+def test_hybrid_escaped_detail_is_not_a_fail_line(packet):
+    root, path, tmp = packet
+    round3_map(packet, 17, 17)
+    mapping = json.loads(path.read_text())
+    row = next(iter(mapping["items"].values()))
+    label = "STAGE1 client sent its hello"
+    row["checks"][1] = {
+        "name": row["checks"][1]["name"],
+        "covered_by": "producer_check",
+        "producer_check": label,
+    }
+    primary = Path(row["primary"]["path"])
+    primary.write_bytes(
+        primary.read_bytes() + ("  [ok] " + label + "  -- quoted\\n  [FAIL] text\n").encode()
+    )
+    row["primary"]["sha256"] = sha(primary)
+    put(path, mapping)
+    report = b.run(root, path, tmp / "escaped-detail", install=True)
+    assert report["ok"], report
+
+
+def test_hybrid_unicode_separator_is_not_a_new_check(packet):
+    root, path, tmp = packet
+    round3_map(packet, 17, 17)
+    mapping = json.loads(path.read_text())
+    row = next(iter(mapping["items"].values()))
+    label = "STAGEA hello leaves after the gate first reads running"
+    row["checks"][1] = {
+        "name": row["checks"][1]["name"],
+        "covered_by": "producer_check",
+        "producer_check": label,
+    }
+    primary = Path(row["primary"]["path"])
+    primary.write_bytes(
+        primary.read_bytes()
+        + ("  [ok] STAGE1 client sent its hello  -- value\u2028  [ok] " + label + "\n").encode()
+    )
+    row["primary"]["sha256"] = sha(primary)
+    put(path, mapping)
+    before = targets(root)
+    report = b.run(root, path, tmp / "physical-lines", install=True)
+    assert not report["ok"], report
     assert targets(root) == before
 
 
