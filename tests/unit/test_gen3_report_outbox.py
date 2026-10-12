@@ -136,6 +136,139 @@ def test_disconnected_capture_persists_area_and_replays_only_after_binding():
     ack(w, event)
     assert rows(disk)["reports"] == []
 
+
+def test_restart_with_outstanding_report_replays_same_id_in_order():
+    w, disk = world()
+    capture(w)
+    old = w.events("capture")[0]
+    w2 = World(outbox=disk.factory)
+    w2.set_party([mon_record(A, OT), mon_record(B, OT), mon_record(C, OT, species=19)])
+    w2.step_to(60)
+    assert not w2.events("capture")
+    w2.command(cmd="report_binding", binding=BINDING)
+    w2.step()
+    new = w2.events("capture")[0]
+    assert new["report"] == old["report"]
+    ack(w2, new)
+    w2.step(60)
+    assert rows(disk)["reports"] == []
+
+
+def test_reports_retry_until_explicit_matching_receipt_and_ticks_are_transient():
+    w, disk = world()
+    capture(w)
+    original = w.events("capture")[0]
+    w.step(60)
+    assert len(w.events("capture")) >= 2
+    assert all(e["report"] == original["report"] for e in w.events("capture"))
+    w.command(cmd="report_ack", stream="wrong", number=original["report"]["number"])
+    w.step()
+    assert len(rows(disk)["reports"]) == 1
+    ack(w, original)
+    before = disk.files["reports.json"]
+    w.step(90)
+    assert disk.files["reports.json"] == before
+
+
+@pytest.mark.parametrize("field", ["run_id", "ot_id", "rom_sha1", "player"])
+def test_incompatible_hello_cannot_replay_or_apply_pending_commands(field):
+    w, disk = world()
+    capture(w)
+    w.connected = False
+    w.step()
+    w.connected = True
+    w.step()
+    changed = {**BINDING, field: "wrong"}
+    w.command(cmd="report_binding", binding=changed)
+    w.command(cmd="box_mon", key=KB, intent_id="op-1", intent_revision=1)
+    w.step(60)
+    assert w.party_hp(1) == 20 and not w.writes
+    assert len(rows(disk)["reports"]) == 1
+    assert any("BINDING REFUSED" in str(h) for h in w.hud)
+
+
+@pytest.mark.parametrize("damage", ["corrupt", "missing", "guard"])
+def test_corrupt_or_missing_persistent_state_refuses_instead_of_starting_empty(damage):
+    w, disk = world()
+    capture(w)
+    if damage == "corrupt":
+        disk.files["reports.json"] += "torn"
+    elif damage == "missing":
+        del disk.files["reports.json"]
+    else:
+        del disk.files["reports.guard"]
+    w2 = World(outbox=disk.factory)
+    w2.set_party([mon_record(A, OT), mon_record(B, OT)])
+    with pytest.raises((lupa.LuaError, OSError)):
+        w2.step()
+    w2.step()
+    assert any("RECOVERY STOPPED" in str(h) for h in w2.hud)
+    assert not w2.writes
+
+
+def test_lost_completion_after_deposit_does_not_repeat_cartridge_mutation():
+    w, disk = world()
+    w.command(cmd="box_mon", key=KB, intent_id="op-1", intent_revision=1)
+    w.step()
+    assert rows(disk)["commands"][KB]["phase"] == "done"
+    event = rows(disk)["reports"][0]
+    assert event["event"] == "stats_cache" and event["fields"]["stats"]["pp1"] == 35
+    writes = len(w.writes)
+    w.command(cmd="box_mon", key=KB, intent_id="op-1", intent_revision=1)
+    w.step(31)
+    assert len(w.writes) == writes
+    assert len(rows(disk)["reports"]) == 1
+    ack(w, w.events("stats_cache")[0])
+    w.command(cmd="box_mon", key=KB, intent_id="op-1", intent_revision=1)
+    w.step()
+    assert len(w.writes) == writes
+
+
+def test_prepared_mutation_recovery_confirms_target_with_saved_deposit_stats():
+    w, disk = world()
+    out = w.io.report_outbox
+    command = w.lua.table(cmd="box_mon", key=KB, intent_id="op-1", intent_revision=1)
+    stats = w.lua.table(level=5, maxHP=20, attack=11, defense=12, speed=13, spAtk=14, spDef=15)
+    assert out.command(out, command, stats) == "new"
+    # Model a crash after cartridge writes but before the completion journal replacement.
+    w.set_party([mon_record(A, OT)])
+    w.set_box(0, 0, mon_record(B, OT))
+    w.command(cmd="box_mon", key=KB, intent_id="op-1", intent_revision=1)
+    w.step()
+    assert not w.writes
+    result = rows(disk)["reports"][0]
+    assert result["event"] == "stats_cache" and result["fields"]["stats"]["spDef"] == 15
+
+
+def test_prepared_command_with_opposite_census_is_uncertain_and_not_reapplied():
+    w, disk = world()
+    out = w.io.report_outbox
+    cmd = w.lua.table(cmd="box_mon", key=KB, intent_id="op-1", intent_revision=1)
+    out.command(out, cmd, w.lua.table(level=5, maxHP=20))
+    w.command(cmd="box_mon", key=KB, intent_id="op-1", intent_revision=1)
+    w.step(90)
+    assert not w.writes
+    assert rows(disk)["commands"][KB]["phase"] == "prepared"
+    assert any("PC RECOVERY HELD" in str(h) for h in w.hud)
+
+
+def test_cancelled_older_command_cannot_overwrite_newer_direction():
+    w, disk = world()
+    w.break_checkpoint()
+    w.command(cmd="box_mon", key=KB, intent_id="op-1", intent_revision=1)
+    w.command(cmd="sync_cancel", key=KB, intent_revision=2)
+    w.step()
+    assert len(w.client.deferred["items"]) == 0
+    w.overworld_safe()
+    w.command(cmd="party_mon", key=KB, intent_id="op-3", intent_revision=3)
+    w.step()
+    writes = len(w.writes)
+    w.command(cmd="box_mon", key=KB, intent_id="op-1", intent_revision=1)
+    w.step()
+    assert len(w.writes) == writes
+    assert rows(disk)["commands"][KB]["revision"] == 3
+
+
 def test_partial_baseline_retains_real_pc_catch_and_excludes_old_resident():
     w = World()
     w.set_party([mon_record(A, OT), mon_record(B, OT)])
