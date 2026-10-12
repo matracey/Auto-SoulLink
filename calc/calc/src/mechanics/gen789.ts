@@ -1462,7 +1462,7 @@ export function calculateDefenseSMSSSV(
     desc.weather = field.weather;
   }
 
-  if (move.named('Explosion', 'Self-Destruct', 'Misty Explosion')) {
+  if (gen.num === 9 && move.named('Explosion', 'Self-Destruct', 'Misty Explosion')) {
     defense = pokeRound(defense / 2);
   }
 

@@ -138,6 +138,12 @@ describe('calc', () => {
           expect(result.desc()).toBe(
             '0 Atk burned Mew Explosion vs. 0 HP / 0 Def Vulpix on a critical hit: 364-429 (167.7 - 197.6%) -- guaranteed OHKO'
           );
+        } else if (gen === 9) {
+          // RR uses 150 BP and halves defense for Explosion.
+          expect(result.range()).toEqual([327, 385]);
+          expect(result.desc()).toBe(
+            '0 Atk burned Mew Explosion vs. 0 HP / 0 Def Vulpix on a critical hit: 327-385 (150.6 - 177.4%) -- guaranteed OHKO'
+          );
         } else if (gen >= 6) {
           expect(result.range()).toEqual([273, 321]);
           expect(result.desc()).toBe(
@@ -152,6 +158,8 @@ describe('calc', () => {
           expect(result.range()).toEqual([149, 176]);
         } else if (gen > 2 && gen < 5) {
           expect(result.range()).toEqual([182, 215]);
+        } else if (gen === 9) {
+          expect(result.range()).toEqual([109, 128]);
         } else {
           expect(result.range()).toEqual([91, 107]);
         }
@@ -225,7 +233,10 @@ describe('calc', () => {
           const [atk, def] = gen === 3 && type === 'Rock' ? ['Atk', 'Def'] : ['SpA', 'SpD'];
 
           const result = calculate(
-            Pokemon('Castform'),
+            Pokemon('Castform', {
+              // Keep this weather-mechanics fixture independent of RR's stat rebalance.
+              overrides: {baseStats: {hp: 70, atk: 70, def: 70, spa: 70, spd: 70, spe: 70}},
+            }),
             Pokemon('Bulbasaur'),
             Move('Weather Ball'),
             Field({weather: weather as Weather})
@@ -281,7 +292,10 @@ describe('calc', () => {
         });
       }
       test(`Iron Ball negates levitate (gen ${gen})`, () => {
-        const result = calculate(Pokemon('Poliwrath'), Pokemon('Mismagius', {item: 'Iron Ball'}), Move('Mud Shot'));
+        const result = calculate(Pokemon('Poliwrath'), Pokemon('Mismagius', {
+          item: 'Iron Ball',
+          overrides: {baseStats: {hp: 60, atk: 60, def: 60, spa: 105, spd: 105, spe: 105}},
+        }), Move('Mud Shot'));
         expect(result.range()).toEqual([29, 35]);
         expect(result.desc()).toBe(
           '0 SpA Poliwrath Mud Shot vs. 0 HP / 0 SpD Mismagius: 29-35 (11.1 - 13.4%) -- possible 8HKO'
@@ -370,6 +384,7 @@ describe('calc', () => {
           boosts: {spa: 2},
         });
         const Milotic = Pokemon('Milotic', {
+          overrides: {baseStats: {hp: 95, atk: 60, def: 79, spa: 100, spd: 125, spe: 81}},
           item: 'Flame Orb',
           nature: 'Bold',
           ability: 'Marvel Scale',
