@@ -3,7 +3,9 @@ import importlib.util
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
 
@@ -11,6 +13,34 @@ ROOT = Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location("companion_build", ROOT / "patch/tools/build.py")
 build = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(build)
+
+
+@pytest.mark.parametrize("title", ["firered", "leafgreen", "emerald"])
+@pytest.mark.parametrize("version", [None, "dev", "v0.3.0", "v0.3.0-dev"])
+def test_candidate_cli_forwards_menu_version(monkeypatch, title, version):
+    producer = Mock()
+    monkeypatch.setattr(build, "build_arena_probe", producer)
+    args = ["build.py", "--trade-candidate", "--target", title, "--rom", "input.gba"]
+    if version is not None:
+        args += ["--version", version]
+    monkeypatch.setattr(sys, "argv", args)
+    assert build.main() == 0
+    producer.assert_called_once_with(
+        title, "input.gba", "trade", trade_candidate=True, version=version,
+    )
+
+
+def test_candidate_cli_rejects_bad_version_before_build(monkeypatch, capsys):
+    producer = Mock()
+    monkeypatch.setattr(build, "build_arena_probe", producer)
+    monkeypatch.setattr(sys, "argv", [
+        "build.py", "--trade-candidate", "--target", "firered", "--version", "invalid",
+    ])
+    with pytest.raises(SystemExit) as error:
+        build.main()
+    assert error.value.code == 2
+    assert "version must be" in capsys.readouterr().err
+    producer.assert_not_called()
 
 
 def test_firered_refuses_rr_mailbox_allocator_overlap():

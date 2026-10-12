@@ -528,7 +528,7 @@ def main():
         if args.arena_probe or args.check or args.describe or args.no_verify_md5:
             ap.error("trade candidate cannot combine with probes/check/describe/verification bypass")
         try:
-            build_arena_probe(args.target, args.rom, "trade", trade_candidate=True)
+            build_arena_probe(args.target, args.rom, "trade", trade_candidate=True, version=args.version)
         except (ValueError, OSError) as error:
             ap.error(str(error))
         return 0
