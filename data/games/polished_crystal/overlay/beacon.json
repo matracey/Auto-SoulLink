@@ -1,9 +1,9 @@
 {
- "count": 39,
+ "count": 40,
  "schema": "polished-overlay-beacon-v1",
- "sha256": "dcc14bcfedee3821af4deaecccca911a77294531abbee82db3701335ac38f7a4",
+ "sha256": "aff811ab6ef9d75b6f95423052afad9f1fd0b56a0082efe5beb155cae65375bb",
  "source": {
-  "canonical_sha1": "c5c0fd206e1f3fdf83f8fe26cd1b0f1dc16555f7",
+  "canonical_sha1": "1ef4effd9e33177a645c41f9b20d06fca9597c67",
   "canonical_spans": [
    {
     "length": 2,
@@ -11,42 +11,42 @@
    },
    {
     "length": 11,
-    "offset": 2064761
+    "offset": 2064780
    }
   ],
   "clean_sha1": "6930b48af5844d373e3c9130f26d6dd1084cf4ed",
   "excluded": [
    334,
    335,
-   2064752,
-   2064753,
-   2064754,
-   2064755,
-   2064756,
-   2064757,
-   2064758,
-   2064759,
-   2064760,
-   2064761,
-   2064762,
-   2064763,
-   2064764,
-   2064765,
-   2064766,
-   2064767,
-   2064768,
-   2064769,
-   2064770,
-   2064771
+   2064771,
+   2064772,
+   2064773,
+   2064774,
+   2064775,
+   2064776,
+   2064777,
+   2064778,
+   2064779,
+   2064780,
+   2064781,
+   2064782,
+   2064783,
+   2064784,
+   2064785,
+   2064786,
+   2064787,
+   2064788,
+   2064789,
+   2064790
   ],
   "generator": "tools/gen_polished_beacon.py",
-  "overlay_sha1": "fe8c57e1034059331ccf25d232ff757d675363b2",
+  "overlay_sha1": "ede69bbf399b7a02007cfe563ff61658535de039",
   "rom_size": 2097152,
   "ups_file": "patch/dist/SLink-Polished.ups",
-  "ups_sha256": "1c16c1559fa85253e52b1e0592e9c727fa1f721ef5bab2cd2f92061fb6472e30",
+  "ups_sha256": "7bc9f0116db551667a423c3ba953c006ee24217a4d6bdc99785582aa94d6203c",
   "version_slot": {
    "length": 20,
-   "offset": 2064752
+   "offset": 2064771
   }
  },
  "spans": [
@@ -119,12 +119,16 @@
    "offset": 868588
   },
   {
-   "length": 264,
+   "length": 283,
    "offset": 2064384
   },
   {
    "length": 103,
-   "offset": 2064649
+   "offset": 2064668
+  },
+  {
+   "length": 26,
+   "offset": 2064791
   },
   {
    "length": 84,
@@ -167,7 +171,7 @@
    "offset": 2067139
   },
   {
-   "length": 427,
+   "length": 482,
    "offset": 2068480
   },
   {
@@ -208,5 +212,5 @@
   }
  ],
  "title": "polished",
- "total": 4052
+ "total": 4152
 }

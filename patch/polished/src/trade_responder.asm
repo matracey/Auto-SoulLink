@@ -1,4 +1,4 @@
-; SLink companion overlay -- Polished Crystal trade card C6: the held RESPONDER service, COMMIT DISABLED
+; SLink companion overlay -- Polished Crystal held RESPONDER service.
 ; (docs/polished/TRADE_COMMIT_RESPONDER.md section 4; docs/polished/TRADE.md sections 14-18). Port of the
 ; responder branch of patch/gen2/src/trade_service.asm (:135-209, :210-352) onto the Polished lease/validators.
 ;
@@ -21,30 +21,23 @@
 ;   Polished predicates, no mail), staged incoming mon (SlinkTradeValidateIncomingStaged) -> pickup ACK (the
 ;   PROMPT generation, last of the entry checks and BEFORE any native UI) -> OpenText, offer text, YesNoBox ->
 ;     NO / B: DONE result 1 (decline), bounded 90-frame RELEASE wait, close.
-;     YES:    wait text -> re-check held frame / own slot / party count -> SlinkTradeSnapshot (ONLY after every native menu
-;             has returned) -> token re-checked (a binder cancel during the menus or the snapshot zeroes it:
-;             no DONE) -> DONE result 0 = CONSENT ONLY, never a completed trade (the commit is assembled but
-;             compile-disabled, SLINK_TRADE_COMMIT_ENABLE = 0) -> one 3600-frame wait shared by (1) the host's RELEASE of the PROMPT
-;             generation and (2) its fresh APPLY (generation previous+1, ACK = previous, same token, same slot;
-;             the APPLY is inspected BEFORE the counter expires, like the v8 proposer) -> pickup ACK ->
-;             staged incoming re-validated, party count and own slot re-checked, own preimage compared with
-;             the snapshot -> DONE result 1 ("not performed: commit disabled", NEVER 0 for an APPLY) ->
-;             bounded 90-frame RELEASE wait -> close.
-; B or a timeout in any wait closes the lease with no further publication. Nothing here writes a party, a
-; box, the save, SRAM or OT slot 0: the only CPU writes are the lease bytes, the stack, OT slot 1 (the
-; snapshot) and what the native UI routines (OpenText/PrintText/YesNoBox/CloseText/GetNickname) touch.
+;     YES:    re-check held frame, selected slot and party count after EACH consent menu,
+;             before normalization/save, after save, and before the post-normalization snapshot.
+;             DONE result 0 here is CONSENT ONLY, never a completed trade. A canceled/replaced
+;             lease exits without republishing its private token.
+;             One 3600-frame budget covers the host's RELEASE and fresh APPLY; APPLY must have
+;             generation previous+1, ACK = previous, the same token and the same slot.
+;             At APPLY, validate incoming data, count/slot and the outgoing snapshot before
+;             entering SlinkTradeApplyCommit. Its native commit owns the final result.
+; B or a timeout closes the lease with no further publication.
 ;
-; Compiled OUT by default (SLINK_TRADE_COMMIT_ENABLE = 0, witness SlinkTradeCommitEnabled at 7e:573B; the
-; IF blocks below): the consent-time save prompt, FixPlayerEVsAndStats normalization and user-confirmed
-; Link_SaveGame of TRADE_COMMIT_RESPONDER.md 4(2)-(3), and the `jp SlinkTradeApplyCommit` into
-; trade_commit.asm. In the default build the APPLY ends in DONE result 1 and the consent snapshot is NOT
-; post-normalization; enabling the commit assembles the normalization before the snapshot.
+; SLINK_TRADE_COMMIT_ENABLE controls the user-confirmed normalization/save and native commit
+; tail. Disabled model builds retain consent/snapshot behavior but refuse APPLY with result 1.
 
 ASSERT SLINK_SERVICE_BANK == $7E ; fixed, like the other trade sections
 ASSERT SLINK_TRADE_CONTEXT_SIZE == 10 ; the proposer's context layout (token, slot, role, gen, result, count, flags)
 
-; PROMPT-phase DONE results (docs/polished/TRADE_COMMIT_RESPONDER.md section 4(3)): 0 = consent only, 1 = decline.
-; An APPLY-phase DONE is always SLINK_TRADE_RESULT_NOT_PERFORMED (1) in this build.
+; PROMPT-phase results: 0 = consent only, 1 = decline. APPLY results belong to the commit tail.
 DEF SLINK_TRADE_RESULT_CONSENT EQU 0
 DEF SLINK_TRADE_RESULT_DECLINE EQU 1
 DEF SLINK_RESP_FLAG_RELEASE_OWED EQU 0
@@ -77,6 +70,15 @@ SlinkTradeResponderService::
 	ld a, [hl]
 	call SlinkTradeCheckOwnSlot
 	jp c, SlinkTradeResponderExit ; party 1..6, contest, slot, mail policy, own record predicates
+	; GetNickname copies all eleven bytes without checking native text controls.
+	; Validate the selected nickname before its first copy or rendering.
+	ld hl, sp + 4
+	ld a, [hl]
+	ld hl, wPartyMonNicknames
+	call SkipNames
+	ld b, MON_NAME_LENGTH
+	call SlinkTradeValidateText
+	jp c, SlinkTradeResponderExit
 	call SlinkTradeValidateIncomingStaged
 	jp c, SlinkTradeResponderExit ; the staged incoming name is rendered below: validated first
 	ld hl, sp + 6
@@ -92,32 +94,28 @@ SlinkTradeResponderService::
 	ld hl, SlinkTradeResponderOfferText
 	call PrintText
 	call YesNoBox
-	jr c, .decline ; carry = NO or B
+	jp c, .decline ; carry = NO or B; the decline path also revalidates before publication
+	call SlinkTradeResponderCheckConsent
+	jp c, SlinkTradeResponderExit
 IF SLINK_TRADE_COMMIT_ENABLE
 	ld hl, SlinkTradeCommitSaveText
 	call PrintText
 	call YesNoBox
 	jp c, .decline
+	call SlinkTradeResponderCheckConsent
+	jp c, SlinkTradeResponderExit
 	farcall FixPlayerEVsAndStats
+	call SlinkTradeResponderCheckConsent
+	jp c, SlinkTradeResponderExit ; never save a visit invalidated during normalization
 	farcall Link_SaveGame
 	jp c, .decline
+	call SlinkTradeResponderCheckConsent
+	jp c, SlinkTradeResponderExit
 ENDC
 	ld hl, SlinkTradeWaitText
 	call PrintText
-	ld hl, sp + 0
-	call SlinkTradeCheckHeldFrame ; header, token, generation == ACK == this visit's PROMPT generation
+	call SlinkTradeResponderCheckConsent
 	jp c, SlinkTradeResponderExit
-	ld a, [SLINK_TRADE_FRAME + 5]
-	cp SLINK_TRADE_CMD_PROMPT
-	jp nz, SlinkTradeResponderExit
-	ld hl, sp + 4
-	ld a, [hl]
-	call SlinkTradeCheckOwnSlot
-	jp c, SlinkTradeResponderExit
-	ld hl, sp + 8
-	ld a, [wPartyCount]
-	cp [hl]
-	jp nz, SlinkTradeResponderExit ; the party changed under the native menus: refuse BEFORE snapshot and consent DONE
 	ld hl, sp + 4
 	ld a, [hl]
 	call SlinkTradeSnapshot ; only after every native menu has returned
@@ -134,6 +132,8 @@ ENDC
 	call SlinkTradePublishDone ; consent only: NEVER a completed-trade claim
 	jr SlinkTradeResponderWait
 .decline
+	call SlinkTradeResponderCheckConsent
+	jp c, SlinkTradeResponderExit
 	ld a, SLINK_TRADE_RESULT_DECLINE
 	call SlinkTradePublishDone
 	jp SlinkTradeResponderRelease
@@ -257,6 +257,31 @@ SlinkTradeResponderExit::
 	call CloseText ; the responder owns its text box: no script runs `endtext`
 .closed
 	add sp, SLINK_TRADE_CONTEXT_SIZE
+	ret
+
+SlinkTradeResponderCheckConsent::
+	; Called with one return address above the ten-byte private context.
+	; Native menus can yield to the binder: never normalize/save a canceled
+	; visit or a replacement frame, slot or party.
+	ld hl, sp + 2
+	call SlinkTradeCheckHeldFrame
+	ret c
+	ld a, [SLINK_TRADE_FRAME + 5]
+	cp SLINK_TRADE_CMD_PROMPT
+	jr nz, .refuse
+	ld hl, sp + 6 ; private own slot
+	ld a, [SLINK_TRADE_FRAME + 9]
+	cp [hl]
+	jr nz, .refuse
+	ld a, [hl]
+	call SlinkTradeCheckOwnSlot
+	ret c
+	ld hl, sp + 10 ; private party count
+	ld a, [wPartyCount]
+	cp [hl]
+	ret z ; matching count also clears carry
+.refuse
+	scf
 	ret
 
 SlinkTradeResponderOfferText:

@@ -1,6 +1,6 @@
 {
   "schema": "polished-overlay-provenance-v1",
-  "generated": "2026-10-09T00:38:32Z",
+  "generated": "2026-10-12T00:55:08Z",
   "source": {
     "url": "https://github.com/Rangi42/polishedcrystal",
     "tag": "v3.2.3",
@@ -41,7 +41,7 @@
       "engine/pokegear/phone.asm"
     ],
     "sources_sha256": {
-      "patch/polished/src/panel.asm": "eff21dd57c8736096a92ebc4b653d49203cedfb89cd13bcf1569e7426ccc4679",
+      "patch/polished/src/panel.asm": "0f63b6867f8a0a67e247418a377ab0fd12078f0e6ff7306ff021d719dbbc3463",
       "patch/polished/src/slink.asm": "6c5de217d0df628508665fa96515a9d9a1b7ace0b4cb1ce7b5ff3f29a489253d",
       "patch/polished/src/slink_mailbox.asm": "5ba31fe8ebd7adf050ad71a49d559150797d49d0b95bff473a08d8e26c09939a",
       "patch/polished/src/slink_sfx.asm": "16611d1282f08cee6eec076f56de25c52ebddcc2058efb0e21112fcb5ae1f1e4",
@@ -52,11 +52,11 @@
       "patch/polished/src/trade_gate.asm": "924d65bdb5f79fb29da53cff71bd3565e4eeeabd578c26cef2122e42cd8e4b57",
       "patch/polished/src/trade_items.asm": "cf5d56f62fdb0473ebe31057325c84b72a4f825702665ab3a3756abe6ebef62a",
       "patch/polished/src/trade_items_table.asm": "1e001ad1ac4727c79de013fbadbde3c99e76d5ce52eef0a24fc7cd67fb1fdde5",
-      "patch/polished/src/trade_responder.asm": "5277a7459695cde111211bbb597de2ff9666f7014be10666af0472562a35c22e",
+      "patch/polished/src/trade_responder.asm": "ec8905b3e6c8fe9a6c03cd56d3b8d77a3942045b1f6b12e1faded99ef2cb4a7b",
       "patch/polished/src/trade_service.asm": "04ac7415964c4e9fb1d5e37db0ab4e9d6b1975dee553936d5ab851dc64e848f2",
       "patch/polished/src/trade_snapshot.asm": "c43d3796cbd3ffd6b7f7ff6ff03d36ceaac79f973daa2d18cea2af594fdf3da9",
       "patch/polished/src/trade_validate.asm": "352f88e3bb91b95f05a5330fd41beae72d0165e5d4237648f0bbba4d641ddba1",
-      "patch/polished/src/version.asm": "c651a857adfc9e1004ce794d669777f498a701085054511bc3ef8e63c9399bf7",
+      "patch/polished/src/version.asm": "b8c3d97130cab56ca1b2c4dc837201680e3459b37e1742272302d568771188ad",
       "patch/gb/slink_abi.inc": "be0ee30a84330c794a1b5f3a2cf4c1435bdfdf3bf63fa4f010deb02a0291181e",
       "patch/gen2/src/title_logo_crystal.2bpp": "284cce7d86bb62cc4d83bdf5a7160b664d722ac3ec7ec1ab6f1eb041c36bacd7",
       "patch/gen2/src/title_rows_crystal.inc": "745e767b2ba8e2f299cd9223de33e540730ecc149b18cecc5b16796c9b1e974d"
@@ -66,16 +66,16 @@
   },
   "command": "make -j4 CFLAGS=-O2 polishedcrystal-3.2.3.gbc",
   "output": {
-    "sha1": "fe8c57e1034059331ccf25d232ff757d675363b2",
-    "md5": "a0a52f4036df13619b9daa403114af4d",
-    "header_crc": "0946",
-    "crc32": "961F854F",
+    "sha1": "ede69bbf399b7a02007cfe563ff61658535de039",
+    "md5": "ab95b6b0024791c469f5f53b30545c79",
+    "header_crc": "DCF3",
+    "crc32": "C2784B4E",
     "title": "PKPCRYSTAL\u0000PKPC",
     "size": 2097152,
     "identical_to_clean": false,
-    "canonical_sha1": "c5c0fd206e1f3fdf83f8fe26cd1b0f1dc16555f7",
+    "canonical_sha1": "1ef4effd9e33177a645c41f9b20d06fca9597c67",
     "version_slot": {
-      "offset": 2064752,
+      "offset": 2064771,
       "length": 20
     },
     "canonical_spans": [
@@ -84,18 +84,18 @@
         "length": 2
       },
       {
-        "offset": 2064761,
+        "offset": 2064780,
         "length": 11
       }
     ],
     "ups": {
       "file": "patch/dist/SLink-Polished.ups",
-      "size": 4195,
-      "sha256": "1c16c1559fa85253e52b1e0592e9c727fa1f721ef5bab2cd2f92061fb6472e30"
+      "size": 4295,
+      "sha256": "7bc9f0116db551667a423c3ba953c006ee24217a4d6bdc99785582aa94d6203c"
     }
   },
   "symbols": {
-    "polished_slink.sym": "2e63e163db800bec7df240f803147fd6ca550692d15cdbd61240c6991dd57dbf",
-    "polished_slink.map": "0beab9fe247a530249a2595d4151b6d35089d62d7a14a8cc4c3f109a3c4845fc"
+    "polished_slink.sym": "1f7974192c03272edf3bb4f6cef89f1d40aa686cb356a6ca80bd27f95946eabe",
+    "polished_slink.map": "5c588f92f2803854a4690aef9ed4051ae12c216b14d083bcb6a9e08586210d3b"
   }
 }

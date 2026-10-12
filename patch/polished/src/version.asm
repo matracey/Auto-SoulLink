@@ -39,13 +39,19 @@ SlinkPrintVersion:
 	; `.text` is a LOCAL of SlinkVersionText (the non-local label that opens its scope), so from
 	; SlinkPrintVersion it is out of scope -- name the exported symbol instead.
 	ld de, SlinkVersionText
-	jp PlaceString
+	jp SlinkPrintVersionBounded
 SlinkVersionText::
 ; `.text` and `.end` are LOCAL labels of the non-local label above: a non-local label inserted
 ; BETWEEN them would close that scope and `.end` would stop resolving (`Expected constant
 ; expression: .end is not constant`, rgbasm). So the exported label goes first, not in the middle.
 .text
+	; One literal tile per character is required both by the bounded copier
+	; and rom_identity.PREFIX = 9. Default Polished text compresses "ou"
+	; and "in" into ngrams; do not let those tokens enter this stamped field.
+	pushc
+	setcharmap no_ngrams
 	db "SoulLink {SLINK_BUILD_VERSION}@"
+	popc
 .end
 	; A FIXED-WIDTH field (patch/tools/rom_identity.py FIELD = 20): stamping a release version changes
 	; only these bytes, so the build's canonical identity (field and global checksum masked) never
@@ -55,3 +61,31 @@ SlinkVersionText::
 ASSERT .end - .text - 1 <= SCREEN_WIDTH - 1
 ASSERT .end - .text <= 20
 SlinkVersionFieldEnd::
+
+SlinkPrintVersionBounded:
+	; The native main menu ends at column 16, not SCREEN_WIDTH - 1.
+	; Use the active rectangle (also respected by MenuBox) and leave both
+	; border columns untouched. Row 10 remains the per-pass version row.
+	; Stamped fields contain literal font tiles only, terminated by "@".
+	; Copy those glyphs directly; truncate rather than wrap into a border.
+	ld a, [wMenuBorderLeftCoord]
+	ld c, a
+	ld b, 0
+	add hl, bc
+	ld a, [wMenuBorderRightCoord]
+	sub c
+	ret c
+	ret z
+	dec a
+	ret z
+	ld b, a
+.glyph
+	ld a, [de]
+	cp "@"
+	ret z
+	ld [hli], a
+	inc de
+	dec b
+	jr nz, .glyph
+	ret
+SlinkVersionPrinterEnd::

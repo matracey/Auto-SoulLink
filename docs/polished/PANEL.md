@@ -684,25 +684,33 @@ chain resumed line 2 at the end of line 1's cursor and wrapped past the box edge
 in the `panel.asm` comment at lines 55-58 and in `LIVE_PANEL.md`). The current source
 (`patch/polished/src/panel.asm`):
 
-* `SlinkPanelFallback` (line 149) prints `SOUL LINK` / `NO CLIENT` and ends in `done` (line 152), not
-  `prompt`, so `AWAIT` is published (line 49) before the panel waits on anything.
-* On the staged path (line 53 `cp SLINK_PANEL_STAGED`), the ROM forces an `@` terminator on both mailbox
-  rows (lines 65-67) and paints them with two separate `rst PlaceString` calls, at
-  `(TEXTBOX_INNERX, TEXTBOX_INNERY)` and `TEXTBOX_INNERY + 1` (lines 68-73).
-* Both the staged path (`jr .waitkey`, line 79) and the timeout path (`.nostage`, line 80) reach
-  `.WaitForButton` (call at line 88, routine at line 132). It consumes the opening key (the `A` that chose
-  "Call" is still held) and waits for a fresh edge.
-* There is no `SlinkPanelScript` and no chained `<RAM>` / `<LNBRK>` renderer.
-  `tests/unit/test_polished_panel.py` asserts the symbol's absence (line 157).
+* `SlinkPanelFallback` prints `SOUL LINK` / `NO CLIENT` and ends in `done`, not `prompt`,
+  so `.page` publishes `AWAIT` before the panel waits on anything.
+* On the staged path, `.SanitizeLine` scans all sixteen payload positions in both mailbox rows.
+  Bytes below native `BATTLEEXTRA_GFX_START` (`$5f`), including premature `@`, `NEXT` (`$56`)
+  and `CTXT` (`$5d`), become space (`$7f`). The ROM then forces each stride's final `@` (`$53`)
+  and paints the rows with separate `rst PlaceString` calls at
+  `(TEXTBOX_INNERX, TEXTBOX_INNERY)` and `TEXTBOX_INNERY + 1`.
+* Both the staged and timeout paths reach `.WaitForButton`. It consumes the opening key
+  (the `A` that chose "Call" is still held) and waits for a fresh edge.
+* `tests/unit/test_polished_panel_rom.py` executes the shipped overlay and native `PlaceString`,
+  checking control/ngram sanitization, literal boundaries, exact tile rows, bounded writes and
+  multi-page fresh-edge behavior. This is an SM83 model, not a live timing receipt.
+* Native BizHawk smoke of the rebuilt overlay also passed C0-C5: page 1 displayed `SOUL LINK`
+  / `PARTNER: RED`, a fresh A advanced to `PAIRS 2/3` / `BADGES 4/8`, and B restored the phone
+  cursor and scroll without mutating contacts. The driver observed 72 mailbox writes, all
+  inside the panel's declared span (`pol-panel`: PASS, frame 806). Malicious-row coverage
+  remains the assembled-ROM model above; this smoke staged ordinary valid rows.
 
 The charmap-safety check below still applies to the bytes the host stages.
 
 **Charmap safety (checked, not assumed):** `PlaceNextChar` (`home/text.asm:184-194`) treats bytes
 below `$5f` as commands/n-grams and the n-gram block is `$0a-$51`, which *overlaps printable ASCII* —
 a raw-ASCII copy would render `" "` (`$20`) as the n-gram `"ha"`. Polished's charmap puts literals at
-`$7f`+ (`" "` = 127, `"A"` = 128), above `BATTLEEXTRA_GFX_START = $5f`, so every staged byte is a
-glyph. The one control code the host writes is the terminator `$53` (`@`), and it comes from the
-generated pack (`overlay.panel.terminator`), not a literal.
+`$7f`+ (`" "` = 127, `"A"` = 128), above `BATTLEEXTRA_GFX_START = $5f`. The host writes the
+terminator `$53` (`@`) from the generated pack (`overlay.panel.terminator`). The ROM independently
+enforces the literal boundary on every payload byte and restores both terminators; safety does not
+depend on the host's encoder.
 
 ### Placement
 

@@ -60,11 +60,13 @@ SlinkPanel::
 	; to exactly SLINK_PANEL_LINE_MAX glyphs so they fully overwrite the fallback. Line 2 sits ONE row below line 1
 	; (the old <LNBRK> was NO_LINE_SPACING: one row; the first fix used +2 and left the fallback's `NO CLIENT` on the
 	; row in between: live C2 'fallback second line is gone' FAIL).
-	; The ROM does not trust the mailbox: force the string terminator at offset SLINK_PANEL_LINE_MAX of BOTH lines so a
-	; malformed staged page (missing '@') can never make PlaceString run past the line, the box border or the mailbox.
-	ld a, '@'
-	ld [wSlinkPanelText + SLINK_PANEL_LINE_MAX], a
-	ld [wSlinkPanelText + SLINK_PANEL_STRIDE + SLINK_PANEL_LINE_MAX], a
+	; Only native literal bytes may reach PlaceString. Bytes below the native
+	; BATTLEEXTRA_GFX_START boundary are commands, ngrams or special dispatch
+	; (including NEXT and CTXT), not single tiles. Sanitize all sixteen positions
+	; on BOTH rows, including premature terminators, then force the stride's '@'.
+	ld hl, wSlinkPanelText
+	call .SanitizeLine
+	call .SanitizeLine
 	hlcoord TEXTBOX_INNERX, TEXTBOX_INNERY
 	ld de, wSlinkPanelText
 	rst PlaceString
@@ -142,6 +144,24 @@ SlinkPanel::
 	ldh a, [hJoyPressed]
 	and PAD_A | PAD_B | PAD_START
 	jr z, .press
+	ret
+
+; HL advances exactly one fixed mailbox stride. Literal battle glyphs ($5f+)
+; are safe too: native PlaceNextChar writes them as one tile, without dispatch.
+.SanitizeLine:
+	ld b, SLINK_PANEL_LINE_MAX
+.glyph
+	ld a, [hl]
+	cp BATTLEEXTRA_GFX_START
+	jr nc, .literal
+	ld a, ' '
+	ld [hl], a
+.literal
+	inc hl
+	dec b
+	jr nz, .glyph
+	ld a, '@'
+	ld [hli], a
 	ret
 
 
