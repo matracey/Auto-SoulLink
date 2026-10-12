@@ -606,9 +606,9 @@ def test_move_data_returns_type_name(adapter):
 
 
 def test_move_data_returns_power_accuracy_pp(adapter):
-    """Hurricane is 110 power / 70 accuracy / 10 PP (per veekun)."""
+    """Hurricane is 120 power / 70 accuracy / 10 PP in Gen 5."""
     d = adapter.move_data(542)
-    assert d["power"] == 110
+    assert d["power"] == 120
     assert d["accuracy"] == 70
     assert d["pp"] == 10
 
