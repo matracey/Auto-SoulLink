@@ -9,47 +9,43 @@ Only the EmuHawk PID this script starts is ever killed (taskkill /T /F /PID); ne
 The ROM is the overlay the Manager hands out: the committed UPS applied to the pinned release, refused unless its sha1 equals
 data/polished/overlay_provenance.json. Facts come from data/polished/polished_slink.sym and the pinned
 source (data/polished_sources.lock.json); nothing is derived from screenshots.
+
+Each entrypoint constructs an immutable LaunchConfig once. Runtime staging, save
+preparation, symbols, child ownership and recording readers live in runtime.py;
+this module retains the independent setup/live/control feature orchestration.
 """
 from __future__ import annotations
 
 import hashlib
 import json
-import os
 import shutil
-import socket
 import subprocess
 import sys
 import time
 import urllib.request
+from dataclasses import replace
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "tools"))
 sys.path.insert(0, str(REPO))
 
-from gen1_playthrough import BIZHAWK_CONFIG, EMUHAWK, write_run_config  # noqa: E402
-
 from server.adapters import polished_codec as pc  # noqa: E402
+from tools.polished_live.runtime import (  # noqa: E402
+    LaunchConfig,
+    free_port,
+    kill_own,
+    launch,
+    prepare_save,
+    read_symbols,
+    stage_pinned_rom,
+)
 
-LANE = Path(os.environ.get("POL_LANE", "F:/slink-work/lanes/pol-live"))
-# POL_KIND: overlay (the SLink companion build, the subject) | clean (the release, a CONTROL only: no client runs on it)
-# | rand (a Manager-randomized cartridge: POL_MGR_RUN = the Manager's run dir holding roms/<p>.gbc + rom_contract.json,
-# POL_PLAYER = whose cartridge; POL_ROM/POL_ROM_SHA1 boot another file, e.g. a beacon-flipped copy, R3)
-KIND = os.environ.get("POL_KIND", "overlay")
-MGR_RUN = Path(os.environ.get("POL_MGR_RUN", "F:/slink-work/lanes/pol-rand/mgr_run"))
-PLAYER = os.environ.get("POL_PLAYER", "a")
-# POL_POSMODE: warp (Script_warp-equivalent WRAM writes + MAPSETUP_WARP, the engine reloads the map) | poke (bare
-# wMapGroup/wMapNumber/wXCoord/wYCoord write, kept only as the corruption CONTROL)
-MODE = os.environ.get("POL_POSMODE", "warp")
-CACHE = Path("F:/slink-work/cache/polished")
-ROM_SRC = CACHE / ("companion-overlay" if KIND == "overlay" else "release") / "polishedcrystal-3.2.3.gbc"
-if KIND == "rand":
-    ROM_SRC = Path(os.environ.get("POL_ROM") or MGR_RUN / "roms" / f"{PLAYER}.gbc")
-ROM = LANE / "rom" / f"pol_{KIND}.gbc"               # unknown hash -> BizHawk names the save from the filename
-SAVE_NAME = f"pol {KIND}.SaveRAM"
-SRAM = LANE / f"sram_{KIND}"
-FIXTURE = Path(os.environ.get("POL_FIXTURE") or LANE / "fixture" / f"polished_{KIND}_{MODE}.SaveRAM")
-SYM = REPO / "data" / "polished" / "polished_slink.sym"
+
+def launch_config(env=None):
+    """Capture an invocation's environment and the driver's required symbol subset."""
+    return replace(LaunchConfig.from_env(env), symbols=SYMBOLS)
+
 SYMBOLS = (
     "wPartyCount", "wPartyMons", "wPartyMonOTs", "wPartyMonNicknames", "wPlayerID", "wPlayerName",
     "wNumBalls", "wBalls", "wMapGroup", "wMapNumber", "wXCoord", "wYCoord", "wBattleMode", "wBattleType",
@@ -84,24 +80,10 @@ SPECIES = (  # (id, name, base hp/atk/def/spe/sat/sdf, exp at L50, gender)
 )
 TACKLE = 0x21          # constants/move_constants.asm
 POKE_BALL = 0x01       # constants/item_constants.asm
-GRASS = (24, 3, 48, 12)  # ROUTE_29 (map_constants group 24 #3); step (48,12) is COLL_LONG_GRASS in Route29.ablk
-# POL_POS overrides it, e.g. 26,1,11,48 = ROUTE_30 step (11,48): TALL_GRASS in Route30.ablk x8..13 (johto_traditional
-# collision), no trainer sight line reaches row 48 (maps/Route30.asm object_events)
-if os.environ.get("POL_POS"):
-    GRASS = tuple(int(v) for v in os.environ["POL_POS"].split(","))
 
 
-def sym_table() -> dict:
-    rows = {}
-    for line in SYM.read_text(encoding="utf-8").splitlines():
-        parts = line.split()
-        if len(parts) == 2 and ":" in parts[0]:
-            bank, addr = parts[0].split(":")
-            rows.setdefault(parts[1], [int(bank, 16), int(addr, 16)])
-    missing = [s for s in SYMBOLS if s not in rows]
-    if missing:
-        raise SystemExit(f"symbols missing from {SYM.name}: {missing}")
-    return {s: rows[s] for s in SYMBOLS}
+def sym_table(config: LaunchConfig) -> dict:
+    return read_symbols(config.sym, config.symbols)
 
 
 def synth_party() -> list:
@@ -125,119 +107,60 @@ def synth_party() -> list:
     return out
 
 
-def stage_rom() -> str:
-    prov = json.loads((REPO / "data/polished/overlay_provenance.json").read_text(encoding="utf-8"))
-    want = prov["output"]["sha1"] if KIND == "overlay" else prov["base_sha1"]
-    if KIND == "rand":   # the Manager's per-player pin (or the explicit sha1 of a deliberately altered copy)
-        want = os.environ.get("POL_ROM_SHA1") or json.loads(
-            (MGR_RUN / "rom_contract.json").read_text(encoding="utf-8"))["players"][PLAYER]["rom_sha1"]
-    if KIND == "overlay" and ROM_SRC == CACHE / "companion-overlay/polishedcrystal-3.2.3.gbc":
-        # Same committed-UPS staging used by hello_live.py; no mutable build-cache input.
-        from patch.tools.make_ups import ups_apply
-        data = ups_apply((CACHE / "release/polishedcrystal-3.2.3.gbc").read_bytes(),
-                         (REPO / "patch/dist/SLink-Polished.ups").read_bytes())
-    else:
-        data = ROM_SRC.read_bytes()
-    sha1 = hashlib.sha1(data).hexdigest()
-    if sha1 != want:
-        raise SystemExit(f"{KIND} ROM sha1 {sha1} != provenance {want}")
-    ROM.parent.mkdir(parents=True, exist_ok=True)
-    if not ROM.exists() or hashlib.sha1(ROM.read_bytes()).hexdigest() != sha1:
-        ROM.write_bytes(data)
-    return sha1
+def stage_rom(config: LaunchConfig) -> str:
+    """Stage only bytes admitted by this invocation's provenance or Manager pin."""
+    prov = json.loads((config.repo / "data/polished/overlay_provenance.json").read_text(encoding="utf-8"))
+    want = prov["output"]["sha1"] if config.kind == "overlay" else prov["base_sha1"]
+    if config.kind == "rand":
+        want = config.rom_sha1 or json.loads(
+            (config.mgr_run / "rom_contract.json").read_text(encoding="utf-8"))["players"][config.player]["rom_sha1"]
+    source, patch = config.rom_src, None
+    if config.kind == "overlay" and source == config.cache / "companion-overlay/polishedcrystal-3.2.3.gbc":
+        source = config.cache / "release/polishedcrystal-3.2.3.gbc"
+        patch = config.repo / "patch/dist/SLink-Polished.ups"
+    return stage_pinned_rom(source, config.rom, want, patch=patch)
 
 
-def free_port() -> int:
-    with socket.socket() as s:
-        s.bind(("127.0.0.1", 0))
-        return s.getsockname()[1]
-
-
-def kill_own(proc: subprocess.Popen, label: str) -> None:
-    if proc.poll() is None:
-        subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)], capture_output=True)
-        proc.wait(timeout=20)
-    print(f"[pol-live] {label} pid {proc.pid} ended rc={proc.returncode}", flush=True)
-
-
-def launch(lua: str, run_dir: Path, env_extra: dict, timeout: int, poll=None) -> tuple[str, int]:
-    """One EmuHawk on the staged ROM; returns (result text, pid). Kills only the PID it started."""
-    run_dir.mkdir(parents=True, exist_ok=True)
-    out = run_dir / "result.txt"
-    out.unlink(missing_ok=True)
-    cfg = run_dir / "config.ini"
-    write_run_config(BIZHAWK_CONFIG, str(cfg), saveram_dir=str(SRAM), purergb=True)
-    longest = max(len(str(SRAM / SAVE_NAME)), len(str(out)))
-    if longest >= 200:
-        raise SystemExit(f"lane path too long ({longest})")
-    syms = run_dir / "syms.json"
-    syms.write_text(json.dumps(sym_table()), encoding="utf-8")
-    env = dict(os.environ, SLINK_ROOT=str(REPO).replace("\\", "/"), POL_OUT=str(out).replace("\\", "/"),
-               POL_SYMS=str(syms).replace("\\", "/"), POL_RUN=str(run_dir).replace("\\", "/"), POL_KIND=KIND, POL_POSMODE=MODE, **env_extra)
-    cmd = [EMUHAWK, f"--lua={(REPO / lua).as_posix()}", f"--config={cfg.as_posix()}", ROM.as_posix()]
-    proc = subprocess.Popen(cmd, cwd=str(REPO), env=env)
-    print(f"[pol-live] EmuHawk pid {proc.pid}: {lua}", flush=True)
-    (run_dir / "emuhawk.pid").write_text(str(proc.pid))
-    deadline = time.monotonic() + timeout
-    text = ""
-    try:
-        while time.monotonic() < deadline and proc.poll() is None:
-            time.sleep(2)
-            if poll:
-                poll()
-            text = out.read_text(encoding="utf-8", errors="replace") if out.exists() else ""
-            if any(line.startswith("RESULT:") for line in text.splitlines()):
-                time.sleep(3)  # let client.saveram()/exit flush
-                break
-    finally:
-        kill_own(proc, "EmuHawk")
-    text = out.read_text(encoding="utf-8", errors="replace") if out.exists() else ""
-    return text, proc.pid
-
-
-def cmd_setup() -> int:
-    sha1 = stage_rom()
-    sram = SRAM
-    sram.mkdir(parents=True, exist_ok=True)
-    (sram / SAVE_NAME).unlink(missing_ok=True)   # cold boot: NEW GAME
-    synth = LANE / f"setup_{KIND}_{MODE}" / "synth.json"
+def cmd_setup(config: LaunchConfig) -> int:
+    sha1 = stage_rom(config)
+    sram = config.sram
+    prepare_save(config, cold=True)
+    synth = config.lane / f"setup_{config.kind}_{config.mode}" / "synth.json"
     synth.parent.mkdir(parents=True, exist_ok=True)
-    synth.write_text(json.dumps({"party": synth_party(), "balls": [[POKE_BALL, 99]], "position": GRASS}), encoding="utf-8")
-    text, pid = launch("tools/polished_live/setup.lua", synth.parent, {"POL_SYNTH": synth.as_posix()}, 1500)
+    synth.write_text(json.dumps({"party": synth_party(), "balls": [[POKE_BALL, 99]], "position": config.position}), encoding="utf-8")
+    text, pid = launch(config, "tools/polished_live/setup.lua", synth.parent, {"POL_SYNTH": synth.as_posix()}, 1500)
     print(text[-3000:])
-    save = sram / SAVE_NAME
+    save = sram / config.save_name
     if save.exists():
-        fixture = FIXTURE
+        fixture = config.fixture
         fixture.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(save, fixture)
         print(f"[pol-live] fixture {fixture} sha256 {hashlib.sha256(fixture.read_bytes()).hexdigest()} rom {sha1}")
     return 0 if "RESULT: PASS" in text else 1
 
 
-def cmd_live() -> int:
-    sha1 = stage_rom()
-    if KIND not in ("overlay", "rand"):
+def cmd_live(config: LaunchConfig) -> int:
+    sha1 = stage_rom(config)
+    if config.kind not in ("overlay", "rand"):
         raise SystemExit("the client only runs on the overlay or a randomized overlay")
-    fixture = FIXTURE
+    fixture = config.fixture
     if not fixture.exists():
         raise SystemExit("run `setup` first")
-    sram = SRAM
-    sram.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(fixture, sram / SAVE_NAME)
-    run = LANE / os.environ.get("POL_RUNNAME", "live")
+    prepare_save(config, fixture)
+    run = config.lane / config.run_name
     srv_dir = run / "srv"
     if srv_dir.exists():
         shutil.rmtree(srv_dir)
     srv_dir.mkdir(parents=True)
-    if KIND == "rand":
+    if config.kind == "rand":
         # the Manager's run as it launches it: rom_contract.json + roms/<p>.gbc (server.py _contracted_rom reads the
         # player's own file to adopt its tables). POL_SWAP=1 swaps the pair's pins (R3: a wrong contract sha1).
-        contract = json.loads((MGR_RUN / "rom_contract.json").read_text(encoding="utf-8"))
-        if os.environ.get("POL_SWAP") == "1":
+        contract = json.loads((config.mgr_run / "rom_contract.json").read_text(encoding="utf-8"))
+        if config.swap:
             pa, pb = contract["players"]["a"], contract["players"]["b"]
             pa["rom_sha1"], pb["rom_sha1"] = pb["rom_sha1"], pa["rom_sha1"]
         (srv_dir / "rom_contract.json").write_text(json.dumps(contract, indent=2), encoding="utf-8")
-        shutil.copytree(MGR_RUN / "roms", srv_dir / "roms",
+        shutil.copytree(config.mgr_run / "roms", srv_dir / "roms",
                         ignore=lambda _d, names: [n for n in names if n not in ("a.gbc", "b.gbc")])
     else:
         # the sha1-bound contract (server/adapters/gen2_polished.py rom_contract_by_sha1): player a = this overlay
@@ -270,9 +193,9 @@ def cmd_live() -> int:
 
     time.sleep(3)
     try:
-        text, pid = launch("tools/polished_live/live.lua", run,
-                           {"SLINK_HOST": "127.0.0.1", "SLINK_PORT": str(port), "SLINK_PLAYER": PLAYER,
-                            "POL_STAGES": os.environ.get("POL_STAGES", "1234")}, 2400, poll)
+        text, pid = launch(config, "tools/polished_live/live.lua", run,
+                           {"SLINK_HOST": "127.0.0.1", "SLINK_PORT": str(port), "SLINK_PLAYER": config.player,
+                            "POL_STAGES": config.stages}, 2400, poll)
         last["t"] = 0
         poll()
     finally:
@@ -285,40 +208,38 @@ def cmd_live() -> int:
     return 0 if "RESULT: PASS" in text else 1
 
 
-def cmd_control() -> int:
+def cmd_control(config: LaunchConfig) -> int:
     """No client: CONTINUE from the fixture, read the loaded map header, screenshot, try for an encounter."""
-    stage_rom()
-    if not FIXTURE.exists():
+    stage_rom(config)
+    if not config.fixture.exists():
         raise SystemExit("run `setup` first")
-    SRAM.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(FIXTURE, SRAM / SAVE_NAME)
-    text, _ = launch("tools/polished_live/control.lua", LANE / f"control_{KIND}_{MODE}", {}, 900)
+    prepare_save(config)
+    text, _ = launch(config, "tools/polished_live/control.lua", config.lane / f"control_{config.kind}_{config.mode}", {}, 900)
     print(text[-3000:])
     return 0 if "RESULT: PASS" in text else 1
 
 
-def cmd_explore() -> int:
+def cmd_explore(config: LaunchConfig) -> int:
     """Run-2 read-only explorations without the client: POL_EXPLORE=B (receptionist stack) | C (Pokegear)."""
-    stage_rom()
-    which = os.environ.get("POL_EXPLORE", "B")
-    if not FIXTURE.exists():
+    stage_rom(config)
+    which = config.explore
+    if not config.fixture.exists():
         raise SystemExit("no fixture: copy run 1's polished_overlay_warp.SaveRAM into <lane>/fixture")
-    SRAM.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(FIXTURE, SRAM / SAVE_NAME)
-    run = LANE / f"explore_{which}"
-    text, _ = launch("tools/polished_live/explore.lua", run, {"POL_EXPLORE": which}, 1500)
+    prepare_save(config)
+    run = config.lane / f"explore_{which}"
+    text, _ = launch(config, "tools/polished_live/explore.lua", run, {"POL_EXPLORE": which}, 1500)
     print(text[-5000:])
     if (run / "stacks.json").exists():
-        resolve(run / "stacks.json")
+        resolve(config, run / "stacks.json")
     return 0 if "RESULT: PASS" in text else 1
 
 
-def resolve(path: Path) -> None:
+def resolve(config: LaunchConfig, path: Path) -> None:
     """Name every stack word: nearest sym at or below it; ROMX words try the sampled bank, then any bank whose bytes
     before the word are a call (cd/c4/cc/d4/dc) or an rst. `call` = the return address really follows a call."""
-    rom = ROM.read_bytes()
+    rom = config.rom.read_bytes()
     syms: dict = {}
-    for line in SYM.read_text(encoding="utf-8").splitlines():
+    for line in config.sym.read_text(encoding="utf-8").splitlines():
         parts = line.split()
         if len(parts) == 2 and ":" in parts[0]:
             b, a = (int(x, 16) for x in parts[0].split(":"))
@@ -376,9 +297,9 @@ def resolve(path: Path) -> None:
             print(f"  sp+{off:<2} {w:04X}  {tag}")
 
 
-def cmd_clean() -> int:
+def cmd_clean(config: LaunchConfig) -> int:
     for sub in ("setup", "live", "sram"):
-        p = LANE / sub
+        p = config.lane / sub
         if p.exists():
             shutil.rmtree(p)
     return 0
@@ -386,4 +307,5 @@ def cmd_clean() -> int:
 
 if __name__ == "__main__":
     which = sys.argv[1] if len(sys.argv) > 1 else ""
-    raise SystemExit({"setup": cmd_setup, "live": cmd_live, "control": cmd_control, "explore": cmd_explore, "clean": cmd_clean}.get(which, lambda: print(__doc__) or 2)())
+    commands = {"setup": cmd_setup, "live": cmd_live, "control": cmd_control, "explore": cmd_explore, "clean": cmd_clean}
+    raise SystemExit(commands[which](launch_config()) if which in commands else print(__doc__) or 2)

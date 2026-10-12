@@ -32,22 +32,15 @@ local function image()
     return out
 end
 -- Audit every Lua mutation API, including unsupported APIs; CPU writes are native.
-local raw_memory, raw_emu = memory, emu
-memory=setmetatable({}, {__index=function(_,name)
-    local fn=raw_memory[name]
-    -- BizHawk API members are userdata here, not Lua functions; a type()=="function" test never audits any write.
-    if type(name)=="string" and name:match("^write") and (type(fn)=="function" or type(fn)=="userdata") then
-        return function(addr,value,domain,...)
-            writes=writes+1
-            local c=context()
-            c.api,c.addr,c.value,c.domain,c.active=name,addr,value,domain,active
-            if name~="write_u8" then c.value=tostring(value) end
-            emit("write",c)
-            return fn(addr,value,domain,...)
-        end
-    end
-    return fn
-end})
+local raw_emu = emu
+local G = dofile(L.ROOT .. "/tools/polished_live/recording_guard.lua")
+memory = G.observe_memory(memory, function(name, addr, value, domain)
+    writes=writes+1
+    local c=context()
+    c.api,c.addr,c.value,c.domain,c.active=name,addr,value,domain,active
+    if name~="write_u8" then c.value=tostring(value) end
+    emit("write",c)
+end)
 emu=setmetatable({}, {__index=function(_,name)
     if name=="setregister" then return function() emit("error",{error="CPU mutation attempted"}) error("CPU mutation denied") end end
     return raw_emu[name]

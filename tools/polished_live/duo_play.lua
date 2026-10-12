@@ -9,8 +9,8 @@
 --     catch                     NATIVE wild catch on the fixture's Route 29 grass (walk, Bag -> Ball, throw; never
 --                               Run: a fled battle would send no_catch and dead-zone the area). Result: the client's
 --                               own `capture` line (key, area_id) and the capture-site hit count.
---     snapshot                  cartridge read-back: party (slot, key, species, HP/MaxHP big-endian, status) read
---                               from WRAM, and box/slot/key census from CartRAM via read_storage_box(...).mons.
+--     snapshot                  full cartridge read-back: keyed 48-byte party records and 11-byte OT/nickname
+--                               arrays (status/moves/PP/item/stats included), plus the physical box/slot/key census.
 --     await_cmd {cmd,key,frames} wait until the SERVER's reply delivered `cmd` (for `key`), let the client run it at
 --                               its overworld hold, then snapshot. The command is never executed by this driver.
 --     synth_hp0 {keys|all}      SYNTH SETUP (disclosed): poke current HP to 0 in the named party records (WRAM),
@@ -49,19 +49,12 @@ L.log(fmt("[play %s] boot frame %d rom %s", ROLE, emu.framecount(), gameinfo.get
 -- UNTAPPED writer: disclosed synth_hp0/synth_hp1 setup only; every byte is reported separately.
 local raw_write_u8 = memory.write_u8
 local client_writes = {}
-for _, k in ipairs({"write_u8", "write_s8", "write_u16_le", "write_u16_be", "write_s16_le", "write_s16_be", "write_u24_le",
-                    "write_u24_be", "write_u32_le", "write_u32_be", "write_s32_le", "write_s32_be", "writebyte",
-                    "writebyterange", "write_bytes_as_array", "write_bytes_as_dict", "writefloat"}) do
-    local fn = memory[k]
-    if fn ~= nil then
-        memory[k] = function(...)
-            local a = {...}
-            client_writes[#client_writes + 1] = fmt("%s(%s,%s,%s) frame %d", k, tostring(a[1]), tostring(a[2]),
-                                                    tostring(a[3]), emu.framecount())
-            return fn(...)
-        end
-    end
-end
+local G = dofile(L.ROOT .. "/tools/polished_live/recording_guard.lua")
+memory = G.observe_memory(memory, function(k, ...)
+    local a = {...}
+    client_writes[#client_writes + 1] = fmt("%s(%s,%s,%s) frame %d", k, tostring(a[1]), tostring(a[2]),
+                                            tostring(a[3]), emu.framecount())
+end)
 
 -- read-only exec probes, registered BEFORE the client exactly as live.lua does
 local sites = J.decode(L.slurp(L.ROOT .. "/data/games/polished_crystal/engine_signals.json"))

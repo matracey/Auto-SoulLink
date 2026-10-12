@@ -27,13 +27,13 @@ import copy
 import hashlib
 import json
 import os
-import shutil
 import sys
 import tempfile
 import time
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO))
 WORK = Path(os.environ.get("SLINK_WORK_ROOT", "F:/slink-work/lanes/pol-rival-probe")) / "out"
 RELEASE = Path(os.environ.get("POL_RELEASE_ROM", "F:/slink-work/cache/polished/release/polishedcrystal-3.2.3.gbc"))
 BANK, GATE, NEXT, LAST = 0x0F, 0x47DD, 0x47E0, 0x480D
@@ -469,16 +469,11 @@ def run_oracle(args, trace, site: str):
 def stage(lane: Path, full_site: bool = False) -> tuple[Path, str, str]:
     check_pack_facts()
     provenance = json.loads((REPO / "data/polished/overlay_provenance.json").read_text(encoding="utf-8"))
-    clean = RELEASE.read_bytes()
-    if hashlib.sha1(clean).hexdigest() != provenance["base_sha1"]:
-        raise ValueError("release ROM sha1 differs from provenance base_sha1")
-    sys.path.insert(0, str(REPO))
-    from patch.tools.make_ups import ups_apply
-
-    data = ups_apply(clean, (REPO / "patch/dist/SLink-Polished.ups").read_bytes())
+    from tools.polished_live.runtime import pinned_rom_bytes
+    data = pinned_rom_bytes(RELEASE, provenance["output"]["sha1"],
+                            patch=REPO / "patch/dist/SLink-Polished.ups",
+                            base_sha1=provenance["base_sha1"])
     sha1 = hashlib.sha1(data).hexdigest()
-    if sha1 != provenance["output"]["sha1"]:
-        raise ValueError(f"staged overlay sha1 {sha1} differs from provenance output.sha1")
     site = check_site_bytes(data)
     if full_site:
         require_pinned_site(site)
@@ -533,14 +528,14 @@ def main(argv=None) -> int:
     WORK.mkdir(parents=True, exist_ok=True)
     lane = Path(tempfile.mkdtemp(prefix=lane_prefix(args.setup), dir=WORK))
     rom, sha1, site = stage(lane, full_site=args.setup == "synth")
-    os.environ.update(POL_LANE=str(lane), POL_KIND="overlay", POL_FIXTURE=str(args.fixture.resolve()))
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    import harness
+    from dataclasses import replace
 
-    harness.SYMBOLS = tuple(harness.SYMBOLS) + tuple(s for s in (*EXTRA_SYMBOLS, "hBattleTurn") if s not in harness.SYMBOLS)
-    harness.ROM_SRC = harness.ROM = rom
-    harness.SRAM.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(args.fixture, harness.SRAM / harness.SAVE_NAME)
+    from tools.polished_live import harness
+    launch_config = replace(harness.launch_config(dict(os.environ, POL_LANE=str(lane), POL_KIND="overlay")),
+                            rom_src=rom, rom=rom,
+                            symbols=tuple(dict.fromkeys((*harness.SYMBOLS, *EXTRA_SYMBOLS, "hBattleTurn"))))
+    harness.prepare_save(launch_config, args.fixture)
     fixture_digest = hashlib.sha256(args.fixture.read_bytes()).hexdigest()
     run = lane / "probe"
     run.mkdir()
@@ -555,7 +550,7 @@ def main(argv=None) -> int:
               f"[probe] native route {args.route}; canonical input {config}; frames {args.frames}; cap {args.trace_cap}"]
     print("\n".join(header), flush=True)
     started = time.monotonic()
-    text, pid = harness.launch("tools/polished_live/rival_gate_probe.lua", run,
+    text, pid = harness.launch(launch_config, "tools/polished_live/rival_gate_probe.lua", run,
                                {"POL_PROBE_CONFIG": config.as_posix()}, args.timeout)
     # Conservative: include harness shutdown/flush time rather than accepting a RESULT seen after its deadline.
     reasons = recording_reasons(text, time.monotonic() - started, args.timeout)

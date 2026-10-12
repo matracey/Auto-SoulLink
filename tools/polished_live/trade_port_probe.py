@@ -314,18 +314,12 @@ def excerpt(trace) -> list[str]:
 
 
 def stage(case: str, lane: Path) -> tuple[Path, str]:
-    clean = RELEASE.read_bytes()
+    sys.path.insert(0, str(REPO))
+    from tools.polished_live.runtime import pinned_rom_bytes
     base_sha1 = json.loads((REPO / "data/polished/overlay_provenance.json").read_text(encoding="utf-8"))["base_sha1"]
-    if hashlib.sha1(clean).hexdigest() != base_sha1:
-        raise SystemExit(f"release ROM sha1 != provenance base {base_sha1}")
-    if case == "clean":
-        data, kind = clean, "clean"
-    else:
-        sys.path.insert(0, str(REPO))
-        from patch.tools.make_ups import ups_apply
-        data, kind = ups_apply(clean, UPS.read_bytes()), "overlay"
-        if hashlib.sha1(data).hexdigest() != OVERLAY_SHA1:
-            raise SystemExit(f"staged overlay sha1 {hashlib.sha1(data).hexdigest()} != {OVERLAY_SHA1}")
+    kind = "clean" if case == "clean" else "overlay"
+    data = pinned_rom_bytes(RELEASE, base_sha1 if kind == "clean" else OVERLAY_SHA1,
+                            patch=None if kind == "clean" else UPS, base_sha1=base_sha1)
     for bank, addr, want, overlay_only in RET_BYTES:
         if overlay_only and kind == "clean":
             continue
@@ -351,20 +345,17 @@ def main() -> int:
         shutil.rmtree(lane)
     lane.mkdir(parents=True)
     kind = "clean" if case == "clean" else "overlay"
-    os.environ.update(POL_LANE=str(lane), POL_KIND=kind, POL_FIXTURE=str(FIXTURE))
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    import harness
-    harness.SYMBOLS = tuple(harness.SYMBOLS) + tuple(s for s in EXTRA_SYMBOLS if s not in harness.SYMBOLS)
+    from tools.polished_live import harness
 
     rom, sha1 = stage(case, lane)
-    harness.ROM_SRC = harness.ROM = rom
+    from dataclasses import replace
+    launch_config = replace(harness.launch_config(dict(os.environ, POL_LANE=str(lane), POL_KIND=kind)),
+                            rom_src=rom, rom=rom, symbols=tuple(dict.fromkeys((*harness.SYMBOLS, *EXTRA_SYMBOLS))))
     digest = hashlib.sha256(FIXTURE.read_bytes()).hexdigest()
     if not digest.startswith(FIXTURE_SHA256_PREFIX):
         raise SystemExit(f"fixture sha256 {digest} does not start {FIXTURE_SHA256_PREFIX}")
-    harness.SRAM.mkdir(parents=True, exist_ok=True)
-    for stale in harness.SRAM.glob("*.SaveRAM*"):
-        stale.unlink()
-    shutil.copyfile(FIXTURE, harness.SRAM / harness.SAVE_NAME)
+    harness.prepare_save(launch_config, FIXTURE, clear=True)
     header = [f"[probe] case {case} kind {kind}", f"[probe] staged ROM {rom} sha1 {sha1}",
               f"[probe] fixture {FIXTURE} sha256 {digest}",
               "[probe] SYNTH: wEventFlags+4 |= $02 (EVENT_GAVE_MYSTERY_EGG_TO_ELM) + engine warp to POKECENTER_2F "
@@ -372,7 +363,7 @@ def main() -> int:
     print("\n".join(header), flush=True)
 
     run = lane / "probe"
-    text, pid = harness.launch("tools/polished_live/trade_port_probe.lua", run, {"POL_CASE": case}, args.timeout)
+    text, pid = harness.launch(launch_config, "tools/polished_live/trade_port_probe.lua", run, {"POL_CASE": case}, args.timeout)
     print(text[-2500:])
     result = run / "result.txt"
     reasons: list[str] = []

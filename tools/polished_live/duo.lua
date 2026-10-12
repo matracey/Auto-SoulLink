@@ -17,18 +17,11 @@ L.log(fmt("[duo %s] boot frame %d rom %s", ROLE, emu.framecount(), gameinfo.getr
 
 -- write tap (every Lua-originated memory write, client included; this driver writes nothing)
 local lua_writes = {}
-for _, k in ipairs({"write_u8", "write_s8", "write_u16_le", "write_u16_be", "write_s16_le", "write_s16_be", "write_u24_le",
-                    "write_u24_be", "write_u32_le", "write_u32_be", "write_s32_le", "write_s32_be", "writebyte",
-                    "writebyterange", "write_bytes_as_array", "write_bytes_as_dict", "writefloat"}) do
-    local fn = memory[k]
-    if fn ~= nil then
-        memory[k] = function(...)
-            local a = {...}
-            lua_writes[#lua_writes + 1] = fmt("%s(%s,%s) frame %d", k, tostring(a[1]), tostring(a[2]), emu.framecount())
-            return fn(...)
-        end
-    end
-end
+local G = dofile(L.ROOT .. "/tools/polished_live/recording_guard.lua")
+memory = G.observe_memory(memory, function(k, ...)
+    local a = {...}
+    lua_writes[#lua_writes + 1] = fmt("%s(%s,%s) frame %d", k, tostring(a[1]), tostring(a[2]), emu.framecount())
+end)
 
 SLINK_HOST, SLINK_PORT, SLINK_PLAYER = os.getenv("SLINK_HOST"), tonumber(os.getenv("SLINK_PORT")), os.getenv("SLINK_PLAYER")
 -- read-only exec probes L.to_overworld needs (L.ow_idle = OWPlayerInput seen; B on the options joypad loop), registered

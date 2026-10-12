@@ -13,7 +13,6 @@ import hashlib
 import json
 import os
 import re
-import shutil
 import socket
 import subprocess
 import sys
@@ -66,12 +65,8 @@ def check_route_calibration(route, overlay_sha1=SHA1):
 
 
 def symbols():
-    rows = {}
-    for line in (ROOT / "data/polished/polished_slink.sym").read_text().splitlines():
-        parts = line.split()
-        if len(parts) == 2 and ":" in parts[0]:
-            rows[parts[1]] = [int(n, 16) for n in parts[0].split(":")]
-    return {n: rows[n] for n in SYMBOLS}
+    from tools.polished_live.runtime import read_symbols
+    return read_symbols(ROOT / "data/polished/polished_slink.sym", SYMBOLS)
 
 
 def partner_from_save(data):
@@ -318,13 +313,13 @@ def main(argv=None):
     rom, sha, _ = probe.stage(run, full_site=True)
     if sha != SHA1:
         raise ValueError("overlay changed; re-pin this driver")
-    os.environ.update(POL_LANE=str(run), POL_KIND="overlay", POL_FIXTURE=str(args.fixture))
+    from dataclasses import replace
+
     from tools.polished_live import harness
-    harness.ROM_SRC = harness.ROM = rom
-    harness.SRAM = run/"sram"
-    harness.SRAM.mkdir()
-    shutil.copyfile(args.fixture, harness.SRAM/harness.SAVE_NAME)
-    harness.SYMBOLS = tuple(set(harness.SYMBOLS) | set(SYMBOLS))
+    launch_config = replace(harness.launch_config(dict(os.environ, POL_LANE=str(run), POL_KIND="overlay")),
+                            rom_src=rom, rom=rom, sram=run / "sram",
+                            symbols=tuple(dict.fromkeys((*harness.SYMBOLS, *SYMBOLS))))
+    harness.prepare_save(launch_config, args.fixture)
     (run/"input.json").write_text(json.dumps(manifest))
     (run/"partner.json").write_text(json.dumps(hello))
     srvdir, wiredir = run/"server", run/"wire"
@@ -347,7 +342,7 @@ def main(argv=None):
             partner = Partner(port, hello)
             partner.start()
             started = time.monotonic()
-            text, pid = harness.launch("tools/polished_live/rival_swap_live.lua", run,
+            text, pid = harness.launch(launch_config, "tools/polished_live/rival_swap_live.lua", run,
                                       {"POL_SWAP_CONFIG": (run/"input.json").as_posix(), "SLINK_HOST": "127.0.0.1",
                                        "SLINK_PORT": str(port), "SLINK_PLAYER": "a"}, args.timeout)
             try:

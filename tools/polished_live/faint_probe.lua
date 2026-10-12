@@ -19,27 +19,16 @@ local function append(kind, fields)
 end
 
 -- Guard probe-originated mutation attempts; the native game necessarily writes RAM.
-local raw_memory, raw_emu = memory, emu
-memory = setmetatable({}, {__index=function(_, name)
-    if name:match("^write") then
-        return function()
-            guest_writes = guest_writes + 1
-            if guest_writes == 1 then append("guest_write", {api="memory." .. name}) end
-            error("read-only faint probe denied memory." .. name, 0)
-        end
+local G = dofile(L.ROOT .. "/tools/polished_live/recording_guard.lua")
+memory, emu = G.readonly(memory, emu, function(kind, api)
+    if kind == "guest_write" then
+        guest_writes = guest_writes + 1
+        if guest_writes == 1 then append(kind, {api=api}) end
+    else
+        cpu_changes = cpu_changes + 1
+        if cpu_changes == 1 then append(kind, {api=api}) end
     end
-    return raw_memory[name]
-end})
-emu = setmetatable({}, {__index=function(_, name)
-    if name == "setregister" then
-        return function()
-            cpu_changes = cpu_changes + 1
-            if cpu_changes == 1 then append("cpu_change", {api="emu.setregister"}) end
-            error("read-only faint probe denied emu.setregister", 0)
-        end
-    end
-    return raw_emu[name]
-end})
+end)
 
 local function byte(field, delta)
     local row = assert(C.ram[field], "missing contract RAM field")

@@ -7,10 +7,8 @@ from __future__ import annotations
 
 import copy
 import hashlib
-import importlib.abc
 import importlib.util
 import json
-import os
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -1071,7 +1069,7 @@ def runner(tmp_path, monkeypatch, text=PASS, elapsed=1, defect=None):
     fixture.write_bytes(b"qualified synthetic fixture")
     work, launches = tmp_path / "lanes", []
     original_plan = P.plan
-    original_spec = importlib.util.spec_from_file_location
+
     monkeypatch.setattr(P, "REPO", tmp_path)
     monkeypatch.setattr(P, "WORK", work)
     monkeypatch.setattr(P, "FIXTURE", fixture)
@@ -1089,7 +1087,7 @@ def runner(tmp_path, monkeypatch, text=PASS, elapsed=1, defect=None):
     for key in ("POL_LANE", "POL_KIND", "POL_FIXTURE"):
         monkeypatch.setenv(key, "before-test")
 
-    def launch(_lua, run, env, _timeout):
+    def launch(_config, _lua, run, env, _timeout):
         run.mkdir(parents=True, exist_ok=True)
         (run / "config.ini").write_text(json.dumps({"PreferredCores": {"GBC": "Gambatte"}}), encoding="utf-8")
         trace = good_trace(env["POL_CASE"])
@@ -1100,22 +1098,9 @@ def runner(tmp_path, monkeypatch, text=PASS, elapsed=1, defect=None):
         launches.append(run)
         return text, 4321
 
-    class Loader(importlib.abc.Loader):
-        def create_module(self, _spec):
-            return None
-
-        def exec_module(self, module):
-            module.SYMBOLS = ()
-            module.SRAM = Path(os.environ["POL_LANE"]) / "sram"
-            module.SAVE_NAME = "probe.SaveRAM"
-            module.launch = launch
-
-    def harness_spec(name, file, *args, **kwargs):
-        if name == "polished_service_probe_harness":
-            return importlib.util.spec_from_loader(name, Loader())
-        return original_spec(name, file, *args, **kwargs)
-
-    monkeypatch.setattr(importlib.util, "spec_from_file_location", harness_spec)
+    from tools.polished_live import harness
+    monkeypatch.setattr(harness, "launch", launch)
+    monkeypatch.setattr(harness, "SYMBOLS", ())
     return work, launches
 
 
@@ -1234,8 +1219,8 @@ def test_attempt_lane_cannot_follow_case_link_outside_work(tmp_path, monkeypatch
 
 # ---- every kind the recorder can emit is either accepted or a NAMED failure (coordinator regression) --------------
 def lua_emitted_kinds():
-    import re
     import pathlib
+    import re
     src = (pathlib.Path(P.__file__).with_suffix(".lua")).read_text(encoding="utf-8")
     kinds = set(re.findall(r'(?:snap|rec|append|emit|event)\(\s*"([a-z_]+)"', src))
     return kinds | set(re.findall(r'kind\s*=\s*"([a-z_]+)"', src))

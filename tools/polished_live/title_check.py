@@ -167,20 +167,22 @@ client.exit()
 
 
 def run_boot(kind: str, rom: Path, lane: Path) -> dict:
-    from tools.gen1_playthrough import BIZHAWK_CONFIG, EMUHAWK, write_run_config
+    from dataclasses import replace
+
+    from tools.gen1_playthrough import write_run_config
+    from tools.polished_live.runtime import LaunchConfig, kill_own, start_owned
 
     run = lane / kind
     run.mkdir(exist_ok=False)
-    cfg = run / "config.ini"
-    write_run_config(BIZHAWK_CONFIG, str(cfg), saveram_dir=str(run / "sram"), purergb=True)
-    config = json.loads(cfg.read_text())
-    config["ScreenshotCaptureOsd"] = False
-    cfg.write_text(json.dumps(config, indent=2))
+    config = replace(LaunchConfig.from_env(), rom=rom, sram=run / "sram", symbols=())
+    def title_config(base, target, **kwargs):
+        write_run_config(base, target, **kwargs)
+        settings = json.loads(Path(target).read_text())
+        settings["ScreenshotCaptureOsd"] = False
+        Path(target).write_text(json.dumps(settings, indent=2))
     script = run / "boot.lua"
     script.write_text(LUA, encoding="utf-8")
-    env = dict(os.environ, SLINK_ROOT=REPO.as_posix(), TITLE_RUN=run.as_posix())
-    proc = subprocess.Popen([EMUHAWK, f"--lua={script.as_posix()}", f"--config={cfg.as_posix()}", rom.as_posix()],
-                            cwd=REPO, env=env)
+    proc = start_owned(config, script, run, {"TITLE_RUN": run.as_posix()}, write_config=title_config)
     print(f"[title] {kind} owned EmuHawk PID {proc.pid}", flush=True)
     try:
         deadline = time.monotonic() + 180
@@ -190,9 +192,7 @@ def run_boot(kind: str, rom: Path, lane: Path) -> dict:
             with suppress(subprocess.TimeoutExpired):
                 proc.wait(timeout=10)
     finally:
-        if proc.poll() is None:
-            subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)], capture_output=True, check=False)
-            proc.wait(timeout=20)
+        kill_own(proc, "title " + kind)
     print(f"[title] {kind} owned PID {proc.pid} ended rc={proc.returncode}", flush=True)
     if not (run / "done.txt").exists():
         raise RuntimeError(f"{kind} native boot incomplete; inspect {run}")
@@ -232,12 +232,10 @@ def main() -> int:
                         "cache/polished/release/polishedcrystal-3.2.3.gbc")
     args = parser.parse_args()
     sys.path.insert(0, str(REPO))
-    from patch.tools.make_ups import ups_apply
-
-    base = args.base.read_bytes()
-    overlay = bytes(ups_apply(base, (REPO / "patch/dist/SLink-Polished.ups").read_bytes()))
-    assert hashlib.sha1(base).hexdigest() == CLEAN_SHA1, "wrong clean release ROM"
-    assert hashlib.sha1(overlay).hexdigest() == OVERLAY_SHA1, "wrong integrated overlay"
+    from tools.polished_live.runtime import pinned_rom_bytes
+    base = pinned_rom_bytes(args.base, CLEAN_SHA1)
+    overlay = pinned_rom_bytes(args.base, OVERLAY_SHA1, patch=REPO / "patch/dist/SLink-Polished.ups",
+                               base_sha1=CLEAN_SHA1)
     art = (REPO / "patch/gen2/src/title_logo_crystal.2bpp").read_bytes()
     assert overlay[0x1F984A:0x1F996A] == art, "overlay art differs from shipped Crystal art"
     rows = [bytes(int(v, 16) for v in re.findall(r"\$([0-9A-F]{2})", line))

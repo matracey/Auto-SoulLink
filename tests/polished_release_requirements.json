@@ -17,8 +17,8 @@
   "live_receipt_rules": {
     "grade": "Every receipt is DEV. A lane author cannot promote their own run to PHYSICAL; that is an owner act recorded elsewhere.",
     "rom_binding": "rom_sha1_executed must equal data/polished/overlay_provenance.json's output.sha1 today. The phone-card commit moved the overlay 29ea04c2 -> 34942315, so every earlier receipt is STALE and red until re-run.",
-    "evidence_bytes": "evidence_file is hashed at judge time. A mismatch is tampering; an unreachable file is also red \u2014 a transcription nobody can check is not evidence. Run this on the lane host.",
-    "code_digest": "UNRECORDED where the lane evidence did not print one. The narrative docs/polished/LIVE_RESULTS.md names commits; the evidence files do not, so the receipts carry UNRECORDED and not the doc's claim."
+    "evidence_bytes": "Every primary/secondary artifact and run witness is re-hashed at judge time. Missing bytes, mismatches, contradictory witness scope/cut/digest/overlay, or a failed producer verdict are red. Supported current oracles replay retained observations; no emulator is launched.",
+    "code_digest": "Computed from all declared runtime source and pack bytes, excluding pack prose only. Every receipt and run witness must carry that digest; narrative commit names are not a substitute."
   },
   "required_ids": [
     "SRC-BEACON",
@@ -78,7 +78,16 @@
     "lua/gen2/signals.lua",
     "server/adapters/polished_codec.py",
     "server/adapters/gen2_polished.py",
-    "patch/polished/src/*.asm"
+    "patch/polished/src/*.asm",
+    "lua/gb_panel.lua",
+    "lua/core/**/*",
+    "server/adapters/polished_rom_scan.py",
+    "server/adapters/gen2_encounter_presentation.py",
+    "data/games/polished_crystal/**/*"
+  ],
+  "code_digest_exclude": [
+    "data/games/polished_crystal/**/*.md",
+    "data/games/polished_crystal/**/*.txt"
   ],
   "items": [
     {
@@ -295,6 +304,7 @@
         "run verdict",
         "escape does not fire the capture site",
         "escape took the Run path",
+        "an observed failed throw does not fire the capture site",
         "party catch fires the capture site exactly once",
         "hROMBank at the hit is 3",
         "hit record",

@@ -22,15 +22,18 @@ inputs.mkdir(parents=True)
 (inputs / "provenance").write_text(json.dumps({"output":{"sha1":hashlib.sha1(b"staged ROM").hexdigest()}}))
 namespace = runpy.run_path(sys.argv[2], run_name="panel_live_unit")
 driver = namespace["main"].__globals__
-driver.update(RELEASE=inputs / "base", UPS=inputs / "patch", PROV=inputs / "provenance",
-              FIXTURE_SRC=inputs / "fixture", ups_apply=lambda base, patch: b"staged ROM")
+driver.update(RELEASE=inputs / "base", UPS=inputs / "patch", PROV=inputs / "provenance")
+os = __import__("os")
+os.environ["POL_FIXTURE"] = str(inputs / "fixture")
+from patch.tools import make_ups
+make_ups.ups_apply = lambda base, patch: b"staged ROM"
 original_mkdir = Path.mkdir
 def guarded_mkdir(path, *args, **kwargs):
     assert path.resolve().is_relative_to(lane), f"write escaped leased panel lane: {path}"
     return original_mkdir(path, *args, **kwargs)
 Path.mkdir = guarded_mkdir
 class EmulatorBoundaryReached(Exception): pass
-def launch(lua, run, extra, timeout):
+def launch(config, lua, run, extra, timeout):
     run.mkdir(parents=True, exist_ok=True)
     raise EmulatorBoundaryReached
 # No fake PASS result: reaching the native backend ends this isolated test.

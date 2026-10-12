@@ -36,6 +36,10 @@ The old HP-0/reconnect controls remain distinct from the native faint-copyback a
 Native oracles never accept hello_reconcile as PASS. Whiteout sends an empty payload; all-HP0 evidence comes
 from the qualified pre-heal hook and send-time cartridge snapshot. S4n proves whiteout event sent plus faint
 propagation, NOT whiteout-handler effects. Surviving strong mons continue native fights/encounters within a bound.
+Native post-stage multiplicities are counted before key deduplication: one linked faint and one force_faint per
+expected partner. A copyback witness must itself contain that key at HP0. Unaffected B records are compared by key,
+including all 48 record bytes and both 11-byte name arrays; absent raw evidence fails, and only slot/address movement
+is ignored. An HP-only snapshot cannot establish collateral safety.
 Evidence: <lane>/play-<name>/evidence.json; one `RESULT: PASS|FAIL|SKIPPED polished-duo-play-<name>` line per scenario.
 PLAY startup HTTP readiness has a 40-second bound; a child not listening yet is not a rule failure.
 The native disclosure lists scenario paths, not evidence that every path ran; steps and PLAY_FINAL
@@ -159,10 +163,14 @@ def distinct_refusals(a: dict, b: dict) -> list[str]:
 def stage_side(paths: dict, rom: bytes, fixture: Path) -> str:
     """Give ONE side its own ROM copy and its own SaveRAM copy of ITS fixture; returns the copy's sha256 (must equal the
     fixture's: the side boots exactly the bytes whose identity the evaluator will expect)."""
-    for k in ("rom", "saveram"):
-        Path(paths[k]).parent.mkdir(parents=True, exist_ok=True)
-    Path(paths["rom"]).write_bytes(rom)
-    shutil.copyfile(fixture, paths["saveram"])
+    from dataclasses import replace
+
+    from tools.polished_live.runtime import LaunchConfig, prepare_save
+    config = replace(LaunchConfig.from_env(), rom=Path(paths["rom"]), sram=Path(paths["sram_dir"]),
+                     save_name=Path(paths["saveram"]).name)
+    config.rom.parent.mkdir(parents=True, exist_ok=True)
+    config.rom.write_bytes(rom)
+    prepare_save(config, fixture)
     return hashlib.sha256(Path(paths["saveram"]).read_bytes()).hexdigest()
 
 
@@ -632,6 +640,9 @@ def _natural_report_reasons(ev: dict, targets: set, linked_key: str, whole_party
     offset = offset if type(offset) is int and offset >= 0 else 0
     faint = [m for m in c2s_events(wa, "faint", offset) if m.get("key") == linked_key]
     whiteout = c2s_events(wa, "whiteout", offset)
+    facts["linked_faint_count"] = len(faint)
+    if len(faint) != 1:
+        reasons.append("a:linked_faint_count_not_one")
     zero_hello = [m for m in c2s_events(wa, "hello", offset)
                   if (_party(m).get(linked_key) or {}).get("hp") == 0]
     events = whiteout if whole_party else faint
@@ -699,6 +710,7 @@ def _natural_report_reasons(ev: dict, targets: set, linked_key: str, whole_party
         staged_slot = (_party(_snap(stage)).get(linked_key) or {}).get("slot")
         witnesses = [h for h in qualified if h.get("battle_hp") == 0 and h.get("slot") == staged_slot
                      and (_party(h).get(linked_key) or {}).get("slot") == staged_slot
+                     and (_party(h).get(linked_key) or {}).get("hp") == 0
                      and any(h["frame"] <= r["frame"] and (_party(r).get(linked_key) or {}).get("slot") == staged_slot
                              for r in zero_reports)]
         if not witnesses:
@@ -758,6 +770,13 @@ def _propagation_reasons(ev: dict, whole_party: bool, natural: bool = False) -> 
         reasons.append("b:force_faint_wrong_command")
     killed = {c.get("key") for c in kills if not natural or c.get("cmd") == "force_faint"}
     facts["b_force_faint_keys"] = sorted(str(k) for k in killed)
+    if natural:
+        counts = {kb: sum(c.get("cmd") == "force_faint" and c.get("key") == kb for c in kills)
+                  for kb in partners}
+        facts["b_force_faint_counts"] = counts
+        for kb, count in counts.items():
+            if count != 1:
+                reasons.append(f"b:force_faint_count_not_one:{kb}")
     for kb in sorted(partners):
         if kb not in killed:
             reasons.append(f"b:force_faint_missing:{kb}")
@@ -799,9 +818,27 @@ def _propagation_reasons(ev: dict, whole_party: bool, natural: bool = False) -> 
             reasons.append(f"b:cartridge_hp_not_zero:{kb}")
         elif natural:
             facts["b_cartridge_witness"][kb] = "await_snapshot"
+    ignored = {"slot", "address", "addr", "wram"}
+
+    def contents(row):
+        return {field: value.lower() if field.endswith("_hex") and isinstance(value, str) else value
+                for field, value in row.items() if field not in ignored}
+
     for key, mon in pre_b.items():
-        if key not in partners and (post_b.get(key) or {}).get("hp") != mon.get("hp"):
+        if key in partners:
+            continue
+        post = post_b.get(key) or {}
+        if post.get("hp") != mon.get("hp"):
             reasons.append(f"b:collateral_hp_change:{key}")
+        complete = all(isinstance(row.get(field), str)
+                       and re.fullmatch(r"[0-9a-fA-F]{" + str(size * 2) + r"}", row[field])
+                       for row in (mon, post)
+                       for field, size in (("record_hex", 48), ("ot_hex", 11), ("nickname_hex", 11)))
+        if not complete:
+            reasons.append(f"b:collateral_raw_evidence_missing:{key}")
+            continue
+        if contents(mon) != contents(post):
+            reasons.append(f"b:collateral_record_change:{key}")
     after = (ev.get("status") or {}).get("after") or {}
     for lk in _as_list(after.get("links")):
         if isinstance(lk, dict) and lk.get("b_key") in partners and lk.get("status") == "alive":
@@ -945,14 +982,7 @@ def emu_health(pid: int, run=subprocess.run) -> dict:
         return {"error": f"{type(exc).__name__}: {exc}"[:300]}
 
 
-def kill_pid(proc: subprocess.Popen, label: str) -> None:
-    if proc.poll() is None:
-        subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)], capture_output=True)
-        try:
-            proc.wait(timeout=20)
-        except subprocess.TimeoutExpired:
-            print(f"[duo] {label} pid {proc.pid} did not exit after taskkill", flush=True)
-    print(f"[duo] {label} pid {proc.pid} ended rc={proc.returncode}", flush=True)
+from tools.polished_live.runtime import kill_own as kill_pid, read_jsonl  # noqa: E402
 
 
 def http_json(port: int, path: str) -> dict:
@@ -960,10 +990,6 @@ def http_json(port: int, path: str) -> dict:
         return json.loads(r.read())
 
 
-def read_jsonl(path: Path) -> list:
-    if not path.is_file():
-        return []
-    return [json.loads(x) for x in path.read_text(encoding="utf-8", errors="replace").splitlines() if x.strip()]
 
 
 def client_line(result: Path, tag: str) -> dict | None:
@@ -1012,30 +1038,25 @@ def main(argv=None) -> int:
     if args.scenario:
         return play_main(args, fixtures, ident)
     sys.path[:0] = [str(REPO / "tools"), str(REPO)]
-    import harness  # sym_table, free_port (reused unchanged)
-    from gen1_playthrough import BIZHAWK_CONFIG, EMUHAWK, write_run_config
+    from dataclasses import replace
 
-    from patch.tools.make_ups import ups_apply
+    from tools.polished_live import harness  # sym_table, free_port (reused unchanged)
+    from tools.polished_live.runtime import pinned_rom_bytes, start_owned
 
     deadline = time.monotonic() + float(os.environ.get("POL_DUO_DEADLINE", "1200"))
-    rom = ups_apply(RELEASE.read_bytes(), UPS.read_bytes())
+    config = harness.launch_config()
+    rom = pinned_rom_bytes(RELEASE, INTEGRATED_SHA1, patch=UPS)
     sha1 = hashlib.sha1(rom).hexdigest()
-    if sha1 != INTEGRATED_SHA1:
-        raise SystemExit(f"staged overlay sha1 {sha1} != integrated overlay {INTEGRATED_SHA1}")
     run = LANE / "run"
     if run.exists():
         shutil.rmtree(run)
     srv_dir, wire_dir = run / "srv", run / "wire"
     srv_dir.mkdir(parents=True)
     (srv_dir / "rom_contract.json").write_text(json.dumps(contract_for(sha1)), encoding="utf-8")
-    syms = json.dumps(harness.sym_table())
     base_paths = {r: side_paths(run, r) for r in ("a", "b")}
     for r, p in base_paths.items():     # own ROM copy + own SaveRAM copy of ITS fixture + own config per side
         if stage_side(p, rom, fixtures[r]) != ident[r]["sha256"]:
             raise SystemExit(f"side {r}: private SaveRAM copy differs from its fixture {fixtures[r]}")
-        write_run_config(BIZHAWK_CONFIG, p["config"], saveram_dir=p["sram_dir"], purergb=True)
-        if max(len(p["saveram"]), len(p["result"])) >= 200:
-            raise SystemExit("lane path too long for BizHawk SaveRAM")
     print(f"[duo] staged overlay sha1 {sha1}; mode {'distinct-identities' if args.distinct_identities else 'single-fixture smoke'}; "
           f"lane {run}", flush=True)
     for r in ("a", "b"):
@@ -1054,11 +1075,10 @@ def main(argv=None) -> int:
     def launch(role: str) -> dict:
         gen[role] += 1
         p = side_paths(run, role, gen[role])
-        Path(p["run"]).mkdir(parents=True, exist_ok=True)
-        Path(p["run"], "syms.json").write_text(syms, encoding="utf-8")
-        env = dict(os.environ, **side_env(p, role, "127.0.0.1", port))
-        cmd = [EMUHAWK, f"--lua={(REPO / 'tools/polished_live/duo.lua').as_posix()}", f"--config={p['config']}", p["rom"]]
-        procs[role] = subprocess.Popen(cmd, cwd=str(REPO), env=env)
+        side_config = replace(config, rom=Path(p["rom"]), sram=Path(p["sram_dir"]),
+                              save_name=Path(p["saveram"]).name)
+        procs[role] = start_owned(side_config, "tools/polished_live/duo.lua", Path(p["run"]),
+                                  side_env(p, role, "127.0.0.1", port), config_path=p["config"])
         pids[role].append(procs[role].pid)
         print(f"[duo] EmuHawk {role} generation {gen[role]} pid {procs[role].pid}", flush=True)
         return p
@@ -1193,32 +1213,25 @@ def play_main(args, fixtures: dict, ident: dict) -> int:
 
 def play_run(args, name: str, fixtures: dict, ident: dict, box_capable: bool) -> tuple[str, list[str], dict]:
     sys.path[:0] = [str(REPO / "tools"), str(REPO)]
-    import harness
-    from gen1_playthrough import BIZHAWK_CONFIG, EMUHAWK, write_run_config
+    from dataclasses import replace
 
-    from patch.tools.make_ups import ups_apply
+    from tools.polished_live import harness
+    from tools.polished_live.runtime import pinned_rom_bytes, start_owned
 
     deadline = time.monotonic() + float(os.environ.get("POL_DUO_DEADLINE", "3600"))
-    rom = ups_apply(RELEASE.read_bytes(), UPS.read_bytes())
+    config = harness.launch_config()
+    rom = pinned_rom_bytes(RELEASE, INTEGRATED_SHA1, patch=UPS)
     sha1 = hashlib.sha1(rom).hexdigest()
-    if sha1 != INTEGRATED_SHA1:
-        raise SystemExit(f"staged overlay sha1 {sha1} != integrated overlay {INTEGRATED_SHA1}")
     run = LANE / f"play-{name}"
     if run.exists():
         raise SystemExit("evidence already exists; choose a fresh POL_DUO_LANE: " + str(run))
     srv_dir, wire_dir = run / "srv", run / "wire"
     srv_dir.mkdir(parents=True)
     (srv_dir / "rom_contract.json").write_text(json.dumps(contract_for(sha1)), encoding="utf-8")
-    syms = json.dumps(harness.sym_table())
     paths = {r: side_paths(run, r) for r in ("a", "b")}
     for r, p in paths.items():
         if stage_side(p, rom, fixtures[r]) != ident[r]["sha256"]:
             raise SystemExit(f"side {r}: private SaveRAM copy differs from its fixture {fixtures[r]}")
-        write_run_config(BIZHAWK_CONFIG, p["config"], saveram_dir=p["sram_dir"], purergb=True)
-        if max(len(p["saveram"]), len(p["result"])) >= 200:
-            raise SystemExit("lane path too long for BizHawk SaveRAM")
-        Path(p["run"]).mkdir(parents=True, exist_ok=True)
-        Path(p["run"], "syms.json").write_text(syms, encoding="utf-8")
     print(f"[play] {name}: {PLAY_SCENARIOS[name]}; overlay sha1 {sha1}; box capability {box_capable}; lane {run}",
           flush=True)
     port, http = harness.free_port(), harness.free_port()
@@ -1282,10 +1295,11 @@ def play_run(args, name: str, fixtures: dict, ident: dict, box_capable: bool) ->
     try:
         wait("server http", server_ready, 40)
         for role in ("a", "b"):
-            env = dict(os.environ, **side_env(paths[role], role, "127.0.0.1", port))
-            lua = (REPO / "tools/polished_live/duo_play.lua").as_posix()
-            procs[role] = subprocess.Popen([EMUHAWK, f"--lua={lua}", f"--config={paths[role]['config']}",
-                                            paths[role]["rom"]], cwd=str(REPO), env=env)
+            p = paths[role]
+            side_config = replace(config, rom=Path(p["rom"]), sram=Path(p["sram_dir"]),
+                                  save_name=Path(p["saveram"]).name)
+            procs[role] = start_owned(side_config, "tools/polished_live/duo_play.lua", Path(p["run"]),
+                                      side_env(p, role, "127.0.0.1", port), config_path=p["config"])
             print(f"[play] EmuHawk {role} pid {procs[role].pid} (server pid {srv.pid} tcp {port} http {http})", flush=True)
         wait("both sides ready", lambda: "PLAY_READY" in result_text("a") and "PLAY_READY" in result_text("b"), 600)
         mark("start")

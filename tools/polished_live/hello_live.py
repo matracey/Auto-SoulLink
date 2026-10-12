@@ -32,14 +32,12 @@ def main(argv: list[str] | None = None) -> int:
 
     sys.path[:0] = [str(REPO / "patch/tools"), str(REPO / "tools/polished_live"),
                    str(REPO / "tools"), str(REPO)]
-    from make_ups import ups_apply
-
+    from tools.polished_live.runtime import pinned_rom_bytes
     patch = REPO / "patch/dist/SLink-Polished.ups"
-    data = ups_apply(args.base.read_bytes(), patch.read_bytes())
-    rom_sha1 = hashlib.sha1(data).hexdigest()
     provenance = json.loads((REPO / "data/polished/overlay_provenance.json").read_text(encoding="utf-8"))
-    if rom_sha1 != provenance["output"]["sha1"]:
-        raise SystemExit(f"committed UPS produced {rom_sha1}, provenance pins {provenance['output']['sha1']}")
+    data = pinned_rom_bytes(args.base, provenance["output"]["sha1"], patch=patch,
+                            base_sha1=provenance["base_sha1"])
+    rom_sha1 = hashlib.sha1(data).hexdigest()
     fixture = args.fixture.resolve()
     fixture_sha256 = hashlib.sha256(fixture.read_bytes()).hexdigest()
     lane = args.lane.resolve()
@@ -52,15 +50,15 @@ def main(argv: list[str] | None = None) -> int:
     if args.dry_run:
         return 0
 
-    os.environ.update(POL_LANE=str(lane), POL_FIXTURE=str(fixture), POL_KIND="overlay",
-                      POL_STAGES="1", POL_RUNNAME="live")
-    import harness
+    from tools.polished_live import harness
 
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_bytes(data)
-    harness.ROM_SRC = out
-    os.chdir(REPO)
-    return harness.cmd_live()
+    from dataclasses import replace
+    config = replace(harness.launch_config(dict(os.environ, POL_LANE=str(lane), POL_FIXTURE=str(fixture),
+                                                POL_KIND="overlay", POL_STAGES="1", POL_RUNNAME="live")),
+                     rom_src=out)
+    return harness.cmd_live(config)
 
 
 if __name__ == "__main__":

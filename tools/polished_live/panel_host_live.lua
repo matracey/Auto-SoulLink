@@ -10,6 +10,17 @@
 -- Why a catch: Soul Link pairs form when BOTH players caught in the same area. Player a's half is a REAL native wild
 -- catch on Route 29 (live.lua's stage-2 battle logic); the partner's half is the scripted TCP partner's `capture`
 -- (sent by the Python side before this run starts catching).
+-- Replay checks cover every server-derived page, not merely the subset the ROM advertised.
+local Oracle = {}
+function Oracle.evaluate_pages(rows, pages, lines)
+    local expected = math.ceil(#rows / lines)
+    local ok = expected > 0 and #pages == expected
+    for i, p in ipairs(pages) do
+        ok = ok and p.page == i and p.pages == expected
+    end
+    return {expected_pages = expected, ok = ok}
+end
+if POL_ORACLE_ONLY then return Oracle end
 local L = dofile(os.getenv("SLINK_ROOT") .. "/tools/polished_live/pol_lib.lua")
 local fmt = string.format
 local J = L.json
@@ -45,6 +56,7 @@ local TEXT = L.woff("wSlinkPanelText", 0)
 -- wire tap: every line the client sends / receives. link_panel commands are kept in full (rows decoded).
 local C = package.loaded["connector"]
 local ev = {sent_events = {}, panels = {}, synth = {}, pages = {}, driver_writes = {}}
+ev.lines_per_page = PAN.lines
 local orig_send, orig_recv = C.send, C.receive
 C.send = function(line, ...)
     local ok, msg = pcall(J.decode, line)
@@ -240,7 +252,7 @@ press("A", 10)
 wait(function() return L.hits.SlinkPhone_CallGate > gate0 end, 300, "Call never reached SlinkPhone_CallGate")
 wait(function() return L.hits.SlinkPanel > panel0 end, 300, "the gate never entered SlinkPanel")
 
-local npages = nil
+local expected_pages = math.ceil(#(ev.pair_rows or {}) / PAN.lines)
 local page = 0
 while true do
     -- the ROM publishes AWAIT, the CLIENT stages and publishes STAGED (the driver does nothing here)
@@ -248,7 +260,8 @@ while true do
          fmt("page %d: the client never published STAGED", page + 1))
     L.idle(40)   -- the ROM prints the page through the text engine; give the tilemap time
     local pg, pgs = L.rw("wSlinkMailbox", OFF_PAGE), L.rw("wSlinkMailbox", OFF_PAGES)
-    npages = pgs
+    L.check("runtime page count equals the server-derived count", pgs == expected_pages, pgs)
+    L.check("runtime page index is the next expected page", pg + 1 == #ev.pages + 1, pg + 1)
     local text_bytes = L.wbytes("wSlinkPanelText", 0, PAN.lines * PAN.stride)
     local staged = {}
     for l = 0, PAN.lines - 1 do
@@ -261,7 +274,7 @@ while true do
                  screen = screen()}
     ev.pages[#ev.pages + 1] = rec
     L.log(fmt("[panelhost] page %d/%d box rows: %s", pg + 1, pgs, table.concat(rec.box_rows, " | ")))
-    if pg + 1 >= pgs then break end
+    if pg + 1 ~= #ev.pages or pgs ~= expected_pages or #ev.pages >= expected_pages then break end
     page = pg
     press("A", 10)   -- advance: the ROM re-publishes AWAIT for the next page; the client stages it
     wait(function() return L.rw("wSlinkMailbox", OFF_PAGE) == pg + 1 end, 300, "A did not advance PANEL_PAGE")
@@ -292,7 +305,10 @@ ev.client_receipts, ev.mailbox = receipts, fmt("%X..%X", 0xC000 + MB_LO, 0xC000 
 L.check("C5 the CLIENT's panel permit logged writes (attribution is non-vacuous)", #plog > 0, #plog)
 L.check("C5 every client panel write is inside the mailbox span", outside == 0, outside)
 L.check("C5 driver wrote only the 6 SYNTH setup bytes, none in the mailbox", #ev.driver_writes == 6, #ev.driver_writes)
-L.check("pages rendered", #ev.pages >= 1, #ev.pages)
+local coverage = Oracle.evaluate_pages(ev.pair_rows or {}, ev.pages, PAN.lines)
+ev.expected_pages = coverage.expected_pages
+L.check("every server-derived page rendered exactly once in order with a stable count", coverage.ok,
+        fmt("expected %d; rendered %d", coverage.expected_pages, #ev.pages))
 -- render fidelity against the rows the server SENT: page p shows rows 2p-1 and 2p of the pair link_panel
 local pr = ev.pair_rows or {}
 for i, r in ipairs(pr) do

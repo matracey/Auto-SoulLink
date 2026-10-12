@@ -1,5 +1,8 @@
 -- SYNTH fixture/link setup is disclosed by Python. Native buttons only here;
 -- every guest write is through the real composed client's trade binder.
+-- Strict receipt: qualified ordered commit/save/readback/publish/exit hooks,
+-- full physical party + both name arrays and trainer ID/name after cold CONTINUE.
+-- Shipped mode selects only the shipped binder; dev composition is explicit.
 local L=dofile(assert(os.getenv("POL_DRIVER_ROOT")).."/tools/polished_live/pol_lib.lua")
 local J=L.json
 local role=os.getenv("SLINK_PLAYER")
@@ -22,17 +25,34 @@ local function exists(name)
     if f then f:close() return true end
     return false
 end
-local function milestone(kind, detail)
+local function milestone(kind, detail, witness)
+    local row={kind=kind,frame=emu.framecount(),detail=detail}
+    for key,value in pairs(witness or {}) do row[key]=value end
     local f=assert(io.open(L.RUN.."/milestones.jsonl","ab"))
-    f:write(J.encode({kind=kind,frame=emu.framecount(),detail=detail}).."\n") f:close()
+    f:write(J.encode(row).."\n") f:close()
 end
 local ok,why=pcall(function()
 console.log("[trade-duo] global print type="..type(print))
 client.speedmode(300)
 for _,name in ipairs({"OWPlayerInput","SetInitialOptions.joypad_loop","YesNoBox","NoYesBox"}) do L.hook(name) end
-for _,name in ipairs({"SlinkTradeCommit","SlinkTradeApplyCommit","SlinkTradePublishDone","SlinkTradeExit","SlinkTradeResponderService","SlinkTradeResponderExit"}) do
-    L.hook(name,function(matched) if matched then milestone("native",name) end end)
+local sites=J.decode(L.slurp(L.RUN.."/trade-sites.json"))
+local function matches(site)
+    for i=1,#site.expected_hex/2 do
+        local expected=tonumber(site.expected_hex:sub(i*2-1,i*2),16)
+        if memory.read_u8(site.rom_offset+i-1,"ROM")~=expected then return false end
+    end
+    return true
 end
+for name,site in pairs(sites) do
+    assert(matches(site),"native trade site bytes differ: "..name)
+    L.hook_at(name,site.bank,site.pc,function(matched)
+        if not matched then return end
+        assert(emu.getregister("PC")==site.pc and matches(site),"native trade site changed: "..name)
+        milestone("native",name,{qualified=true,pc=site.pc,bank=site.bank,expected_hex=site.expected_hex})
+    end)
+end
+-- UI automation uses this separately, never as commit evidence.
+L.hook("SlinkTradeResponderService")
 -- Explicit dev option, through the existing Entry.build seam. Private root
 -- contains the enabled build's provenance/profile, not changed shipped pins.
 local original_dofile=dofile
@@ -47,8 +67,10 @@ end end
 SLINK_HOST,SLINK_PORT,SLINK_PLAYER=os.getenv("SLINK_HOST"),tonumber(os.getenv("SLINK_PORT")),role
 dofile(L.ROOT.."/lua/slink.lua")
 dofile=original_dofile
-local binder=SLINK_GEN2_PARTS and (SLINK_GEN2_PARTS.polished_trade or SLINK_GEN2_PARTS.dev_polished_trade)
-assert(SLINK_GEN2_CLIENT and binder,"enabled graph failed to compose trade binder")
+local parts=assert(SLINK_GEN2_PARTS,"trade graph absent")
+local binder
+if os.getenv("POL_TRADE_DEV")=="1" then binder=parts.dev_polished_trade else binder=parts.polished_trade end
+assert(SLINK_GEN2_CLIENT and binder,"selected trade graph failed to compose binder")
 local C=assert(package.loaded.connector)
 local hello,done,prompt=nil,nil,false
 local queries,abort_reason=0,nil
@@ -89,7 +111,15 @@ end
     while not hello and emu.framecount()-t<1800 do L.frame() end
     assert(hello,"hello absent")
     L.idle(180) -- let normal party ticks and any setup-link retrieval acknowledgment settle on both sides
-    dump("ready.json",hello)
+    local physical={player_id_hex=L.hex(L.wbytes("wPlayerID",0,2)),
+        player_name_hex=L.hex(L.wbytes("wPlayerName",0,8)),party_count=L.rw("wPartyCount"),party={}}
+    for slot=0,physical.party_count-1 do
+        physical.party[#physical.party+1]={slot=slot,
+            record_hex=L.hex(L.wbytes("wPartyMons",slot*48,48)),
+            ot_hex=L.hex(L.wbytes("wPartyMonOTs",slot*11,11)),
+            nickname_hex=L.hex(L.wbytes("wPartyMonNicknames",slot*11,11))}
+    end
+    dump("ready.json",physical)
     L.log("READY "..role.." cold="..tostring(cold).." pos="..L.rw("wXCoord")..","..L.rw("wYCoord"))
     t=emu.framecount()
     while not exists("go") and not exists("stop") and emu.framecount()-t<90000 do L.frame() end

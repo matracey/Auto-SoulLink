@@ -4,7 +4,6 @@ import copy
 import importlib.util
 import sys
 from pathlib import Path
-from types import SimpleNamespace
 from urllib.error import URLError
 
 import pytest
@@ -767,9 +766,6 @@ def test_natural_loss_passes_when_the_server_already_memorialized_the_killed_pai
 def test_natural_report_may_follow_its_hook_on_a_later_frame(whole_party):
     ev = natural_ev(whole_party)
     ev["steps"]["a"]["battle"]["reports"][0]["frame"] = 160
-    if not whole_party:
-        # The faint hook sees zero battle HP before the engine copies it to the party.
-        ev["steps"]["a"]["battle"]["site_hits"]["faint_copyback"][0]["party"][0]["hp"] = 1
     ev["wire"]["a"].append(_rec("meta", {"event": "_disconnect"}))
     ev["wire"]["b"].append(_rec("meta", {"event": "_disconnect"}))
     oracle = duo.oracle_whiteout_natural if whole_party else duo.oracle_faint_natural
@@ -1052,9 +1048,8 @@ def test_play_waits_for_server_readiness_before_starting_both_sides(tmp_path, mo
     monkeypatch.setattr(duo.sys, "path", list(sys.path))
 
     monkeypatch.setattr(make_ups, "ups_apply", lambda base, patch: rom)
-    monkeypatch.setitem(sys.modules, "gen1_playthrough", SimpleNamespace(
-        BIZHAWK_CONFIG="unused-config", EMUHAWK="EmuHawk.exe", write_run_config=lambda *a, **kw: None))
-    monkeypatch.setitem(sys.modules, "harness", SimpleNamespace(sym_table=lambda: {}, free_port=lambda: 54321))
+    from tools.polished_live import harness, runtime
+    monkeypatch.setattr(harness, "free_port", lambda: 54321)
     fixtures = {r: tmp_path / f"{r}.SaveRAM" for r in ("a", "b")}
     saves = synth_pair()
     for role, data in zip(("a", "b"), saves, strict=True):
@@ -1091,6 +1086,10 @@ def test_play_waits_for_server_readiness_before_starting_both_sides(tmp_path, mo
 
     monkeypatch.setattr(duo, "http_json", status)
     monkeypatch.setattr(duo.subprocess, "Popen", Process)
+    def start_owned(config, lua, run, env, *, config_path=None):
+        run.mkdir(parents=True, exist_ok=True)
+        return Process([config.emuhawk, f"--lua={lua}", f"--config={config_path}", config.rom.as_posix()])
+    monkeypatch.setattr(runtime, "start_owned", start_owned)
     monkeypatch.setattr(duo, "kill_pid", lambda proc, label: setattr(proc, "returncode", 0))
     monkeypatch.setattr(duo.time, "sleep", lambda seconds: None)
     monkeypatch.setattr(duo, "read_jsonl", wire)
@@ -1239,3 +1238,52 @@ def test_duo_play_step_loop_records_a_lua_error_and_keeps_the_client_running():
     ok, err, logs, frames = out
     assert ok is False and "pol-live-finished" in err             # the finish marker passes through ...
     assert "PLAY_LUA_ERROR" in logs and "synthetic step error" in logs and frames > 0   # ... after the error was logged
+
+
+@pytest.mark.parametrize("whole_party", [False, True], ids=["faint", "whiteout"])
+@pytest.mark.parametrize("duplicate", ["faint", "force_faint"])
+def test_f5_natural_loss_rejects_duplicate_poststage_reports_and_kills(whole_party, duplicate):
+    ev = natural_ev(whole_party)
+    if duplicate == "faint":
+        ev["wire"]["a"].append(_rec("c2s", {"event": "faint", "key": KA}))
+    else:
+        ev["wire"]["b"].append(_rec("s2c", {"commands": [{"cmd": "force_faint", "key": KB}]}))
+    oracle = duo.oracle_whiteout_natural if whole_party else duo.oracle_faint_natural
+    assert oracle(ev)[0] == "FAIL"
+
+
+def test_f6_copyback_requires_its_own_keyed_party_hp_zero():
+    ev = natural_ev()
+    hit = ev["steps"]["a"]["battle"]["site_hits"]["faint_copyback"][0]
+    next(m for m in hit["party"] if m["key"] == KA)["hp"] = 1
+    assert duo.oracle_faint_natural(ev)[0] == "FAIL"
+
+
+@pytest.mark.parametrize("field,offset", [
+    ("record_hex", 32), ("record_hex", 2), ("record_hex", 23), ("record_hex", 1),
+    ("record_hex", 38), ("ot_hex", 0), ("nickname_hex", 0),
+], ids=["status", "moves", "pp", "item", "stats", "ot", "nickname"])
+def test_f7_unaffected_partner_full_record_is_preserved(field, offset):
+    ev = natural_ev()
+    mon = ev["steps"]["b"]["await"]["snapshot"]["party"][0]
+    raw = bytearray.fromhex(mon[field])
+    raw[offset] ^= 1
+    mon[field] = raw.hex()
+    assert duo.oracle_faint_natural(ev)[0] == "FAIL"
+
+
+@pytest.mark.parametrize("missing", ["record_hex", "ot_hex", "nickname_hex"])
+def test_f7_unaffected_partner_missing_raw_evidence_fails_closed(missing):
+    ev = natural_ev()
+    for label in ("pre", "await"):
+        ev["steps"]["b"][label]["snapshot"]["party"][0].pop(missing)
+    assert duo.oracle_faint_natural(ev)[0] == "FAIL"
+
+
+def test_f7_unaffected_native_slot_movement_is_allowed():
+    ev = natural_ev()
+    ev["steps"]["b"]["await"]["snapshot"]["party"].reverse()
+    for slot, mon in enumerate(ev["steps"]["b"]["await"]["snapshot"]["party"]):
+        mon["slot"] = slot
+        mon["address"] = 0xD000 + slot * 48
+    assert duo.oracle_faint_natural(ev)[:2] == ("PASS", [])

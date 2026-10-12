@@ -19,16 +19,15 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import importlib.util
 import json
 import os
 import re
-import shutil
 import sys
 import time
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO))
 WORK = Path("F:/slink-work/lanes/pol-service-probe")
 RELEASE = Path("F:/slink-work/cache/polished/release/polishedcrystal-3.2.3.gbc")
 FIXTURE = Path("F:/slink-work/lanes/g2int-live/pol/fixture/polished_overlay_warp.SaveRAM")
@@ -573,14 +572,7 @@ def read_symbols(path):
     return _parse_symbols(path.read_text(encoding="utf-8"))
 
 
-def _parse_symbols(text):
-    rows = {}
-    for line in text.splitlines():
-        parts = line.split()
-        if len(parts) == 2 and re.fullmatch(r"[0-9a-fA-F]+:[0-9a-fA-F]+", parts[0]):
-            bank, addr = parts[0].split(":")
-            rows.setdefault(parts[1], [int(bank, 16), int(addr, 16)])
-    return rows
+from tools.polished_live.runtime import parse_symbols as _parse_symbols  # noqa: E402
 
 
 def read_verified_symbols(repo):
@@ -593,19 +585,11 @@ def read_verified_symbols(repo):
 
 
 def stage(lane, run_plan):
-    clean = RELEASE.read_bytes()
-    if hashlib.sha1(clean).hexdigest() != run_plan["base_sha1"]:
-        raise ValueError("release sha1 differs from provenance base_sha1")
-    sys.path.insert(0, str(REPO))
-    from patch.tools.make_ups import ups_apply
-
-    overlay = ups_apply(clean, (REPO / "patch/dist/SLink-Polished.ups").read_bytes())
-    sha1 = hashlib.sha1(overlay).hexdigest()
-    if sha1 != run_plan["expected_overlay_sha1"]:
-        raise ValueError("overlay sha1 differs from provenance output.sha1")
+    from tools.polished_live.runtime import stage_pinned_rom
     rom = lane / "rom/pol_overlay.gbc"
-    rom.parent.mkdir(parents=True, exist_ok=True)
-    rom.write_bytes(overlay)
+    sha1 = stage_pinned_rom(RELEASE, rom, run_plan["expected_overlay_sha1"],
+                            patch=REPO / "patch/dist/SLink-Polished.ups",
+                            base_sha1=run_plan["base_sha1"])
     return rom, sha1
 
 
@@ -633,31 +617,29 @@ def main(argv=None):
             break
     run_plan["lane"] = str(lane)
     print(json.dumps(run_plan, indent=2), flush=True)
-    os.environ.update(POL_LANE=str(lane), POL_KIND="overlay", POL_FIXTURE=str(FIXTURE))
-    # Load a private harness instance: its environment-derived paths must belong to this lane.
-    spec = importlib.util.spec_from_file_location("polished_service_probe_harness", REPO / "tools/polished_live/harness.py")
-    harness = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(harness)
+    from dataclasses import replace
+
+    from tools.polished_live import harness
     rows = read_verified_symbols(REPO)
     # Optional code hooks are omitted from syms.json when absent; Lua records missing_symbol, oracle FAILS.
     required = tuple(harness.SYMBOLS) + tuple(s for s in EXTRA_SYMBOLS if s not in HOOKS)
     missing = sorted(set(required) - rows.keys())
     if missing:
         raise ValueError(f"required data/setup symbols missing: {missing}")
-    harness.SYMBOLS = tuple(dict.fromkeys((*required, *(s for s in HOOKS if s in rows))))
+    symbols = tuple(dict.fromkeys((*required, *(s for s in HOOKS if s in rows))))
     rom, sha1 = stage(lane, run_plan)
     store_sites = build_native_store_sites(rom.read_bytes(), rows)
     store_path = lane / "native_store_sites.json"
     store_path.write_text(json.dumps(store_sites, indent=2), encoding="utf-8")
-    harness.ROM_SRC = harness.ROM = rom
+    launch_config = replace(harness.launch_config(dict(os.environ, POL_LANE=str(lane), POL_KIND="overlay")),
+                            rom_src=rom, rom=rom, symbols=symbols)
     digest = hashlib.sha256(FIXTURE.read_bytes()).hexdigest()
     if not digest.startswith(FIXTURE_SHA256_PREFIX):
         raise ValueError("fixture sha256 differs from qualified fixture")
-    harness.SRAM.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(FIXTURE, harness.SRAM / harness.SAVE_NAME)
+    harness.prepare_save(launch_config, FIXTURE)
     run = lane / "probe"
     started = time.monotonic()
-    text, pid = harness.launch("tools/polished_live/trade_service_probe.lua", run,
+    text, pid = harness.launch(launch_config, "tools/polished_live/trade_service_probe.lua", run,
                                {"POL_CASE": args.case, "POL_STORE_SITES": store_path.as_posix()}, args.timeout)
     elapsed = time.monotonic() - started
     deadline_met = elapsed < args.timeout

@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import importlib.util
 import json
 import os
 import subprocess
@@ -535,18 +534,15 @@ def main(argv=None):
     root.mkdir(parents=True, exist_ok=True)
     lane = root / (args.case + "-" + uuid.uuid4().hex[:12])
     lane.mkdir()
-    spec = importlib.util.spec_from_file_location(
-        "explode_harness", REPO / "tools/polished_live/harness.py"
-    )
-    os.environ.update(POL_LANE=str(lane), POL_KIND="overlay")
-    harness = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(harness)
-    harness.SYMBOLS = tuple(dict.fromkeys((*harness.SYMBOLS, *config["contract"]["symbols"])))
-    harness.ROM = harness.ROM_SRC = lane / "rom/pol_overlay.gbc"
-    harness.ROM.parent.mkdir()
-    harness.ROM.write_bytes(rom)
-    harness.SRAM.mkdir(parents=True)
-    (harness.SRAM / harness.SAVE_NAME).write_bytes(fixture)
+    from dataclasses import replace
+
+    from tools.polished_live import harness
+    launch_config = replace(harness.launch_config(dict(os.environ, POL_LANE=str(lane), POL_KIND="overlay")),
+                            symbols=tuple(dict.fromkeys((*harness.SYMBOLS, *config["contract"]["symbols"]))))
+    launch_config.rom.parent.mkdir()
+    launch_config.rom.write_bytes(rom)
+    launch_config.sram.mkdir(parents=True)
+    (launch_config.sram / launch_config.save_name).write_bytes(fixture)
     run = lane / "probe"
     run.mkdir()
     (run / "input.json").write_text(json.dumps(config))
@@ -596,6 +592,7 @@ def main(argv=None):
         )
         started = time.monotonic()
         text, pid = harness.launch(
+            launch_config,
             "tools/polished_live/explode_live.lua",
             run,
             {
