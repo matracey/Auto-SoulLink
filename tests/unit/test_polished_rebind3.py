@@ -105,7 +105,10 @@ def packet(tmp_path):
             roles["negative"] = str(
                 put(
                     run / "capture_negative.json",
-                    {"failed_throw_count": 1, "capture_hits": 0, "ok": True},
+                    {"failed_throw_count": 1, "capture_hits": 0, "ok": True, "throws": [
+                        {"frame": 10, "caps_before": 0, "frame_end_exclusive": 11,
+                         "wrong_bank_hits": 0, "caught": False, "to_pc": False, "cap_hits": 0},
+                    ]},
                 )
             )
         elif rid == selected[1]:
