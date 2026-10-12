@@ -5,9 +5,14 @@ from __future__ import annotations
 import logging
 from collections import Counter
 from copy import deepcopy
+from dataclasses import asdict
 from datetime import UTC, datetime
 from time import monotonic
+from typing import TYPE_CHECKING
 from uuid import uuid4
+
+if TYPE_CHECKING:
+    from server.state import SoulLinkState
 
 PLAYERS = ("a", "b")
 MUTATIONS = frozenset({"box_mon", "party_mon", "memorialize", "force_faint", "force_explode"})
@@ -156,3 +161,72 @@ class Recovery:
             record["target_key"] = target_key
         self.history.append(record)
         return deepcopy(record)
+
+    @staticmethod
+    def expected(state: SoulLinkState, player: str) -> dict[str, dict]:
+        expected = {}
+        for entry in state.links:
+            mon = getattr(entry, player)
+            if mon and entry.status.value == "alive":
+                expected[mon.key] = {**asdict(mon), "area_id": entry.area_id}
+        for collection in (state.pending_captures, state.unpaired_mons):
+            for area, players in collection.items():
+                if mon := players.get(player):
+                    expected[mon.key] = {**asdict(mon), "area_id": area}
+        for key in state.bonus_keys[player]:
+            if key not in expected:
+                stats = state.mon_stats[player].get(key, {})
+                expected[key] = {
+                    "key": key, "area_id": "_bonus_pending_" + key,
+                    "nickname": stats.get("nickname", ""), "species": stats.get("species_id", 0),
+                    "level": stats.get("level", 0), "is_shiny": True,
+                }
+        return expected
+
+    @classmethod
+    def claimed(cls, state: SoulLinkState, player: str) -> set[str]:
+        keys = set(cls.expected(state, player))
+        for entry in state.links:
+            if mon := getattr(entry, player):
+                keys.add(mon.key)
+        keys.update(state.pending_memorials[player])
+        keys.update(state.ambiguous_keys[player])
+        return keys
+
+    def paused(self, state: SoulLinkState) -> dict[str, set[str]]:
+        paused = {pid: set(self.limbo[pid]) | self._suspected[pid] for pid in PLAYERS}
+        for entry in state.links:
+            halves = [(pid, getattr(entry, pid)) for pid in PLAYERS]
+            if any(mon and mon.key in paused[pid] for pid, mon in halves):
+                for pid, mon in halves:
+                    if mon:
+                        paused[pid].add(mon.key)
+        return paused
+
+    def control(self, state: SoulLinkState, player: str) -> dict:
+        return {"cmd": "recovery_control", "paused": sorted(self.paused(state)[player]),
+                "cancelled": dict(self.cancellations[player])}
+
+    def observe_message(self, state: SoulLinkState, player: str, msg: dict) -> None:
+        """Called after hello admission, before snapshot reconciliation."""
+        if (msg.get("party_hidden") is True or state.party_snapshot_withheld(player, msg) or msg.get("in_battle")
+                or state.pending_trade or state._trade_settle_ticks.get(player, 0)
+                or any(state.report_backlog.values())):
+            self.invalidate(player)
+            return
+        if "inventory_complete" not in msg and "inventory_generation" not in msg:
+            return
+        generation = msg.get("inventory_generation")
+        records = [*msg.get("party", []), *msg.get("pc_boxes", [])] if (
+            isinstance(msg.get("party"), list) and isinstance(msg.get("pc_boxes"), list)) else None
+        if (msg.get("inventory_complete") is not True or type(generation) is not int or generation < 1
+                or records is None or any(not isinstance(row, dict) or not isinstance(row.get("key"), str)
+                                          or not row["key"] for row in records)):
+            self.invalidate(player)
+            return
+        changes = self.observe(player, generation, records, self.expected(state, player),
+                               self.claimed(state, player))
+        if changes:
+            for row in changes:
+                log.info("[%s] recovery %s: %s", player, row["action"], row["key"])
+            state._save()

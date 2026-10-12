@@ -31,6 +31,7 @@ from enum import Enum
 from server import json_files
 from server.adapters.base import GameRulesAdapter, humanize_area_id
 from server.pokemon_data import _parse_pid_otid_key, pid_otid_shiny
+from server.recovery import MUTATIONS, Recovery
 
 log = logging.getLogger(__name__)
 
@@ -237,6 +238,8 @@ class SoulLinkState:
         self.report_bindings: dict[str, dict] = {}
         self.report_receipts: dict[str, dict] = {"a": {}, "b": {}}
         self.report_backlog = {"a": 0, "b": 0}
+        self.recovery = Recovery()
+        self.recovery_clients: set[str] = set()
         self.sync_revision = 0
         self.sync_versions: dict[str, dict[str, dict]] = {"a": {}, "b": {}}
         self.sync_delivered: dict[str, set[str]] = {"a": set(), "b": set()}
@@ -554,6 +557,8 @@ class SoulLinkState:
             return self._handle_report(player_id, msg)
         malformed = self.normalize_party_snapshot(player_id, msg)
         if malformed is not None:
+            if msg.get("event") != "hello":
+                self.recovery.invalidate(player_id)
             return malformed
         event = msg.get("event", "unknown")
         if (event in ("tick", "safe") and player_id in self.report_bindings
@@ -568,6 +573,8 @@ class SoulLinkState:
                 return [{"cmd": "noop", "refused": "report_binding"}]
         refused = self.refuse_hidden_event(player_id, msg)
         if refused is not None:
+            if event != "hello":
+                self.recovery.invalidate(player_id)
             return refused
 
         # The client has spoken about this key, so nothing we sent for it is still on the wire:
@@ -742,6 +749,8 @@ class SoulLinkState:
         elif event == "rival_team_replaced":
             self._handle_rival_team_replaced(player_id, msg)
         elif event in ("safe", "tick"):
+            if player_id in self.recovery_clients:
+                self.recovery.observe_message(self, player_id, msg)
             if "trade_blocked" in msg:
                 self.trade_blocked[player_id] = msg["trade_blocked"] is True
             if "awaiting_save" in msg:
@@ -787,17 +796,23 @@ class SoulLinkState:
     def _deliver_commands(self, player_id: str) -> list[dict]:
         self._prepare_sync_intents()
         owed = self.queued_commands[player_id][:]
-        cmds = [c for c in owed if c.get("cmd") not in DURABLE_SYNC_COMMANDS
+        paused = self.recovery.paused(self)[player_id]
+        held = [c for c in owed if c.get("cmd") in MUTATIONS and c.get("key") in paused]
+        cmds = [c for c in owed if c not in held and (c.get("cmd") not in DURABLE_SYNC_COMMANDS
                 or player_id in self.report_bindings
-                or c.get("intent_id") not in self.sync_delivered[player_id]]
-        if any(c.get("cmd") in DURABLE_SYNC_COMMANDS for c in cmds) or self.report_bindings:
+                or c.get("intent_id") not in self.sync_delivered[player_id])]
+        requires_commit = any(c.get("cmd") in MUTATIONS or c.get("intent_id")
+                              or c.get("cmd") == "report_binding" for c in cmds)
+        if requires_commit or self.report_bindings or self.save_failed:
             self._save()
-        if self.save_failed and any(c.get("intent_id") or c.get("cmd") == "report_binding" for c in cmds):
+        if requires_commit and self.save_failed and not self._report_transaction:
             return [{"cmd": "noop", "refused": "persistence"}]
         self.sync_delivered[player_id].update(
             c["intent_id"] for c in cmds if c.get("cmd") in DURABLE_SYNC_COMMANDS)
         self.queued_commands[player_id] = [
-            c for c in owed if c.get("cmd") in DURABLE_SYNC_COMMANDS]
+            c for c in owed if c.get("cmd") in DURABLE_SYNC_COMMANDS or c in held]
+        if player_id in self.recovery_clients:
+            cmds.insert(0, self.recovery.control(self, player_id))
         self._arm_inflight(player_id, cmds)
         if cmds:
             _summary = ", ".join(
@@ -994,7 +1009,8 @@ class SoulLinkState:
         boxes = Counter(m.get("key") for m in msg["pc_boxes"] if isinstance(m, dict))
         confirmed = False
         for key, row in self.sync_versions[player_id].items():
-            if not row.get("active") or key in self.ambiguous_keys[player_id]:
+            if (not row.get("active") or key in self.ambiguous_keys[player_id]
+                    or key in self.recovery.paused(self)[player_id]):
                 continue
             # An older, opposite command may still be waiting on the client.
             if row.get("intent_id") not in self.sync_delivered[player_id]:
@@ -1096,6 +1112,8 @@ class SoulLinkState:
         out = []
         for be in sorted(self.partner_blobs.get(player_id, []), key=lambda e: e.get("slot", 99)):
             k = be.get("key", "")
+            if k in self.recovery.paused(self)[player_id]:
+                continue
             entry = self.entry_for(player_id, k)
             if not entry or entry.status != LinkStatus.ALIVE:
                 continue
@@ -2320,6 +2338,7 @@ class SoulLinkState:
             # ledger shows migrated (evolution, NPC trade) or a dead pair's half would reach a cartridge
             # that no longer holds it and come back as a failed sync.
             saved_sync = data.get("queued_sync")
+            state.recovery = Recovery.load(data.get("mon_recovery"))
             recovery = data.get("gameplay_delivery")
             if recovery is not None:
                 if (not isinstance(recovery, dict) or not isinstance(recovery.get("run_id"), str)
@@ -2468,6 +2487,14 @@ class SoulLinkState:
                 self._save()
 
         # Adopted here: past every identity-lock return above.
+        self.recovery.disconnect(player_id)
+        if msg.get("inventory_protocol") == 1:
+            self.recovery_clients.add(player_id)
+            backlog = msg.get("report_backlog", 0)
+            self.report_backlog[player_id] = max(0, backlog) if type(backlog) is int else 0
+            self.recovery.observe_message(self, player_id, msg)
+        else:
+            self.recovery_clients.discard(player_id)
         self.battle_identity_clients[player_id] = declare_identity
         if not declare_identity:
             # C5-11c MAJOR 7: an ACCEPTED legacy hello also clears the stored battle identity, so
@@ -3976,6 +4003,8 @@ class SoulLinkState:
     def _has_pending_command(self, player_id: str, key: str, *cmds: str) -> bool:
         """True if a matching command for key is queued for player_id, or has been
         delivered and is still unanswered (in flight on the client — see sync_inflight)."""
+        if key in self.recovery.paused(self)[player_id] and any(c in MUTATIONS for c in cmds):
+            return True
         if (self.sync_versions[player_id].get(key, {}).get("suspended")
                 and any(c in DURABLE_SYNC_COMMANDS for c in cmds)):
             return True
@@ -5247,6 +5276,7 @@ class SoulLinkState:
         self._prepare_sync_intents()
         os.makedirs(self._data_dir, exist_ok=True)
         payload = {
+            "mon_recovery": self.recovery.dump(),
             "gameplay_delivery": {
                 "run_id": self.report_run_id, "bindings": self.report_bindings,
                 "receipts": self.report_receipts, "sync_revision": self.sync_revision,

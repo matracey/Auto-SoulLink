@@ -93,6 +93,74 @@ def test_uncommitted_report_is_not_acknowledged_and_replays_cleanly(tmp_path, mo
     assert any(c["cmd"] == "report_ack" for c in s.handle_event("a", msg))
 
 
+def test_legacy_death_is_persisted_before_either_client_receives_it(tmp_path, monkeypatch):
+    s = linked(tmp_path)
+    s._save()
+    write = s._atomic_write_json
+
+    def fail(*_):
+        raise OSError("disk unavailable")
+
+    monkeypatch.setattr(s, "_atomic_write_json", fail)
+    assert s.handle_event("a", {"event": "faint", "key": A}) == [{"cmd": "noop", "refused": "persistence"}]
+    assert s.handle_event("b", {"event": "tick"}) == [{"cmd": "noop", "refused": "persistence"}]
+    assert s.links[0].status == LinkStatus.DEAD
+    assert SoulLinkState.load(data_dir=str(tmp_path)).links[0].status == LinkStatus.ALIVE
+    for pid in ("a", "b"):
+        assert not s.sync_inflight[pid]
+        assert not s.death_inflight[pid]
+    monkeypatch.setattr(s, "_atomic_write_json", write)
+    cmds = s.handle_event("b", {"event": "tick"})
+    assert any(c["cmd"] == "force_faint" and c["key"] == B for c in cmds)
+    assert any(c["cmd"] == "memorialize" and c["key"] == B for c in cmds)
+    saved = SoulLinkState.load(data_dir=str(tmp_path))
+    assert saved.links[0].status == LinkStatus.DEAD
+    assert saved.pending_memorials == {"a": {A}, "b": {B}}
+    assert any(c["cmd"] == "memorialize" and c["key"] == A
+               for c in s.handle_event("a", {"event": "tick"}))
+
+
+@pytest.mark.parametrize("command", ["force_faint", "force_explode", "memorialize", "box_mon", "party_mon"])
+def test_queued_mutation_requires_a_successful_save(tmp_path, monkeypatch, command):
+    s = linked(tmp_path)
+    s._save()
+    s.queued_commands["b"] = [{"cmd": command, "key": B}]
+    write = s._atomic_write_json
+
+    def fail(*_):
+        raise OSError("disk unavailable")
+
+    monkeypatch.setattr(s, "_atomic_write_json", fail)
+    assert not s.save_failed
+    assert s.handle_event("b", {"event": "tick"}) == [{"cmd": "noop", "refused": "persistence"}]
+    assert s.queued_commands["b"][0]["cmd"] == command
+    monkeypatch.setattr(s, "_atomic_write_json", write)
+    assert s.handle_event("b", {"event": "tick"})[0]["cmd"] == command
+
+
+def test_bound_faint_report_retries_after_failed_commit(tmp_path, monkeypatch):
+    s = linked(tmp_path)
+    bind(s, "a", [{"key": A, "hp": 20}])
+    write = s._atomic_write_json
+    msg = report(s, "a", 1, "faint", key=A,
+                 battle_evidence={"in_battle": True, "is_trainer": True})
+
+    def fail(*_):
+        raise OSError("disk unavailable")
+
+    monkeypatch.setattr(s, "_atomic_write_json", fail)
+    assert s.handle_event("a", msg) == [{"cmd": "noop", "refused": "report_not_committed"}]
+    assert s.links[0].status == LinkStatus.ALIVE
+    assert not s.pending_memorials["a"]
+    assert not s.queued_commands["b"]
+    monkeypatch.setattr(s, "_atomic_write_json", write)
+    cmds = s.handle_event("a", msg)
+    assert any(c["cmd"] == "report_ack" for c in cmds)
+    assert any(c["cmd"] == "memorialize" and c["key"] == A for c in cmds)
+    assert SoulLinkState.load(data_dir=str(tmp_path)).links[0].status == LinkStatus.DEAD
+    assert [c["cmd"] for c in s.handle_event("a", msg)] == ["report_ack"]
+
+
 @pytest.mark.parametrize("change", ["run_id", "player", "ot_id", "rom_sha1"])
 def test_report_cannot_cross_run_player_save_or_cartridge(tmp_path, change):
     s = linked(tmp_path)
