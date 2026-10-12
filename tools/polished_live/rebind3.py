@@ -291,6 +291,53 @@ PRODUCER_COMPLETION = {
 }
 
 
+# HYBRID owner ruling: fixed exclusions, not a map-supplied classification.
+# GAPS.json at ddfb3e52d: all 23 WRITE rows, plus conservative manifest audit.
+WRITE_CHECKS = frozenset(
+    {
+        "0 Lua-originated writes and no panel write attempt",
+        "B closes to the Phone list with no call placed and PANEL_STATE cleared",
+        "B's cartridge shows the partner at HP 0 and no other B mon changed",
+        "C4 B closes back to the Phone list with no call placed and PANEL_STATE cleared",
+        "C5 every panel write is inside the mailbox span and the audit is non-vacuous",
+        "a native full-party catch reached a box; the six-mon fixture was prepared by native catch and SAVE without a client or RAM party edits, hashed, and reloaded",
+        "both native commits and one trade_done each",
+        "both native save copies valid and exchanged",
+        "box_mon: exact diff subset over declared ranges, and its control fails",
+        "box_mon: party 5 -> 4 and the key leaves the party",
+        "box_mon: the mon is in a gameplay box and its pokedb entry checksum verifies",
+        "cold CONTINUE preserves both received mons and identities",
+        "columns 8-9 of rows 0-1 are drawn by every native card",
+        "force_faint: every write is inside the target's +32/+34/+35 bytes",
+        "force_faint: exact diff subset, and its control fails",
+        "force_faint: the bench mon's HP is 0, status 0, party count unchanged",
+        "full-memory diff confined to expected write set",
+        "independent recompute of the force_faint, box_mon, party_mon and both memorialize diffs equals the driver's",
+        "memorialize (box origin): exact diff subset, and its control fails",
+        "memorialize (box origin): memorialize_done exactly once, no memorialize_failed, from a boxed key",
+        "memorialize (box origin): the census reads the key only in box 20 at the same (bank, entry), and the source membership is removed",
+        "memorialize (party origin): a fresh pokedb entry equal to the party mon's own encoding, and it verifies",
+        "memorialize (party origin): exact diff subset, and its control fails",
+        "memorialize (party origin): memorialize_done exactly once, no memorialize_failed, and the key leaves the party",
+        "memorialize (party origin): the census reads the key only in box 20 at the first empty slot",
+        "native party grew by exactly one at the capture hook, before client quarantine",
+        "native party grew by exactly one at the variant capture hook, before client quarantine",
+        "no Lua-originated memory write",
+        "observation-only leg has zero Lua writes; variant-catch quarantine writes are retained separately and do not count as write-path qualification",
+        "one bound command and exact write plan",
+        "one reply and exact confined partner party write",
+        "party_mon: exact diff subset, and its control fails",
+        "party_mon: party 4 -> 5, the key at the last slot, healed",
+        "party_mon: the box slot is cleared and the pokedb entry is never freed",
+        "s3 native delete still works and leaves one SLink row",
+        "the client's own permit wrote the mailbox, all writes inside its span",
+        "the loss setup is a disclosed HP 1 on every non-egg record, never HP 0",
+        "the loss setup is a disclosed HP 1 on the linked lead only, never HP 0",
+        "the write domain is recorded",
+    }
+)
+
+
 def producer_completion(item, row, bound, snap):
     requested = [c["name"] for c in row["checks"] if c.get("covered_by") == "producer_completion"]
     if not requested:
@@ -327,6 +374,105 @@ def producer_completion(item, row, bound, snap):
     return proven
 
 
+def producer_checks(row, records, root, snap, used_labels):
+    """HYBRID: exact observational L.check echoes from a launch-bound source.
+
+    A primary and its tee console may each contain the same single check. They
+    are alternative recordings, not two independent checks. Duplicate echoes
+    within either matching recording refuse; labels cannot be reused per receipt.
+    """
+    proofs, labels, fingerprints = {}, set(), set()
+    for check in row["checks"]:
+        if check.get("covered_by") != "producer_check":
+            continue
+        require(
+            set(check) == {"name", "covered_by", "producer_check"},
+            "producer_check exact fields required",
+        )
+        name, label = check["name"], check["producer_check"]
+        require(name not in WRITE_CHECKS, "WRITE criterion cannot use producer_check")
+        require(
+            name not in PRODUCER_COMPLETION and label not in PRODUCER_COMPLETION,
+            "generic verdict belongs to producer_completion",
+        )
+        require(
+            isinstance(label, str) and label.strip() and "\n" not in label and "\r" not in label,
+            "producer_check requires one literal label",
+        )
+        require(label not in labels, "producer_check label reused for different checks")
+        require(
+            label not in used_labels or used_labels[label] == name,
+            "producer_check label reused for different checks across receipts",
+        )
+        prefix = "  [ok] " + label
+        matches = []
+        primary = exact_path(row["primary"]["path"])
+        for specification in row["launches"]:
+            launch_path = exact_path(specification["path"])
+            launch = snap.read(launch_path)
+            witness = exact_path(records[launch_path]["run_witness"]["path"])
+            outputs = {exact_path(launch["console"])}
+            if exact_path(records[primary]["run_witness"]["path"]) == witness:
+                outputs.add(primary)
+            counts = {}
+            lines_by_path = {}
+            for output in sorted(outputs):
+                require(output in records, "unbound producer output")
+                lines = snap.raw(output).decode("utf-8").splitlines()
+                lines_by_path[output] = lines
+                counts[output] = sum(
+                    line == prefix or line.startswith(prefix + "  -- ") for line in lines
+                )
+            if not any(counts.values()):
+                continue
+            require(
+                all(n <= 1 for n in counts.values()), "producer_check label appears more than once"
+            )
+            require(
+                not any("  [FAIL] " in line for lines in lines_by_path.values() for line in lines),
+                "producer_check output contains a FAIL check",
+            )
+            checkout = exact_path(launch["source_checkout"])
+            sources = []
+            for driver in launch["driver_files"]:
+                relative = exact_path(driver["path"]).relative_to(checkout)
+                source_path = root / relative
+                raw = source_path.read_bytes()  # fresh rehash, not only the cached source read
+                require(
+                    digest(raw) == driver["sha256"], "producer_check driver changed after launch"
+                )
+                require(
+                    raw == snap.raw(source_path),
+                    "producer_check driver differs from checked source",
+                )
+                if label.encode("utf-8") in raw:
+                    sources.append((driver["sha256"], str(source_path)))
+            require(sources, "producer_check literal absent from launch-hashed driver source")
+            source_hash, source_path = sorted(sources)[0]
+            output = (
+                primary if counts.get(primary) else next(p for p in sorted(outputs) if counts[p])
+            )
+            matches.append(
+                {
+                    "driver_sha256": source_hash,
+                    "driver": source_path,
+                    "label": label,
+                    "output": str(output),
+                    "output_sha256": digest(snap.raw(output)),
+                    "launch": str(launch_path),
+                }
+            )
+        require(len(matches) == 1, "producer_check missing or ambiguous across launches")
+        proof = matches[0]
+        fingerprint = (proof["driver_sha256"], label)
+        require(fingerprint not in fingerprints, "producer_check blanket observation")
+        fingerprints.add(fingerprint)
+        labels.add(label)
+        used_labels[label] = name
+        proofs[name] = proof
+    return proofs
+
+
 def has_summary(value, *, in_container=False):
     if isinstance(value, bool):
         return in_container
@@ -355,7 +501,7 @@ def summary_text(text):
     )
 
 
-def assertions(checks, expected, bound, snap, *, item, proven):
+def assertions(checks, expected, bound, snap, *, item, proven, producer_observations):
     require(
         isinstance(checks, list) and [c["name"] for c in checks] == expected,
         "exact ordered manifest checks required",
@@ -364,8 +510,25 @@ def assertions(checks, expected, bound, snap, *, item, proven):
     for check in checks:
         if "covered_by" in check:
             engine = check["covered_by"]
+            if engine == "producer_check":
+                proof = producer_observations.get(check["name"])
+                require(
+                    proof is not None and proof["label"] == check["producer_check"],
+                    "producer_check not proved",
+                )
+                result.append(
+                    {
+                        "name": check["name"],
+                        "result": "PASS",
+                        "observed": {"covered_by": engine, **proof},
+                    }
+                )
+                continue
             if engine == "producer_completion":
-                approved = dict.fromkeys(PRODUCER_COMPLETION, "verifier._producer_errors + zero FAIL checks; final check_live required")
+                approved = dict.fromkeys(
+                    PRODUCER_COMPLETION,
+                    "verifier._producer_errors + zero FAIL checks; final check_live required",
+                )
                 passed = (engine, check["name"]) in proven
             else:
                 approved = COVERAGE.get((item["id"], item["expect_scenario"]), {}).get(engine, {})
@@ -1080,7 +1243,7 @@ def run(root, map_path, stage_dir, *, install=False):
         )
         require(set(plan["items"]) == set(selected) <= set(live), "missing/unknown LIVE id")
         report["partial"] = "diagnostic_subset" in plan
-        candidates, all_records = [], {}
+        candidates, all_records, producer_labels = [], {}, {}
         stage.mkdir(parents=True)
         for rid in selected:
             item, row = live[rid], plan["items"][rid]
@@ -1111,6 +1274,7 @@ def run(root, map_path, stage_dir, *, install=False):
             )
             bound = set(records)
             launches(row, bound, records, plan, root, snap)
+            producer_observations = producer_checks(row, records, root, snap, producer_labels)
             replay_facts = replay_extra(item, row, bound, root, snap)
             proven = set()
             if isinstance(replay_facts, dict) and replay_facts.get("r3_aggregate") is True:
@@ -1135,7 +1299,13 @@ def run(root, map_path, stage_dir, *, install=False):
                 proven.add("verifier_replay")
             proven.update(producer_completion(item, row, bound, snap))
             checks = assertions(
-                row["checks"], item["expect_checks"], bound, snap, item=item, proven=proven
+                row["checks"],
+                item["expect_checks"],
+                bound,
+                snap,
+                item=item,
+                proven=proven,
+                producer_observations=producer_observations,
             )
             primary = row["primary"]
             doc = {

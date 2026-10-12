@@ -915,6 +915,179 @@ def test_round3_producer_completion_binds_each_r2_leg(packet, mode):
         assert targets(root) == before
 
 
+@pytest.mark.parametrize(
+    "mode",
+    [
+        "primary",
+        "console",
+        "detail",
+        "missing",
+        "twice",
+        "fail",
+        "console-fail",
+        "no-source",
+        "changed-driver",
+        "write-check",
+        "reused",
+        "verdict",
+        "prefix",
+        "bad-indent",
+    ],
+)
+def test_hybrid_producer_check(packet, mode):
+    root, path, tmp = packet
+    round3_map(packet, 17, 17)
+    mapping = json.loads(path.read_text())
+    row = next(iter(mapping["items"].values()))
+    label = "STAGEA hello leaves after the gate first reads running"
+    if mode == "no-source":
+        label = "Invented assertion without source provenance"
+    index = 0 if mode == "verdict" else 1
+    row["checks"][index] = {
+        "name": row["checks"][index]["name"],
+        "covered_by": "producer_check",
+        "producer_check": label,
+    }
+    if mode == "reused":
+        row["checks"][2] = {
+            "name": row["checks"][2]["name"],
+            "covered_by": "producer_check",
+            "producer_check": label,
+        }
+    if mode == "write-check":
+        mapping, row, item = remap_single(packet, "LIVE-HELLO-ADMITTED")
+        facts = Path(row["checks"][0]["assertions"][0]["artifact"])
+        put(facts, {str(i): i + 10 for i in range(len(item["expect_checks"]))})
+        for r in row["secondary_evidence"]:
+            if Path(r["path"]) == facts:
+                r["sha256"] = sha(facts)
+        row["checks"] = [
+            {
+                "name": name,
+                "assertions": [
+                    {"artifact": str(facts), "pointer": f"/{i}", "op": "eq", "expected": i + 10}
+                ],
+            }
+            for i, name in enumerate(item["expect_checks"])
+        ]
+        row["checks"][-1] = {
+            "name": "no Lua-originated memory write",
+            "covered_by": "producer_check",
+            "producer_check": label,
+        }
+    output = Path(row["primary"]["path"])
+    if mode in {"console", "console-fail"}:
+        launch = json.loads(Path(row["launches"][0]["path"]).read_text())
+        output = Path(launch["console"])
+    line = "  [ok] " + label
+    if mode == "detail":
+        line += "  -- frame 17"
+    if mode == "prefix":
+        line += " but not the requested condition"
+    if mode == "bad-indent":
+        line = line.lstrip()
+    raw = output.read_bytes()
+    if mode != "missing":
+        raw += (line + "\n").encode()
+    if mode == "twice":
+        raw += (line + "\n").encode()
+    if mode in {"fail", "console-fail"}:
+        raw += b"  [FAIL] another check\n"
+    output.write_bytes(raw)
+    for r in [row["primary"], *row["secondary_evidence"]]:
+        if Path(r["path"]) == output:
+            r["sha256"] = sha(output)
+    if mode == "changed-driver":
+        driver = root / "tools/polished_live/live.lua"
+        driver.write_bytes(driver.read_bytes() + b"\n-- changed after launch\n")
+    put(path, mapping)
+    before = targets(root)
+    report = b.run(root, path, tmp / "hybrid", install=True)
+    assert report["ok"] is (mode in {"primary", "console", "detail"}), report
+    if mode not in {"primary", "console", "detail"}:
+        assert targets(root) == before
+
+
+def test_hybrid_driver_change_after_launch_validation_refuses(packet, monkeypatch):
+    root, path, tmp = packet
+    round3_map(packet, 17, 17)
+    mapping = json.loads(path.read_text())
+    row = next(iter(mapping["items"].values()))
+    label = "STAGEA hello leaves after the gate first reads running"
+    row["checks"][1] = {
+        "name": row["checks"][1]["name"],
+        "covered_by": "producer_check",
+        "producer_check": label,
+    }
+    primary = Path(row["primary"]["path"])
+    primary.write_bytes(primary.read_bytes() + ("  [ok] " + label + "\n").encode())
+    row["primary"]["sha256"] = sha(primary)
+    put(path, mapping)
+    original = b.producer_checks
+
+    def change_then_check(*args):
+        driver = root / "tools/polished_live/live.lua"
+        driver.write_bytes(driver.read_bytes() + b"\n-- late change\n")
+        return original(*args)
+
+    monkeypatch.setattr(b, "producer_checks", change_then_check)
+    before = targets(root)
+    report = b.run(root, path, tmp / "hybrid-late", install=True)
+    assert not report["ok"] and any("driver changed after launch" in e for e in report["errors"]), (
+        report
+    )
+    assert targets(root) == before
+
+
+def test_hybrid_label_cannot_back_different_checks_across_receipts(packet):
+    root, path, tmp = packet
+    round3_map(packet, 17, 17)
+    mapping = json.loads(path.read_text())
+    gate = next(iter(mapping["items"].values()))
+    label = "STAGEA hello leaves after the gate first reads running"
+    primary = Path(gate["primary"]["path"])
+    primary.write_bytes(primary.read_bytes() + ("  [ok] " + label + "\n").encode())
+    gate["primary"]["sha256"] = sha(primary)
+    facts = Path(gate["checks"][1]["assertions"][0]["artifact"])
+    put(facts, {"observation": 17, **{str(i): {"count": i + 1} for i in range(20)}})
+    for record in gate["secondary_evidence"]:
+        if Path(record["path"]) == facts:
+            record["sha256"] = sha(facts)
+    gate["checks"][1] = {
+        "name": gate["checks"][1]["name"],
+        "covered_by": "producer_check",
+        "producer_check": label,
+    }
+    other = copy.deepcopy(gate)
+    item = next(
+        i
+        for i in json.loads((root / v.MANIFEST).read_text())["items"]
+        if i["id"] == "LIVE-HELLO-ADMITTED"
+    )
+    other["target_sha256"] = sha(root / item["receipt"])
+    other["checks"] = [
+        {
+            "name": name,
+            "assertions": [
+                {"artifact": str(facts), "pointer": f"/{i}/count", "op": "eq", "expected": i + 1}
+            ],
+        }
+        for i, name in enumerate(item["expect_checks"])
+    ]
+    other["checks"][1] = {
+        "name": other["checks"][1]["name"],
+        "covered_by": "producer_check",
+        "producer_check": label,
+    }
+    mapping["items"][item["id"]] = other
+    mapping["diagnostic_subset"].append(item["id"])
+    put(path, mapping)
+    before = targets(root)
+    report = b.run(root, path, tmp / "cross-receipt", install=True)
+    assert not report["ok"] and any("across receipts" in e for e in report["errors"]), report
+    assert targets(root) == before
+
+
 def test_valid_five_families_stage_then_install(packet):
     root, path, tmp = packet
     before = targets(root)
