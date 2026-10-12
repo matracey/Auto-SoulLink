@@ -65,6 +65,8 @@ def empty_status_payload() -> dict:
         "area_states": {},
         "pending_captures": {},
         "unpaired_mons": {},
+        "limbo": {"a": {}, "b": {}},
+        "recovery_candidates": {"a": [], "b": []},
         "encounter_locks": {},
         "rules": {
             "species_lock": False,

@@ -73,7 +73,8 @@ except ImportError:
     from server import calc_files
 import aiohttp_jinja2
 
-from server.admin_auth import setup_admin_auth
+from server.admin_auth import is_admin, setup_admin_auth
+from server.recovery import RecoveryConflict
 from server.templating import resolve_layout, resolve_theme, setup_templating
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -1647,6 +1648,8 @@ class SLinkServer:
 
     def _disconnect_clients(self):
         """Make state replacement visible to clients through their reconnect/hello path."""
+        for player in ("a", "b"):
+            self.state.recovery.disconnect(player)
         for writer in tuple(self._client_connections):
             writer.close()
 
@@ -1941,6 +1944,7 @@ class SLinkServer:
                 writers.discard(writer)
                 if not writers:
                     self._client_writers.pop(player_id)
+                    self.state.recovery.disconnect(player_id)
             for player_id, writers in list(self._presence_writers.items()):
                 if writer not in writers:
                     continue
@@ -3143,6 +3147,8 @@ class SLinkServer:
                 for e in s.links
             ],
             "area_states": {k: v.value for k, v in s.area_states.items()},
+            "limbo": s.recovery.dump()["limbo"],
+            "recovery_candidates": {pid: s.recovery.available(pid) for pid in ("a", "b")},
             "pending_captures": {
                 area: {
                     pid: {
@@ -3291,11 +3297,38 @@ class SLinkServer:
             "tcp_port":     self._tcp_port,
             "game_label":   self._rom_label(),
             "show_calc":    bool(self._calc_profile()),
+            "is_admin":     await is_admin(request),
         })
         return aiohttp_jinja2.render_template("dashboard.html", request, ctx)
 
     async def handle_status_json(self, request):
         return aiohttp_web.json_response(self._build_status_dict())
+
+    async def handle_recovery(self, request):
+        if not await is_admin(request):
+            return aiohttp_web.json_response({"ok": False, "error": "Administrator access required."}, status=401)
+        try:
+            data = await request.json()
+        except (ValueError, UnicodeDecodeError):
+            data = None
+        if (not isinstance(data, dict) or data.get("player") not in ("a", "b")
+                or data.get("action") not in ("rebind", "retire", "detach")
+                or any(not isinstance(data.get(field), str) or not data[field]
+                       for field in ("key", "revision"))
+                or not isinstance(data.get("target_key", ""), str)):
+            return aiohttp_web.json_response({"ok": False, "error": "Invalid recovery request."}, status=400)
+        try:
+            record = self.state.recovery.resolve(
+                self.state, data["player"], data["key"], data["revision"],
+                data["action"], data.get("target_key", ""))
+        except RecoveryConflict as error:
+            return aiohttp_web.json_response({"ok": False, "error": str(error)}, status=409)
+        except OSError:
+            return aiohttp_web.json_response({"ok": False, "error": "Resolution could not be saved."}, status=503)
+        if data["action"] == "rebind":
+            self._migrate_presentation_key(data["player"], data["key"], data["target_key"])
+        self._notify_sse()
+        return aiohttp_web.json_response({"ok": True, "resolution": record})
 
     async def handle_healthz(self, request):
         return aiohttp_web.json_response({"ok": True})
@@ -5827,6 +5860,7 @@ def build_app(srv):
     app.router.add_get("/readyz",      srv.handle_readyz)
     app.router.add_get("/timeline",    srv.handle_timeline_html)
     app.router.add_get("/api/status",  srv.handle_status_json)
+    app.router.add_post("/api/recovery", srv.handle_recovery)
     app.router.add_get("/api/events",  srv.handle_sse)
     app.router.add_post("/api/reset",              srv.handle_reset_api)
     app.router.add_post("/api/inject_link",        srv.handle_inject_link_api)
