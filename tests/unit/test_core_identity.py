@@ -124,6 +124,30 @@ def test_ack_drops_the_pending_alias_only_for_its_own_old_key(lua, ident):
     assert ident.ack(ident, OLD) is not None and not ident.active(ident)
 
 
+def test_multiple_changes_keep_each_alias_until_its_ack(lua, ident):
+    first = party(lua, mon(lua, NEW, 0))
+    ident.begin_alias(ident, OLD, NEW, first[1], first)
+    second = party(lua, mon(lua, OTHER, 0))
+    ident.begin_alias(ident, NEW, OTHER, second[1], second)
+    ident.observe(ident, second)
+    assert find(ident, OLD, second) == (0, None)
+    assert find(ident, NEW, second) == (0, None)
+    assert ident.ack(ident, OLD).new_key == NEW
+    assert find(ident, NEW, second) == (0, None)
+    assert ident.ack(ident, NEW).new_key == OTHER
+    assert not ident.active(ident)
+
+
+def test_rejected_earlier_alias_still_resolves_the_latest_record(lua, ident):
+    first = party(lua, mon(lua, NEW, 0))
+    ident.begin_alias(ident, OLD, NEW, first[1], first)
+    second = party(lua, mon(lua, OTHER, 0))
+    ident.begin_alias(ident, NEW, OTHER, second[1], second)
+    ident.reject(ident, OLD, second)
+    assert find(ident, OLD, second) == (0, None)
+    assert ident.pending_for(ident, NEW) is not None
+
+
 def test_reject_for_another_old_key_retires_nothing(lua, ident):
     p = party(lua, mon(lua, NEW, 0))
     ident.begin_alias(ident, OLD, NEW, p[1], p)

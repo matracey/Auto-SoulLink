@@ -216,7 +216,7 @@ function Session.new(p)
     -- Returns true when the ACK is settled, false while it waits for a readable party.
     local function apply_ack(cmd)
         if not cmd.new_key or cmd.new_key == cmd.old_key then return true end
-        local a = identity.pending
+        local a = identity:pending_for(cmd.old_key)
         if not (a and a.old_key == cmd.old_key and a.new_key == cmd.new_key) then
             log("key_change_ack " .. tostring(cmd.old_key) .. " -> " .. tostring(cmd.new_key)
                 .. ": no valid alias for the pair (" .. (a and "different pair" or "none")
@@ -301,7 +301,7 @@ function Session.new(p)
             -- next complete box census (a census refusal asks for that census now). Console only --
             -- the player sees no refusal for a change that is still in flight (HUD is player-facing
             -- only, owner ruling 2026-09-25).
-            local a = identity.pending
+            local a = identity:pending_for(cmd.old_key)
             if a and a.old_key == cmd.old_key and a.new_key == cmd.new_key then
                 a.retry_gen = game.box_generation and (game.box_generation()) or nil
                 if (cmd.reason == "box census unavailable" or cmd.reason == "party hidden")
@@ -333,13 +333,14 @@ function Session.new(p)
     -- KEY-SCOPE-5: a change refused for a retryable reason goes out again once a complete box
     -- census NEWER than the refusal has gone out (mirrors lua/gen1/client.lua resend_refused_change).
     local function resend_refused_change()
-        local a = identity.pending
         -- `a.msg` is the exact message the driver sent; Identity:begin_alias never sets it, and a
         -- resend with no fields is a key_change nobody can act on. Stay armed, send nothing.
-        if a and a.msg and a.retry_gen and game.box_generation then
-            local gen, complete = game.box_generation()
-            if complete and gen and gen > a.retry_gen then
-                if send("key_change", a.msg) then a.retry_gen = nil end
+        for _, a in pairs(identity.pending_aliases) do
+            if a.msg and a.retry_gen and game.box_generation then
+                local gen, complete = game.box_generation()
+                if complete and gen and gen > a.retry_gen then
+                    if send("key_change", a.msg) then a.retry_gen = nil end
+                end
             end
         end
     end
@@ -362,10 +363,12 @@ function Session.new(p)
         -- the census fresh on its own PC triggers), and a scan that CANNOT land -- a null storage
         -- pointer across a menu or a battle -- would otherwise walk every box every 30 frames
         -- for the rest of the session.
-        local a = identity.pending
-        if a and a.retry_gen and game.box_generation and game.rescan_boxes then
-            local _, complete = game.box_generation()
-            if complete == false then game.rescan_boxes() end
+        for _, a in pairs(identity.pending_aliases) do
+            if a.retry_gen and game.box_generation and game.rescan_boxes then
+                local _, complete = game.box_generation()
+                if complete == false then game.rescan_boxes() end
+                break
+            end
         end
         local f = game.tick_fields()
         -- the resend rides the tick that carries the newer census: a tick that went nowhere

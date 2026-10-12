@@ -37,14 +37,14 @@ local function matches(m, e) return same_bytes(m.nickname_bytes, e.nick) and sam
 -- p.key(m) -> string: the generation's identity key for a decoded mon.
 function Identity.new(p)
     return setmetatable({ key = assert(p and p.key, "identity: key(m) required"),
-                          pending = nil, retired_alias = {} }, Identity)
+                          pending = nil, pending_aliases = {}, retired_alias = {} }, Identity)
 end
 
 -- Observe one alias against a readable party: latches ambiguous/lost, returns the sole match.
 function Identity:observe_one(a, party)
     local slot, mon, n = nil, nil, 0
     for _, m in ipairs(party) do
-        if self.key(m) == a.new_key and matches(m, a.evidence) then
+        if self.key(m) == (a.target_key or a.new_key) and matches(m, a.evidence) then
             n = n + 1
             slot, mon = m.slot, m
         end
@@ -59,45 +59,57 @@ end
 -- Every readable frame (pure pass, nothing refreshed): an edit interval in which the changed
 -- record stops matching, however briefly, latches `lost` before a twin could become the match.
 function Identity:observe(party)
-    if self.pending then self:observe_one(self.pending, party) end
+    for _, a in pairs(self.pending_aliases) do self:observe_one(a, party) end
     for _, r in pairs(self.retired_alias) do self:observe_one(r, party) end
 end
 
-function Identity:active() return self.pending ~= nil or next(self.retired_alias) ~= nil end
+function Identity:active() return next(self.pending_aliases) ~= nil or next(self.retired_alias) ~= nil end
+
+function Identity:pending_for(key) return self.pending_aliases[key] end
 
 -- A key_change was observed (and sent): hold the old->new alias until the server answers.
 -- `party` (optional) is observed at once, so a twin present now latches ambiguity for good.
 function Identity:begin_alias(old_key, new_key, mon, party, since)
+    for _, aliases in ipairs({self.pending_aliases, self.retired_alias}) do
+        for _, a in pairs(aliases) do
+            if (a.target_key or a.new_key) == old_key then
+                if matches(mon, a.evidence) then a.target_key = new_key else a.lost = true end
+            end
+        end
+    end
     self.pending = { old_key = old_key, new_key = new_key, evidence = evidence_of(mon), since = since }
+    self.pending_aliases[old_key] = self.pending
     if party then self:observe_one(self.pending, party) end
     return self.pending
 end
 
 -- key_change_ack: the rename is committed server-side; the alias ends. Returns it, or nil.
 function Identity:ack(old_key)
-    local a = self.pending
-    if a and a.old_key == old_key then self.pending = nil; return a end
-    return nil
+    local a = self.pending_aliases[old_key]
+    self.pending_aliases[old_key] = nil
+    if self.pending == a then self.pending = next(self.pending_aliases) and select(2, next(self.pending_aliases)) or nil end
+    return a
 end
 
 -- key_change_rejected: the cartridge cannot be rolled back, so the retirement the server queues
 -- under the OLD key must find the record by the key it physically holds. Returns the retired
 -- alias, or nil when the rejection is not for the pending alias.
 function Identity:reject(old_key, party)
-    local a = self.pending
-    if not (a and a.old_key == old_key) then return nil end
-    local r = { new_key = a.new_key, evidence = a.evidence, ambiguous = a.ambiguous, lost = a.lost }
+    local a = self:pending_for(old_key)
+    if not a then return nil end
+    local r = { new_key = a.new_key, target_key = a.target_key,
+                evidence = a.evidence, ambiguous = a.ambiguous, lost = a.lost }
     self.retired_alias[old_key] = r
     if party then self:observe_one(r, party) end
-    self.pending = nil
+    self:ack(old_key)
     return r
 end
 
 -- A record carrying an aliased key left the party natively (PC, daycare, release, trade): the
 -- alias's authority ends for good. key == nil (unreadable departure) hits every alias.
 function Identity:departure(key)
-    local function hit(a) if a and (key == nil or key == a.new_key) then a.lost = true end end
-    hit(self.pending)
+    local function hit(a) if a and (key == nil or key == (a.target_key or a.new_key)) then a.lost = true end end
+    for _, a in pairs(self.pending_aliases) do hit(a) end
     for _, r in pairs(self.retired_alias) do hit(r) end
 end
 
@@ -107,6 +119,7 @@ function Identity:forget(key) self.retired_alias[key] = nil end    -- its memori
 -- The save was cleared (reset / new game): every alias belonged to the session that ended.
 function Identity:clear()
     self.pending = nil
+    for k in pairs(self.pending_aliases) do self.pending_aliases[k] = nil end
     for k in pairs(self.retired_alias) do self.retired_alias[k] = nil end
 end
 
@@ -132,7 +145,7 @@ function Identity:find_party_slot(key, party)
         end
     end
     if not slot then
-        local a = self.pending
+        local a = self:pending_for(key)
         if a and a.old_key == key then
             local aslot, amon, why = self:observe_one(a, party)
             if aslot or why then return aslot, amon, party, why end

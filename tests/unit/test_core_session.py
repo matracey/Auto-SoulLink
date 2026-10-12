@@ -181,6 +181,24 @@ class World:
 
 # -- falsifier 1: pause, never drop -------------------------------------------------------
 
+def test_two_identity_acknowledgements_migrate_a_held_command_through_both_keys():
+    w = World()
+    w.step_to(60)
+    w.st.checkpoint = False
+    w.set_party((OLD, 0))
+    w.command(cmd="box_mon", key=OLD)
+    w.step()
+    for before, after in ((OLD, NEW), (NEW, A)):
+        w.set_party((after, 0))
+        p = w.st.party
+        w.identity.begin_alias(w.identity, before, after, p[1], p)
+    w.command(cmd="key_change_ack", old_key=OLD, new_key=NEW, migrated=True)
+    w.command(cmd="key_change_ack", old_key=NEW, new_key=A, migrated=True)
+    w.step()
+    assert w.q["items"][1].key == A
+    assert not w.identity.active(w.identity)
+
+
 def test_falsifier_unreadable_party_pauses_writes_keeps_the_queue_and_one_live_validation_resumes():
     w = World()
     w.step_to(60)
