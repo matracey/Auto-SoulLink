@@ -121,7 +121,7 @@ def test_scan_script_sites_and_npc_trades_match_the_pack(roms):
     """P8: the species/form/level at all 53 resolved script sites equal script_sites.json and the statics/gifts
     pack rows of the same source line; the 9 NPC trades equal gifts.json npc_trades, on release AND overlay."""
     release, overlay = roms
-    sites = [s for s in json.loads((REPO / "data/polished/script_sites.json").read_text(encoding="utf-8"))["sites"]
+    sites = [s for s in _pack("script_sites")["sites"]
              if s["offset"] is not None]
     rows = {r["source"].split()[-1]: r for r in [*_pack("static_encounters")["encounters"], *_pack("gifts")["gifts"]]}
     for rom in (release, overlay):
@@ -199,7 +199,7 @@ def test_the_overlay_write_domain_covers_every_final_ups_byte():
     assert any(lo == 0xC030 and hi - lo == 6 for lo, hi in spans), spans
     assert spans[-1][1] <= 0x7E * 0x4000 + 0x4000
     # the header checksums ($14E-$14F) ride inside the ROM0 bridge's run now, not beside it
-    assert any(lo <= 0x14E and 0x14F <= hi for lo, hi in spans), spans
+    assert any(lo <= 0x14E and hi >= 0x14F for lo, hi in spans), spans
 
 
 @pytest.mark.parametrize("offset, what", [(0x70, "companion overlay"), (0xDA8, "companion overlay"),

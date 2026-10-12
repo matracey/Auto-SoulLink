@@ -155,8 +155,8 @@ disagree, **the later one wins** and the earlier one carries the marker.
 | `data/polished/polished_slink.sym` / `.map` | `tools/build_polished_companion.py` | `python tools/build_polished_companion.py --check` |
 | `data/polished/build_provenance.json` | `tools/build_polished_syms.py` | as above |
 | `data/polished/overlay_provenance.json` | `tools/build_polished_companion.py` | as above |
-| `data/polished/upr_polished_entries.ini` | `tools/gen_upr_polished_ini.py` | `python tools/gen_upr_polished_ini.py --check` |
-| `data/polished/script_sites.json` | `tools/gen_polished_script_sites.py` | `python tools/gen_polished_script_sites.py --check` |
+| `data/games/polished_crystal/upr_polished_entries.ini` | `tools/gen_upr_polished_ini.py` | `python tools/gen_upr_polished_ini.py --check` |
+| `data/games/polished_crystal/script_sites.json` | `tools/gen_polished_script_sites.py` | `python tools/gen_polished_script_sites.py --check` |
 | `data/polished/free_space.txt` | `tools/build_polished_syms.py` | as above |
 | `data/games/polished_crystal/*.json`, `charmap.lua` | `tools/gen_polished_pack.py` | `python tools/gen_polished_pack.py --check` |
 | `data/games/polished_crystal/profile.json` | `tools/gen_polished_profile.py` | `python tools/gen_polished_profile.py --check` |

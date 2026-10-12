@@ -1,7 +1,7 @@
 """P8 (the Polished counterpart of Gen 2's R4): a randomized Polished companion cartridge answers from its own bytes.
 
 server/adapters/gen2_polished.scan_randomized reads the wild, fishing, tree and contest tables, the species/level at
-every resolved script site (data/polished/script_sites.json: starters, statics, gifts) and the NPC trades of a
+every resolved script site (data/games/polished_crystal/script_sites.json: starters, statics, gifts) and the NPC trades of a
 rand_overlay cartridge; the player's adapter adopts them (use_rom_encounters) and a randomized adapter never answers
 with the shipped tables. ingest_rom_content takes only the server's bytes whose sha1 is the contract pin; anything a
 client reports stays unqualified. Clean and overlay adapters are unchanged.
