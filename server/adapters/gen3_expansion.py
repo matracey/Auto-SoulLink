@@ -180,9 +180,7 @@ PROFILE_PACK = Path(__file__).resolve().parents[2] / "data/games/gen3_exp/28877d
 # same profile.derived block lua/gen3/reads.lua decodes with: tools/gen_gen3_profile.py
 # generates it from this build's compiler facts (facts.json bitfields), so the server and
 # the client share one source (X2).
-LAYOUT_KEYS = ("MON_SPECIES_MASK", "MON_ITEM_MASK", "MON_MOVE_MASK", "EXPERIENCE_MASK",
-               "NICKNAME_EXTRA", "POKEBALL_FIELD", "ABILITY_NUM_FIELD", "PP_MASK",
-               "MARKINGS_MASK", "SHINY_MODIFIER_FIELD")
+LAYOUT_KEYS = gen3_codec.EXPANSION_LAYOUT_KEYS
 _DERIVED = json.loads(PROFILE_PACK.read_text(encoding="utf-8"))["titles"][
     "emerald_expansion_28877d73"]["derived"]
 EXPANSION_PARTY_LAYOUT = gen3_codec.validate_expansion_layout(

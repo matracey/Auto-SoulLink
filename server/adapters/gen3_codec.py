@@ -229,6 +229,9 @@ def _validate_mask(label: str, value: object) -> None:
 
 _MASK_KEYS = ("MON_SPECIES_MASK", "MON_ITEM_MASK", "MON_MOVE_MASK",
               "EXPERIENCE_MASK", "PP_MASK", "MARKINGS_MASK")
+EXPANSION_LAYOUT_KEYS = _MASK_KEYS + (
+    "NICKNAME_EXTRA", "POKEBALL_FIELD", "ABILITY_NUM_FIELD", "SHINY_MODIFIER_FIELD",
+)
 
 
 def validate_expansion_layout(layout: dict | None) -> dict:
@@ -848,9 +851,12 @@ def _record_layout(title: str, layout: dict | None) -> dict:
     """The masked-record layout a title's party/box decode needs: none for vanilla, and
     for expansion the build's own (a vanilla decode of an expansion record reads the new
     bit lanes as species/moves/experience, so it is refused rather than guessed)."""
-    if title == TITLE_EXPANSION and not layout:
-        raise ValueError("expansion records need the build's layout (profile.derived)")
-    return validate_expansion_layout(layout)
+    layout = validate_expansion_layout(layout)
+    if title == TITLE_EXPANSION:
+        missing = [key for key in EXPANSION_LAYOUT_KEYS if key not in layout]
+        if missing:
+            raise ValueError(f"expansion records need the build's layout; missing {', '.join(missing)}")
+    return layout
 
 
 def party_from_save(image: bytes, rr: bool = False, title: str = TITLE_FRLG,

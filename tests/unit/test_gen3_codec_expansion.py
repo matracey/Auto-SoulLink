@@ -50,7 +50,8 @@ def _mon(personality, species):
             "sp_defense": 10}
 
 
-def test_synthetic_expansion_flash_round_trips_through_the_masked_layout():
+@pytest.fixture
+def expansion_image():
     layout = C.slot_layout(title=T)
     sb2_size, sb1_size = C._TITLE_SAVE_SIZES[T]
     count_off, party_off = C._TITLE_PARTY_OFFSETS[T]
@@ -68,8 +69,11 @@ def test_synthetic_expansion_flash_round_trips_through_the_masked_layout():
         chunk = blocks[entry["object"]][entry["offset"]:entry["offset"] + entry["size"]]
         image[entry["id"] * C.SECTOR_SIZE:(entry["id"] + 1) * C.SECTOR_SIZE] = \
             C.write_sector(chunk, entry["id"], 2, layout)   # counter 2 -> slot 0
-    image = bytes(image)
+    return bytes(image)
 
+
+def test_synthetic_expansion_flash_round_trips_through_the_masked_layout(expansion_image):
+    image = expansion_image
     assert C.qualify_flash(image, title=T) == (True, "ok")
     # the vanilla Emerald layout checksums the last storage sector over too few bytes
     assert C.qualify_flash(image, title="emerald")[0] is False
@@ -85,3 +89,17 @@ def test_expansion_records_refuse_a_decode_without_the_builds_layout():
         C.party_from_save(image, title=T)
     with pytest.raises(ValueError, match="layout"):
         C.boxes_from_save(image, title=T)
+
+
+@pytest.mark.parametrize("decode", [C.party_from_save, C.boxes_from_save])
+@pytest.mark.parametrize("missing", list(EXPANSION_PARTY_LAYOUT))
+def test_expansion_save_requires_every_record_field(expansion_image, decode, missing):
+    layout = {key: value for key, value in EXPANSION_PARTY_LAYOUT.items() if key != missing}
+    with pytest.raises(ValueError, match=missing):
+        decode(expansion_image, title=T, layout=layout)
+
+
+@pytest.mark.parametrize("decode", [C.party_from_save, C.boxes_from_save])
+def test_unrelated_nonempty_layout_cannot_enable_expansion_decode(expansion_image, decode):
+    with pytest.raises(ValueError, match="layout"):
+        decode(expansion_image, title=T, layout={"unrelated": 1})
