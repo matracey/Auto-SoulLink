@@ -224,6 +224,8 @@ These are DEV results, not PHYSICAL receipts. The ROM and the emulator are the s
 `75c7a5dc...`), copied into the new lane `F:/slink-work/lanes/pol-live2/`. The client code is this tree at
 `78dddd8b`, which includes the hello gate (`read_overworld_gate`) and `c442a248` (census rescan, `supports_box_mon`).
 
+2026-10-11: supports_box_mon retired by the review fixes; box_mon is always queued.
+
 | run | what | EmuHawk PID | server PID | evidence |
 |---|---|---|---|---|
 | A1 | `POL_STAGES=123 harness.py live` | 53384 | 51724 | `runA1/`, `runA1.out` |

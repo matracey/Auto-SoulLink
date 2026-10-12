@@ -15,7 +15,7 @@ its old capability flags, OPEN counts and overlays do not override this section.
 | Trade binder | Cancel is wired before APPLY; publication uses the fresh-generation boundary. Native responder-entry observation gates the driver's consent input. shipped-001 FAIL remains retained; driver-only fix produced shipped-002 PASS. |
 | Rival swap | Manager option enabled; configured RIVAL0/1/2 classes. `LIVE-RIVAL-SWAP` proves one native 0F:47DD enemy send-in for RIVAL0/id3 with a scripted second identity, not all rivals. |
 | Explosion and plain faints | Manager Explode option enabled. Three required DEV receipts cover native Explosion, active faint and bench hold/overworld faint, exact writes and commanded echo suppression. TEST HOST command delivery is disclosed. |
-| Box operations and memorialize | `supports_box_mon=True`; memorialize is implemented for party and box origins, box20/index19. RC contract is legacy parity best-effort; three-outcome owed-burial persistence is post-RC. Fresh a/b/d/e/f `LIVE-WRITES-OVERWORLD` closes `OPEN-MEMORIALIZE`; exact diffs and controls PASS. |
+| Box operations and memorialize | Party sync and box writes are always composed; `box_mon` is always queued. Memorialize is implemented for party and box origins, box20/index19. RC contract is legacy parity best-effort; three-outcome owed-burial persistence is post-RC. Fresh a/b/d/e/f `LIVE-WRITES-OVERWORLD` closes `OPEN-MEMORIALIZE`; exact diffs and controls PASS. |
 | Natural faint / whiteout | `LIVE-DUO-NATURAL-FAINT` (S2n) closes `OPEN-WRITE-PATH`; `LIVE-DUO-NATURAL-WHITEOUT` (S4n) is also required. S4n's accepted bar is event sent plus partner deaths via per-mon faint; it does not prove the whiteout handler caused those deaths. |
 
 No self-promotion from DEV to PHYSICAL or release approval is implied. Remaining receipt/source
@@ -46,6 +46,8 @@ Recorded 2026-10-08 from coordinator card `g2p-decisions`. These are relayed own
 * In-battle write negatives are unit/model-covered for the RC. The only remaining `OPEN-WRITE-PATH` live requirement is a **PHYSICAL in-battle natural faint** (duo S2n), not another commanded-kill run.
 * Whiteout's accepted S4n obligation is **whiteout event sent + all partners die via per-mon faint**. It does not claim that `_handle_whiteout` caused the deaths live; that handler stays unit-covered.
 * Rival swap, commanded active-faint and bench-faint PASS live in `F:/slink-work/lanes/pol-explode2`. `OPEN-EXPLODE-RIVAL` now waits for the client explode echo fix (in flight) and the capability/Manager flip at freeze. No new receipts or PHYSICAL promotion in this update; rebind at the frozen cut.
+
+2026-10-11: supports_box_mon retired by the review fixes; box_mon is always queued.
 
 **2026-10-09 — RC 1 memorial ruling and later lane evidence (card `g2p-rcmemo`)**
 * Memorialize is **in RC 1**: both mons of a dead linked pair must move to **memorial box 20, index 19**. `OPEN-MEMORIALIZE` is OPEN/blocking: client refuses at `polished_overworld.lua:902/:1038`; executor per `MEMORIALIZE.md` is in flight (`pol-memorial`), then a live `writes_run` memorialize leg receipt is required at freeze.
@@ -112,6 +114,8 @@ integrated overlay).
 | Polished release verifier | IMPLEMENTED and MODEL-TESTED. Its verdict is red | n/a | `tools/verify_polished_release.py`, manifest `tests/polished_release_requirements.json`, report `RC_STATUS.md`; false-green paths closed in `6fb8ea629` | `tests/unit/test_verify_polished_release.py` (90). Known red: see the header |
 | C-5 randomized duo gate | PARTIAL. The gate is real release evidence: `c5_gate_errors` (`tools/verify_gen2_release.py:2462`) requires an installed, sound packet and a PHYSICAL PASS per cell at the current digest. The installer `tools/c5_install_receipts.py` has a link-safe destination and an unpinned-file gate (`verify_gen2_release.py:2458`). **Receipts are NOT installed** (`tests/fixtures/gen2/receipts/c5/` does not exist) | NO | `tools/c5_runner.py` (needs EmuHawk, about 20 min, run at freeze) | `tests/unit/test_verify_gen2_c5.py`, `tests/unit/test_c5_install.py` |
 
+2026-10-11: supports_box_mon retired by the review fixes; box_mon is always queued.
+
 **Note W (box_mon / force_faint).** HISTORICAL (the committed `docs/polished/LIVE_WRITES.md` was updated 2026-10-06 and now records (a), (b), (d) PASS on `6e43f8d9`, bank 1, one mon; only (c) is NOT RUN). The earlier state of that document: it said
 check (a), (b) and (c) are NOT RUN (the save fixture did not load). The later driver commits
 `9fd4619a5` (a) and `dfeec7555` (b) fixed the harness, and the lane result file
@@ -169,7 +173,11 @@ The original ruling kept both flags **False**. `supports_box_mon` became True in
 10. **Explode (historical gap, current evidence 2026-10-09):** explode, active-faint and bench-faint PASS after echo fix `ea90b9fd3` in `pol-explodefix`; in-battle negatives remain unit/model-covered for the RC. `OPEN-EXPLODE-RIVAL` waits for capability/Manager flip and receipt binding at freeze.
 11. **Evidence is for a past overlay:** the live PASS names `6e43f8d9`; the current overlay differs. Re-run on the frozen cut.
 
+2026-10-11: supports_box_mon retired by the review fixes; box_mon is always queued.
+
 ### Status of the box-command gaps (source update 2026-10-08 at `cb477bc1`)
 Closed in code: gaps 1 and 2 (withdraw ack and `party full` retry, `O.client_boxes`, commit `4bda8793d`, composed at `lua/gen2/entry.lua:910-913`); gap 7 egg/mail executor guards (`647ffe59f`). Gap 3's three-outcome contract is **GO, Gen 3 first (owner 2026-10-06, relayed above)**, not waiting for an owner ruling; its Polished implementation/integration and failure qualification remain open. Rival source writer is composed at `entry.lua:917-923`, REFUSING by default; SYNTH staging is authorised with disclosure, but the rival hook at `0f:47DD`, live PC semantics and class set remain open. The plain-faint path has opt-in settlement composition at `entry.lua:924-927`; parity + plain-faint scope is DECIDED, not qualification. Gaps 4 (memorialize), 5 (last-healthy parity), 6 (live bank-2/native-reload evidence), 8-11 retain the qualifications/limits above. `supports_box_mon()` and `supports_explode_mode()` remain **False** (`server/adapters/gen2_polished.py:751-763`); approved decisions do not flip capabilities.
 
 **2026-10-09 supersession:** the capability-False and probe-only statements in the dated 2026-10-08 paragraph above are historical. `supports_box_mon=True` since `8c1b841e2`; rival swap and active/bench faint now have `pol-explode2` live passes. The current RC requirements are the four owner rulings recorded above, not the old live-negative gate.
+
+2026-10-11: supports_box_mon retired by the review fixes; box_mon is always queued.
