@@ -39,6 +39,10 @@ def packet(tmp_path):
     put(root / "lua/model.lua", b"return 1\n")
     put(root / v.PROVENANCE, {"output": {"sha1": v.overlay_sha1(ROOT)}})
     put(root / "patch/dist/SLink-Polished.ups", b"MODEL")
+    put(
+        root / "data/polished/polished_slink.sym",
+        b"00:DC00 wPartyCount\n00:DD00 wPartyMonNicknames\n02:D800 wPokeDB1UsedEntries\n02:D820 wPokeDB2UsedEntries\n",
+    )
     for name in [
         "tools/verify_polished_release.py",
         "tools/polished_live/live.lua",
@@ -287,6 +291,322 @@ def targets(root):
     return {
         str(p): p.read_bytes() for p in (root / "tests/fixtures/polished/receipts").glob("*.json")
     }
+
+
+def remap_single(packet, rid):
+    root, path, tmp = packet
+    mapping = json.loads(path.read_text())
+    row = next(iter(mapping["items"].values()))
+    item = next(x for x in json.loads((root / v.MANIFEST).read_text())["items"] if x["id"] == rid)
+    row["target_sha256"] = sha(root / item["receipt"])
+    mapping["items"] = {rid: row}
+    mapping["diagnostic_subset"] = [rid]
+    return mapping, row, item
+
+
+@pytest.mark.parametrize(
+    "attack",
+    [
+        "regex-disguise",
+        "regex-subspan",
+        "regex-padding",
+        "pointer-container",
+        "nested-summary",
+        "pointer-alias",
+        "raw-regex-alias",
+    ],
+)
+def test_round2_summary_and_blanket_bypasses_refuse(packet, attack):
+    root, path, tmp = packet
+    rid = (
+        "LIVE-WRITES-OVERWORLD"
+        if "container" in attack or "summary" in attack
+        else "LIVE-HELLO-GATE-FRAME"
+    )
+    if rid == "LIVE-WRITES-OVERWORLD":
+        writes_packet(packet)  # valid raw diff, so no earlier gate masks this assertion regression
+        mapping = json.loads(path.read_text())
+        row = mapping["items"][rid]
+        item = next(
+            i for i in json.loads((root / v.MANIFEST).read_text())["items"] if i["id"] == rid
+        )
+    else:
+        mapping, row, item = remap_single(packet, rid)
+    facts = Path(row["checks"][0]["assertions"][0]["artifact"])
+    count = len(item["expect_checks"])
+    if attack in {"pointer-container", "nested-summary"}:
+        value = [{"what": str(i), "ok": True, "detail": "MODEL echo"} for i in range(count)]
+        put(facts, {"checks" if attack == "pointer-container" else "observations": value})
+    else:
+        put(facts, {str(i): {"count": 1} for i in range(count)})
+    primary = Path(row["primary"]["path"])
+    primary.write_bytes(b"frame 27 raw_count 1\nRESULT: PASS\n")
+    row["primary"]["sha256"] = sha(primary)
+    for record in row["secondary_evidence"]:
+        if Path(record["path"]) == facts:
+            record["sha256"] = sha(facts)
+    checks = []
+    for i, name in enumerate(item["expect_checks"]):
+        if attack.startswith("regex") or attack == "raw-regex-alias":
+            pattern = {
+                "regex-disguise": r"^RESULT: P[A]SS$",
+                "regex-subspan": r"P[A]SS",
+                "regex-padding": r"^RESULT: P[A]SS$",
+                "raw-regex-alias": r"^frame 27 raw_count 1$",
+            }[attack]
+            assertion = {
+                "artifact": str(primary),
+                "op": "regex_count",
+                "pattern": pattern + "(?:)" * i,
+                "expected": 1,
+            }
+        else:
+            prefix = "checks" if attack == "pointer-container" else "observations"
+            pointer = f"/{i}/count" if attack == "pointer-alias" else f"/{prefix}/{i}"
+            assertion = {
+                "artifact": str(facts),
+                "op": "eq",
+                "pointer": pointer,
+                "expected": 1 if attack == "pointer-alias" else value[i],
+            }
+        checks.append({"name": name, "assertions": [assertion]})
+    row["checks"] = checks
+    put(path, mapping)
+    before = targets(root)
+    report = b.run(root, path, tmp / "bypass", install=True)
+    assert not report["ok"], report
+    assert targets(root) == before
+
+
+def test_round2_leftover_recovery_does_not_prevent_rollback(packet, monkeypatch):
+    root, path, tmp = packet
+    replace = b.os.replace
+    before = targets(root)
+    for target in before:
+        Path(target + ".rebind3-rollback").write_bytes(b"OLD unrelated recovery")
+    calls = 0
+
+    def fail_second(source, target):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise OSError("second candidate failed")
+        return replace(source, target)
+
+    monkeypatch.setattr(b.os, "replace", fail_second)
+    report = b.run(root, path, tmp / "leftover", install=True)
+    assert not report["ok"]
+    assert targets(root) == before, report
+    assert not report.get("unrecovered"), report
+
+
+def test_round2_staged_bytes_changed_after_judgment_refuse(packet, monkeypatch):
+    root, path, tmp = packet
+    original = b.install_all
+
+    def tamper(candidates):
+        candidates[0][1].write_bytes(b'{"tampered":true}\n')
+        return original(candidates)
+
+    monkeypatch.setattr(b, "install_all", tamper)
+    before = targets(root)
+    report = b.run(root, path, tmp / "staged-race", install=True)
+    assert not report["ok"], report
+    assert targets(root) == before
+
+
+def test_round2_failed_rollback_names_unrecovered_target(packet, monkeypatch):
+    root, path, tmp = packet
+    before = targets(root)
+    replace = b.os.replace
+    calls = 0
+
+    def fail_install_and_restore(source, target):
+        nonlocal calls
+        calls += 1
+        if calls >= 2:
+            raise OSError("MODEL media refuses replacement")
+        return replace(source, target)
+
+    monkeypatch.setattr(b.os, "replace", fail_install_and_restore)
+    report = b.run(root, path, tmp / "unrecovered", install=True)
+    assert not report["ok"] and report["partial"] and not report["installed"]
+    changed = {p for p, data in targets(root).items() if data != before[p]}
+    assert changed == {r["target"] for r in report["unrecovered"]}
+    assert len(changed) == 1 and report["rollback_complete"] is False
+    for r in report["unrecovered"]:
+        assert Path(r["recovery"]).read_bytes() == before[r["target"]]
+
+
+def test_round2_late_staged_change_rolls_back_earlier_candidate(packet, monkeypatch):
+    root, path, tmp = packet
+    before = targets(root)
+    replace = b.os.replace
+
+    def late_change(source, target):
+        result = replace(source, target)
+        if Path(source).parent == tmp / "late":
+            for staged in (tmp / "late").glob("*.json"):
+                staged.write_bytes(b"{}")
+        return result
+
+    monkeypatch.setattr(b.os, "replace", late_change)
+    report = b.run(root, path, tmp / "late", install=True)
+    assert not report["ok"] and targets(root) == before, report
+
+
+def writes_packet(packet):
+    root, path, tmp = packet
+    mapping, row, item = remap_single(packet, "LIVE-WRITES-OVERWORLD")
+    facts = Path(row["checks"][0]["assertions"][0]["artifact"])
+    put(facts, {str(i): {"count": i + 1} for i in range(len(item["expect_checks"]))})
+    for record in row["secondary_evidence"]:
+        if Path(record["path"]) == facts:
+            record["sha256"] = sha(facts)
+    row["checks"] = [
+        {
+            "name": name,
+            "assertions": [
+                {"artifact": str(facts), "pointer": f"/{i}/count", "op": "eq", "expected": i + 1}
+            ],
+        }
+        for i, name in enumerate(item["expect_checks"])
+    ]
+    before = {
+        "cart_hex": "00" * 32768,
+        "party_start": 0xDC00,
+        "party_hex": "00" * 322,
+        "allocation": {str(a): 0 for start in (0x2800, 0x2820) for a in range(start, start + 26)},
+    }
+    operations, expected = {}, {}
+    for i, leg in enumerate(("a", "b", "d", "e", "f")):
+        after = copy.deepcopy(before)
+        after["party_hex"] = "00" * i + "01" + "00" * (321 - i)
+        expected[leg] = [f"party@{0xDC00 + i}"]
+        operations[leg] = {
+            "before": copy.deepcopy(before),
+            "after": after,
+            "changed": [{"kind": "party", "a": 0xDC00 + i}],
+            "expected": expected[leg],
+        }
+    operations["a"]["writes"] = [
+        {"op": "write_u8", "addr": 0xDC00, "v": 1, "domain": "System Bus", "frame": 50}
+    ]
+    trace = put(
+        facts.parent / "write-trace.json",
+        {"rom_sha1": mapping["overlay_sha1"], "operations": operations},
+    )
+    row["secondary_evidence"].append(
+        {
+            "path": str(trace),
+            "sha256": sha(trace),
+            "run_witness": row["primary"]["run_witness"].copy(),
+        }
+    )
+    row["roles"]["trace"] = str(trace)
+    row["write_expected"] = expected
+    put(path, mapping)
+    return trace
+
+
+@pytest.mark.parametrize(
+    "fault",
+    [
+        None,
+        "missing-operations",
+        "summary-only",
+        "changed-image",
+        "claimed-diff",
+        "expanded-allowance",
+        "short-image",
+        "missing-tap",
+        "wrong-tap",
+        "outside-tap",
+    ],
+)
+def test_round2_writes_requires_raw_recomputed_diff(packet, fault):
+    root, path, tmp = packet
+    trace = writes_packet(packet)
+    doc = json.loads(trace.read_text())
+    if fault == "missing-operations":
+        doc.pop("operations")
+    elif fault == "summary-only":
+        doc["operations"] = {k: {"ok": True, "detail": "diff PASS"} for k in "abdef"}
+    elif fault == "changed-image":
+        doc["operations"]["a"]["after"]["cart_hex"] = "01" + "00" * 32767
+    elif fault == "claimed-diff":
+        doc["operations"]["b"]["changed"] = []
+    elif fault == "expanded-allowance":
+        doc["operations"]["d"]["expected"].append("cart@0")
+    elif fault == "short-image":
+        doc["operations"]["e"]["before"]["cart_hex"] = "00"
+        doc["operations"]["e"]["after"]["cart_hex"] = "00"
+    elif fault == "missing-tap":
+        doc["operations"]["a"].pop("writes")
+    elif fault == "wrong-tap":
+        doc["operations"]["a"]["writes"][0]["v"] = 2
+    elif fault == "outside-tap":
+        doc["operations"]["a"]["writes"].append(
+            {"op": "write_u8", "addr": 0xDC10, "v": 0, "domain": "System Bus", "frame": 50}
+        )
+    put(trace, doc)
+    mapping = json.loads(path.read_text())
+    for record in next(iter(mapping["items"].values()))["secondary_evidence"]:
+        if Path(record["path"]) == trace:
+            record["sha256"] = sha(trace)
+    put(path, mapping)
+    before = targets(root)
+    report = b.run(root, path, tmp / "writes", install=True)
+    assert report["ok"] is (fault is None), report
+    if fault:
+        assert targets(root) == before
+
+
+@pytest.mark.parametrize("mode", ["mixed", "unlisted", "wrong-scenario", "failed-replay"])
+def test_round2_covered_checks_require_named_successful_replay(packet, mode):
+    root, path, tmp = packet
+    mapping = json.loads(path.read_text())
+    rid = "LIVE-DUO-NATURAL-FAINT"
+    row = mapping["items"][rid]
+    name = (
+        "the server marks the link dead after the kill"
+        if mode != "unlisted"
+        else row["checks"][0]["name"]
+    )
+    row["checks"] = [
+        {"name": c["name"], "covered_by": "verifier_replay"} if c["name"] == name else c
+        for c in row["checks"]
+    ]
+    if mode == "failed-replay":
+        primary = Path(row["primary"]["path"])
+        doc = json.loads(primary.read_text())
+        doc["evidence"]["wire"]["a"].append(copy.deepcopy(doc["evidence"]["wire"]["a"][-1]))
+        put(primary, doc)
+        row["primary"]["sha256"] = sha(primary)
+    if mode == "wrong-scenario":
+        manifest_path = root / v.MANIFEST
+        manifest = json.loads(manifest_path.read_text())
+        next(i for i in manifest["items"] if i["id"] == rid)["expect_scenario"] = "duo/unsupported"
+        put(manifest_path, manifest)
+        mapping["manifest_sha256"] = sha(manifest_path)
+        for r in mapping["items"].values():
+            launch = Path(r["launches"][0]["path"])
+            doc = json.loads(launch.read_text())
+            doc["requirement_manifest_sha256"] = sha(manifest_path)
+            put(launch, doc)
+            end = launch.with_name("job.exit.json")
+            doc = json.loads(end.read_text())
+            doc["launch_sha256"] = sha(launch)
+            put(end, doc)
+            for record in r["secondary_evidence"]:
+                if Path(record["path"]) in (launch, end):
+                    record["sha256"] = sha(Path(record["path"]))
+    put(path, mapping)
+    before = targets(root)
+    report = b.run(root, path, tmp / "covered", install=True)
+    assert report["ok"] is (mode == "mixed"), report
+    if mode != "mixed":
+        assert targets(root) == before
 
 
 def test_valid_five_families_stage_then_install(packet):

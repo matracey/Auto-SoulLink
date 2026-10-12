@@ -21,6 +21,8 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
+from contextlib import suppress
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -28,7 +30,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from tools import verify_polished_release as verifier
-from tools.polished_live.runtime import loads_json
+from tools.polished_live.runtime import loads_json, parse_symbols
 
 ROOT = Path(__file__).resolve().parents[2]
 WITNESS = {"path", "sha256", "scope", "source_head", "code_digest"}
@@ -205,18 +207,100 @@ def pointer(value, path):
     return value
 
 
-def assertions(checks, expected, bound, snap):
+SUMMARY_KEYS = {"ok", "verdict", "result", "status", "pass", "checks"}
+
+# Reviewed per-criterion coverage, not scenario-wide permission. In particular,
+# judge_pages does NOT prove the manifest's compound rendering/glyph criterion.
+COVERAGE = {
+    ("LIVE-R3-REFUSALS", "r3/refusals"): {
+        "r3_aggregate": {
+            "a clean overlay against an overlay contract is admitted": "rebind3.r3_aggregate: ROM/contract + hello/config",
+            "a swapped contract is refused by the server": "rebind3.r3_aggregate: mismatch + named rejection",
+            "every reply after the refusal is noop": "rebind3.r3_aggregate: all post-refusal commands",
+            "a flipped byte $1F8028 is refused by the client": "rebind3.r3_aggregate: generated beacon + raw refusal",
+        }
+    },
+    ("LIVE-DUO-NATURAL-FAINT", "duo/play-faint-natural"): {
+        "verifier_replay": {
+            "the loss setup is a disclosed HP 1 on the linked lead only, never HP 0": "duo.py:566-621",
+            "a native battle loss produced exactly one faint event for the linked mon and no whiteout": "duo.py:638-670",
+            "the engine copyback witness shows the linked mon at HP 0 before the client report": "duo.py:672-717",
+            "the server sent exactly one force_faint for the linked partner to B and nothing else lethal": "duo.py:753-792",
+            "B's cartridge shows the partner at HP 0 and no other B mon changed": "duo.py:793-841",
+            "the server marks the link dead after the kill": "duo.py:842-858",
+            "no reconnect or hello re-report after the stage mark": "duo.py:627-636",
+        }
+    },
+    ("LIVE-DUO-NATURAL-WHITEOUT", "duo/play-whiteout-natural"): {
+        "verifier_replay": {
+            "the loss setup is a disclosed HP 1 on every non-egg record, never HP 0": "duo.py:566-621",
+            "a native battle loss without Run produced a whiteout event after every party mon fainted": "duo.py:658-703",
+            "the whiteout is reported with the entire party at HP 0 and before any heal": "duo.py:678-704",
+            "the server sent exactly one force_faint for the linked partner to B via the per-mon faint of the linked mon": "duo.py:693-696,753-792",
+            "B's cartridge shows the partner at HP 0 and no other B mon changed": "duo.py:793-841",
+            "the server marks the link dead after the kill": "duo.py:842-858",
+            "no reconnect or hello re-report after the stage mark": "duo.py:627-636",
+        }
+    },
+    ("LIVE-SHIPPED-TRADE", "trade/shipped-native-commit-cold-continue"): {
+        "verifier_replay": {
+            "both native commits and one trade_done each": "trade_duo_live.py:158-183,191-210",
+            "server re-keyed without false faint": "trade_duo_live.py:205-206,224-233",
+            "cold CONTINUE preserves both received mons and identities": "trade_duo_live.py:142-155,210-219",
+            "both native save copies valid and exchanged": "trade_duo_live.py:219-223,259",
+        }
+    },
+}
+VERIFIER_REPLAYS = {
+    "duo/play-faint-natural",
+    "duo/play-whiteout-natural",
+    "panel/real-host-paging",
+    "trade/shipped-native-commit-cold-continue",
+}
+
+
+def has_summary(value):
+    if isinstance(value, dict):
+        return any(str(k).casefold() in SUMMARY_KEYS or has_summary(v) for k, v in value.items())
+    return isinstance(value, list) and any(has_summary(v) for v in value)
+
+
+def summary_text(text):
+    return (
+        re.search(r"\bRESULT\s*:|\b(?:PASS|FAIL|verdict)\b|\[\s*(?:ok|FAIL)\s*\]", text, re.I)
+        is not None
+    )
+
+
+def assertions(checks, expected, bound, snap, *, item, proven):
     require(
         isinstance(checks, list) and [c["name"] for c in checks] == expected,
         "exact ordered manifest checks required",
     )
     result, fingerprints = [], set()
     for check in checks:
+        if "covered_by" in check:
+            engine = check["covered_by"]
+            approved = COVERAGE.get((item["id"], item["expect_scenario"]), {}).get(engine, {})
+            require(
+                set(check) == {"name", "covered_by"}
+                and check["name"] in approved
+                and engine in proven,
+                "covered_by check not approved or replay did not pass",
+            )
+            result.append(
+                {
+                    "name": check["name"],
+                    "result": "PASS",
+                    "observed": {"covered_by": engine, "source": approved[check["name"]]},
+                }
+            )
+            continue
         require(
             set(check) == {"name", "assertions"} and check["assertions"],
             "reviewed raw assertions required",
         )
-        facts = []
+        facts, observations = [], set()
         for a in check["assertions"]:
             path = exact_path(a["artifact"])
             require(path in bound, f"unbound raw observation: {path}")
@@ -225,27 +309,48 @@ def assertions(checks, expected, bound, snap):
                 require(
                     set(a) == {"artifact", "pointer", "op", "expected"}, "unknown assertion fields"
                 )
-                key = a["pointer"].rsplit("/", 1)[-1].lower()
+                segments = [
+                    s.replace("~1", "/").replace("~0", "~").casefold()
+                    for s in a["pointer"].split("/")
+                ]
                 require(
-                    key not in {"ok", "verdict", "result", "pass", "status", "checks"},
+                    not (set(segments) & SUMMARY_KEYS),
                     "generic completion is not raw proof",
                 )
                 observed = pointer(snap.read(path), a["pointer"])
+                require(not has_summary(observed), "completion container is not raw proof")
                 require(
                     type(observed) is type(a["expected"]) and observed == a["expected"],
                     f"raw check mismatch: {check['name']} {a['pointer']}",
                 )
+                observations.add(
+                    (
+                        str(path),
+                        "value",
+                        digest(
+                            json.dumps(observed, sort_keys=True, separators=(",", ":")).encode()
+                        ),
+                    )
+                )
             elif op == "regex_count":
                 require(set(a) == {"artifact", "pattern", "op", "expected"}, "unknown regex fields")
-                require(
-                    not re.search(r"PASS|\[ok\]|verdict", a["pattern"], re.I),
-                    "generic PASS regex forbidden",
-                )
                 require(
                     type(a["expected"]) is int and a["expected"] >= 0 and len(a["pattern"]) > 3,
                     "explicit count/pattern required",
                 )
-                observed = len(re.findall(a["pattern"], snap.raw(path).decode(), re.MULTILINE))
+                text = snap.raw(path).decode()
+                matches = list(re.finditer(a["pattern"], text, re.MULTILINE))
+                for match in matches:
+                    start = text.rfind("\n", 0, match.start()) + 1
+                    end = text.find("\n", match.end())
+                    lines = text[start : end if end >= 0 else len(text)]
+                    require(
+                        not summary_text(match.group()) and not summary_text(lines),
+                        "matched producer completion/summary is not raw proof",
+                    )
+                spans = sorted({m.span() for m in matches})
+                observations.add((str(path), "spans", json.dumps(spans)))
+                observed = len(matches)
                 require(observed == a["expected"], f"raw count mismatch: {check['name']}")
             else:
                 raise ValueError(f"unknown raw assertion operation: {op}")
@@ -257,7 +362,7 @@ def assertions(checks, expected, bound, snap):
                     "observed": observed,
                 }
             )
-        fingerprint = json.dumps(check["assertions"], sort_keys=True)
+        fingerprint = tuple(sorted(observations))
         require(fingerprint not in fingerprints, "blanket check replacement forbidden")
         fingerprints.add(fingerprint)
         result.append(
@@ -506,6 +611,117 @@ def r3_aggregate(row, bound, root, snap):
     )
 
 
+def replay_write_diffs(trace, reviewed, root, snap):
+    """Recompute writes.lua record_diff bytes, never trace.checks or claimed counts.
+
+    The producer has no offline API. Its three image regions are specified by
+    writes.lua snapshot()/record_diff(); addresses come from the frozen symbols.
+    Allowed addresses must also be explicitly approved in the binding map.
+    """
+    require(trace["rom_sha1"] == verifier.overlay_sha1(root), "writes ROM binding")
+    operations = trace["operations"]
+    require(set(operations) == set(reviewed) == set("abdef"), "writes need all five raw operations")
+    symbols = parse_symbols(
+        snap.raw(root / "data/polished/polished_slink.sym").decode(), reject_duplicates=True
+    )
+    start = symbols["wPartyCount"][1]
+    end = symbols["wPartyMonNicknames"][1] + 6 * 11
+    allocation = set()
+    for name in ("wPokeDB1UsedEntries", "wPokeDB2UsedEntries"):
+        bank, address = symbols[name]
+        allocation.update(
+            range(bank * 0x1000 + address - 0xD000, bank * 0x1000 + address - 0xD000 + 26)
+        )
+
+    def image(doc):
+        require(
+            set(doc) == {"cart_hex", "party_start", "party_hex", "allocation"},
+            "writes image schema",
+        )
+        cart, party = bytes.fromhex(doc["cart_hex"]), bytes.fromhex(doc["party_hex"])
+        require(
+            len(cart) == 32768 and len(party) == end - start and doc["party_start"] == start,
+            "writes snapshot coverage differs from frozen symbols",
+        )
+        alloc = doc["allocation"]
+        require(
+            isinstance(alloc, dict)
+            and set(alloc) == {str(a) for a in allocation}
+            and all(type(v) is int and 0 <= v <= 255 for v in alloc.values()),
+            "writes allocation coverage",
+        )
+        return {
+            **{f"cart@{a}": v for a, v in enumerate(cart)},
+            **{f"party@{start + a}": v for a, v in enumerate(party)},
+            **{f"alloc@{a}": v for a, v in alloc.items()},
+        }
+
+    facts = {}
+    for leg, op in operations.items():
+        before, after = image(op["before"]), image(op["after"])
+        observed = {key for key in before if before[key] != after[key]}
+        claimed = op["changed"]
+        require(
+            isinstance(claimed, list)
+            and all(set(c) == {"kind", "a"} and type(c["a"]) is int for c in claimed),
+            "writes changed-address schema",
+        )
+        claimed_set = {f"{c['kind']}@{c['a']}" for c in claimed}
+        allowed = reviewed[leg]
+        require(
+            isinstance(allowed, list)
+            and allowed
+            and all(isinstance(a, str) for a in allowed)
+            and len(set(allowed)) == len(allowed)
+            and set(allowed) <= before.keys(),
+            "writes reviewed address set",
+        )
+        require(
+            isinstance(op["expected"], list)
+            and len(set(op["expected"])) == len(op["expected"])
+            and set(op["expected"]) == set(allowed),
+            "writes producer allowance differs from reviewed addresses",
+        )
+        require(
+            observed
+            and len(claimed_set) == len(claimed)
+            and observed == claimed_set
+            and observed <= set(allowed),
+            f"writes {leg}: recomputed diff disagrees with claim/allowance",
+        )
+        if leg == "a":
+            # Only operation a exposes the complete write tap in the current
+            # producer. Other legs expose full images, not a fabricated tap.
+            writes = op["writes"]
+            require(isinstance(writes, list) and writes, "writes a: missing raw write operations")
+            replayed, last_frame = before.copy(), -1
+            for write in writes:
+                require(
+                    write["op"] == "write_u8"
+                    and type(write["addr"]) is int
+                    and type(write["v"]) is int
+                    and 0 <= write["v"] <= 255
+                    and type(write["frame"]) is int
+                    and write["frame"] >= last_frame,
+                    "writes a: invalid/unordered write tap",
+                )
+                addr, domain = write["addr"], write["domain"]
+                if domain == "CartRAM":
+                    key = f"cart@{addr}"
+                elif domain == "System Bus":
+                    key = f"party@{addr}"
+                elif domain == "WRAM":
+                    key = f"alloc@{addr}" if addr in allocation else f"party@{addr + 0xC000}"
+                else:
+                    raise ValueError("writes a: unmeasured write domain")
+                require(key in allowed, "writes a: raw write outside reviewed address set")
+                replayed[key] = write["v"]
+                last_frame = write["frame"]
+            require(replayed == after, "writes a: tap does not reproduce postimage")
+        facts[leg] = {"changed_bytes": len(observed), "addresses": sorted(observed)}
+    return facts
+
+
 def replay_extra(item, row, bound, root, snap):
     """Reuse producer oracles absent from the verifier's dispatch; no copied labels."""
 
@@ -544,6 +760,8 @@ def replay_extra(item, row, bound, root, snap):
             row["rom_sha1_executed"] in executed,
             "receipt substituted source overlay for executed randomized SHA1",
         )
+    if rid == "LIVE-WRITES-OVERWORLD":
+        return {"write_diffs": replay_write_diffs(role("trace"), row["write_expected"], root, snap)}
     if rid == "LIVE-CAPTURE-PARTY-ONLY":
         from lupa import LuaRuntime
 
@@ -644,36 +862,93 @@ def replay_extra(item, row, bound, root, snap):
             )
     elif rid == "LIVE-R3-REFUSALS":
         r3_aggregate(row, bound, root, snap)
+        # The historical literal is covered only if it is the byte just proved.
+        mutation_doc = role("mutations")
+        beacon_offsets = [
+            r["offset"] for r in mutation_doc["mutations"] if Path(r["path"]).stem == "flipbeacon"
+        ]
+        return {"r3_aggregate": True, "beacon_offset": beacon_offsets[0]}
     # Duo/host/trade are replayed by check_live, including the hashed trade closure.
     # Remaining IDs must satisfy every explicit reviewed raw assertion above.
 
 
+class InstallFailure(Exception):
+    def __init__(self, cause, unrecovered, recovery_files):
+        super().__init__(str(cause))
+        self.unrecovered = unrecovered
+        self.recovery_files = recovery_files
+
+
 def install_all(candidates):
-    """All prepared first; per-target compare-and-replace, undo owned writes on error."""
-    installed = []
+    """Sole writer: reserve every recovery copy before the first atomic replacement."""
+    installed, recovery, unrecovered = [], {}, []
+
+    def remaining():
+        return [str(p) for p in recovery.values() if p.exists()]
+
+    def cleanup():
+        # A cleanup failure retains a recovery file; it never hides an install or
+        # rollback result and never deletes somebody else's old recovery file.
+        for path in recovery.values():
+            with suppress(OSError):
+                path.unlink(missing_ok=True)
+
     try:
-        for target, _staged, _old, expected in candidates:
+        for target, staged, old, expected, judged in candidates:
             require(
                 digest(target.read_bytes()) == expected, f"target changed before install: {target}"
             )
-        for target, staged, old, expected in candidates:
+            require(digest(staged.read_bytes()) == judged, f"judged candidate changed: {staged}")
+            fd, name = tempfile.mkstemp(
+                prefix=target.name + ".", suffix=".rebind3-recovery", dir=target.parent
+            )
+            recovery[target] = Path(name)
+            with os.fdopen(fd, "wb") as stream:
+                stream.write(old)
+                stream.flush()
+                os.fsync(stream.fileno())
+            require(
+                digest(recovery[target].read_bytes()) == expected,
+                f"recovery verification failed: {target}",
+            )
+        for target, staged, _old, expected, judged in candidates:
             require(
                 digest(target.read_bytes()) == expected, f"target changed during install: {target}"
             )
-            owned = digest(staged.read_bytes())
-            os.replace(staged, target)
-            installed.append((target, old, owned))
-    except BaseException:
-        for target, old, owned in reversed(installed):
             require(
-                digest(target.read_bytes()) == owned, f"foreign edit prevents rollback: {target}"
+                digest(staged.read_bytes()) == judged,
+                f"judged candidate changed before replace: {staged}",
             )
-            # Recovery bytes are prepared in the target filesystem; no cross-volume rename.
-            rollback = target.with_name(target.name + ".rebind3-rollback")
-            with rollback.open("xb") as stream:
-                stream.write(old)
-            os.replace(rollback, target)
-        raise
+            os.replace(staged, target)
+            installed.append((target, expected, judged))
+    except BaseException as error:
+        for target, expected, judged in reversed(installed):
+            try:
+                require(
+                    digest(target.read_bytes()) == judged,
+                    f"foreign edit prevents rollback: {target}",
+                )
+                require(
+                    digest(recovery[target].read_bytes()) == expected, f"recovery changed: {target}"
+                )
+                os.replace(recovery[target], target)
+                require(
+                    digest(target.read_bytes()) == expected,
+                    f"rollback verification failed: {target}",
+                )
+            except BaseException as rollback_error:
+                unrecovered.append(
+                    {
+                        "target": str(target),
+                        "recovery": str(recovery[target]),
+                        "reason": str(rollback_error),
+                    }
+                )
+        if not unrecovered:
+            cleanup()
+        raise InstallFailure(error, unrecovered, remaining()) from error
+    cleanup()
+    return {"recovery_files": remaining()}
 
 
 def run(root, map_path, stage_dir, *, install=False):
@@ -729,8 +1004,31 @@ def run(root, map_path, stage_dir, *, install=False):
             )
             bound = set(records)
             launches(row, bound, records, plan, root, snap)
-            checks = assertions(row["checks"], item["expect_checks"], bound, snap)
-            replay_extra(item, row, bound, root, snap)
+            replay_facts = replay_extra(item, row, bound, root, snap)
+            proven = set()
+            if isinstance(replay_facts, dict) and replay_facts.get("r3_aggregate") is True:
+                proven.add("r3_aggregate")
+                for check in row["checks"]:
+                    literal = re.search(r"\$([0-9A-Fa-f]+)", check["name"])
+                    if check.get("covered_by") == "r3_aggregate" and literal:
+                        require(
+                            replay_facts["beacon_offset"] == int(literal[1], 16),
+                            "covered beacon criterion no longer matches generated byte",
+                        )
+            if item["expect_scenario"] in VERIFIER_REPLAYS:
+                snap.recheck()
+                errors = verifier._replay_errors(
+                    item,
+                    snap.raw(exact_path(row["primary"]["path"])),
+                    exact_path(row["primary"]["path"]),
+                    {p: snap.raw(p) for p in bound if p != exact_path(row["primary"]["path"])},
+                )
+                snap.recheck()
+                require(not errors, f"verifier replay refused: {errors}")
+                proven.add("verifier_replay")
+            checks = assertions(
+                row["checks"], item["expect_checks"], bound, snap, item=item, proven=proven
+            )
             primary = row["primary"]
             doc = {
                 "schema": verifier.RECEIPT_SCHEMA,
@@ -769,23 +1067,30 @@ def run(root, map_path, stage_dir, *, install=False):
                     "sha256": digest(staged.read_bytes()),
                     "checks": checks,
                     "bindings": list(records.values()),
+                    "replay": replay_facts,
                 }
             )
             require(judged.ok, f"{rid}: {judged.reasons}")
-            candidates.append((target, staged, old, row["target_sha256"]))
+            candidates.append((target, staged, old, row["target_sha256"], digest(snap.raw(staged))))
         source(root, plan, Snapshot())
         snap.recheck()
         if install:
             # Same-volume atomic replaces. Reject cross-volume staging rather than
             # falling back to a non-atomic copy or writing unchecked target temps.
             require(
-                all(t.stat().st_dev == s.stat().st_dev for t, s, _, _ in candidates),
+                all(t.stat().st_dev == s.stat().st_dev for t, s, _, _, _ in candidates),
                 "stage must share target filesystem",
             )
-            install_all(candidates)
+            report.update(install_all(candidates) or {})
             report["installed"] = True
         report["ok"] = True
     except Exception as exc:  # fail closed, including malformed producer payloads
+        if isinstance(exc, InstallFailure):
+            report["unrecovered"] = exc.unrecovered
+            report["recovery_files"] = exc.recovery_files
+            report["rollback_complete"] = not exc.unrecovered
+            if exc.unrecovered:
+                report["partial"] = True
         report["errors"].append(f"{type(exc).__name__}: {exc}")
         recorded = {r["id"] for r in report["rows"]}
         for item_id in selected:
