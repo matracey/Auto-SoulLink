@@ -1220,6 +1220,59 @@ def test_item6_carries_only_while_master_has_not_moved():
     assert _decide(row, ev, inputs={}, master="d" * 40).kind == "RUN"
 
 
+@pytest.mark.parametrize("branch", ["main", "master"])
+def test_item6_carry_uses_resolved_primary_branch(tmp_path, monkeypatch, branch):
+    repo = tmp_path / "repo"
+    base = _repo(repo)
+    if _git(repo, "branch", "--show-current") != branch:
+        _git(repo, "branch", "-m", branch)
+    _git(repo, "checkout", "-qb", "feature")
+    (repo / "a.txt").write_text("two\n")
+    _git(repo, "commit", "-qam", "feature")
+    cut = _git(repo, "rev-parse", "HEAD")
+    monkeypatch.setattr(fc, "REPO", str(repo))
+    row = _row("item6_route_diff")
+    monkeypatch.setattr(fc, "collect_evidence", lambda: {row.id: [_ev(row.id, master=base, inputs={})]})
+    monkeypatch.setattr(fc, "hash_inputs", lambda *_: {})
+    monkeypatch.setattr(fc, "git_diff_names", lambda *_: [])
+    monkeypatch.setattr(fc, "git_is_ancestor", lambda *_: True)
+    assert fc.primary_revision() == base
+    decisions, _ = fc.plan_decisions([row], cut, True, str(repo))
+    assert decisions[row.id].kind == "CARRY"
+    _git(repo, "branch", "-f", branch, cut)
+    decisions, _ = fc.plan_decisions([row], cut, True, str(repo))
+    assert decisions[row.id].kind == "RUN"
+
+
+def test_item6_provisions_the_resolved_primary_commit(monkeypatch, tmp_path):
+    baseline = "d" * 40
+    monkeypatch.setattr(fc, "primary_revision", lambda: baseline)
+    monkeypatch.setattr(fc, "collect_evidence", lambda: {})
+    calls = []
+
+    def provision(tree, rev, root):
+        calls.append((tree, rev))
+        if len(calls) == 2:
+            raise fc.LaneError("stopped before emulator work")
+
+    monkeypatch.setattr(fc, "provision", provision)
+    monkeypatch.setattr(fc, "copy_inputs", lambda *args, **kwargs: None)
+    cut = _git(fc.REPO, "rev-parse", "HEAD")
+    lane, master = str(tmp_path / "lane"), str(tmp_path / "baseline")
+    assert fc.main(["--cut", cut, "--rows", "item6_route_diff", "--lane", lane, "--master", master]) == 2
+    assert calls == [(lane, cut), (master, baseline)]
+
+
+def test_item6_refuses_an_unknown_primary_branch_before_running(monkeypatch, capsys):
+    def unknown():
+        raise fc.LaneError("cannot resolve primary branch")
+
+    monkeypatch.setattr(fc, "primary_revision", unknown)
+    cut = _git(fc.REPO, "rev-parse", "HEAD")
+    assert fc.main(["--cut", cut, "--rows", "item6_route_diff", "--dry-run"]) == 2
+    assert "ABORT: cannot resolve primary branch" in capsys.readouterr().err
+
+
 def test_glob_star_stays_in_its_directory():
     assert fc.touched(["lua/slink.lua", "lua/gen1/client.lua", "lua/gen3/a/b.lua"],
                       ["lua/*.lua", "lua/gen3/**"]) == ["lua/slink.lua", "lua/gen3/a/b.lua"]

@@ -47,7 +47,7 @@ link / nearby-trainer-panel rows (FR+LG and Emerald) and the clean zip-boot REFU
 fc_SUMMARY_<cut8>_frlgc_rand.txt. Its rows need the randomized ROMs of SLINK_GEN3_RAND_ROMS; a row whose ROM is absent BLOCKS the pass
 by name (exit 2), never skips. --dry-run prints each row's estimated wall time (from retained receipts, see RAND_ROW_EST_NOTE).
 Sequential, one emulator lane (docs/gen3/PLAN.md:23). Order: provision the lane at --cut (and the
-master tree when item 6 is selected), then every selected row in runbook order. Each row writes
+primary-branch tree when item 6 is selected), then every selected row in runbook order. Each row writes
 docs/gen3/probes/fc_<row>_<cut8>.txt through gen3_probe_receipt.run_receipt_text, and the pass
 rewrites docs/gen3/probes/fc_SUMMARY_<cut8>.txt after every row (the latest invocation's rows) and the same text in
 fc_SUMMARY_<cut8>_run<UTC stamp>.txt, which no later invocation overwrites.
@@ -964,6 +964,16 @@ def head(tree):
 def main_checkout():
     common = _git(REPO, "rev-parse", "--path-format=absolute", "--git-common-dir").stdout.strip()
     return os.path.dirname(common)
+
+
+def primary_revision():
+    from slink_space import primary_branch
+
+    try:
+        branch = primary_branch(REPO)
+    except RuntimeError as exc:
+        raise LaneError(str(exc)) from exc
+    return _git(REPO, "rev-parse", "--verify", f"refs/heads/{branch}^{{commit}}").stdout.strip()
 
 
 def provision_plan(tree, rev, extra_pinned=None, extra_unpinned=None, base_inputs=True):
@@ -2758,7 +2768,7 @@ def plan_decisions(rows, cut, carry, lane):
     hit, else RUN (built live, then cached); without --carry every other row RUNs."""
     ev = collect_evidence()
     est = {r.id: estimate_seconds(ev.get(estimate_twin(r.id), []), cut) or r.est for r in rows}   # a companion row: its clean twin's history; else the plan's own estimate
-    master = _git(REPO, "rev-parse", "master", check=False).stdout.strip() or None if carry else None
+    master = primary_revision() if carry and any(r.id == "item6_route_diff" for r in rows) else None
     out = {}
     for r in rows:
         if build_kind(r.id):
@@ -2903,7 +2913,7 @@ def run_pass(args):
             print(f"# provision: gate inputs (release_gate_quick's unit lane): {STAGED['exp']} (pin exp) + .cache/expansion-output/, "
                   f".cache/expansion-src junction (locked commit, tracked-clean), {VENDORED_DECOMP} junction")
         if any(r.id == "item6_route_diff" for r in run_rows):
-            print(f"# provision: the same for {master} at master")
+            print(f"# provision: the same for {master} at primary branch {primary_revision()}")
         for k, r in enumerate(rows, 1):
             d, env = decisions[r.id], " ".join(f"{a}={b}" for a, b in r.env.items())
             where = "" if r.id in mine else "  [other shard]"
@@ -2945,7 +2955,7 @@ def run_pass(args):
                 if any(is_gate_row(r) for r in run_rows):
                     provision_gate_inputs(lane, root)
         if any(r.id == "item6_route_diff" for r in run_rows):
-            provision(master, "master", root)
+            provision(master, primary_revision(), root)
             copy_inputs(master, root, only=ITEM6_INPUTS)
     except LaneError as exc:
         print(f"[final_cut] ABORT: {exc}", file=sys.stderr)
@@ -3033,7 +3043,7 @@ def main(argv=None):
     ap.add_argument("--cut", required=True, help="the frozen cut (any rev; resolved to a sha)")
     ap.add_argument("--lane", default=os.path.join(wt, "gen3-lane-clean"))
     ap.add_argument("--master", default=os.path.join(wt, "gen3-lane-master"),
-                    help="item 6's baseline tree, provisioned at `master`")
+                    help="item 6's baseline tree, provisioned at the resolved primary branch")
     ap.add_argument("--title", default="frlg", choices=("frlg", "rr", "emerald", "exp", "frlgc", "frlgc-rand"),
                     help="frlg (default): the G4 FR/LG plan, unchanged. rr: the G5 Radical Red "
                          "plan (card G5-RUNNER-RR) -- the RR duo rows, the RR opcode gates, and the "
@@ -3064,7 +3074,11 @@ def main(argv=None):
                          "--lane per shard); shard 1 also writes the CARRIED receipts")
     ap.add_argument("--merge-summary", action="store_true",
                     help="write fc_SUMMARY_<cut8>.txt from every row's receipt at --cut, then exit")
-    return run_pass(ap.parse_args(argv))
+    try:
+        return run_pass(ap.parse_args(argv))
+    except LaneError as exc:
+        print(f"[final_cut] ABORT: {exc}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":
