@@ -129,7 +129,9 @@ export function getRecovery(
   if (move.named('G-Max Finale')) {
     recovery[0] = recovery[1] = Math.round(attacker.maxHP() / 6);
   }
-  if (attacker.hasAbility('Parasitic Waste') && move.named('Gunk Shot', 'Sludge Bomb', 'Sludge Wave', 'Sludge', 'Poison Jab', 'Cross Poison')) {
+  if (attacker.hasAbility('Parasitic Waste') &&
+      move.named('Gunk Shot', 'Sludge Bomb', 'Sludge Wave',
+        'Sludge', 'Poison Jab', 'Cross Poison')) {
     move.drain = [1, 2];
   }
 
@@ -834,6 +836,7 @@ function buildDescription(description: RawDesc, attacker: Pokemon, defender: Pok
     output += description.attackBoost + ' ';
   }
   output = appendIfSet(output, attackerLevel);
+  output = appendIfSet(output, description.attackEVs);
   output = appendIfSet(output, description.attackerItem);
   output = appendIfSet(output, description.attackerAbility);
   output = appendIfSet(output, description.rivalry);
@@ -896,6 +899,9 @@ function buildDescription(description: RawDesc, attacker: Pokemon, defender: Pok
     output += description.defenseBoost + ' ';
   }
   output = appendIfSet(output, defenderLevel);
+  output = appendIfSet(
+    output, [description.HPEVs, description.defenseEVs].filter(Boolean).join(' / ')
+  );
   output = appendIfSet(output, description.defenderItem);
   output = appendIfSet(output, description.defenderAbility);
   if (description.isTabletsOfRuin) {
