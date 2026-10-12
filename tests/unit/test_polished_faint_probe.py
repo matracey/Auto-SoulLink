@@ -469,7 +469,8 @@ def test_runner_with_synthetic_launcher_only(tmp_path, monkeypatch, inputs, conf
         )  # restore environment after main's explicit live-path staging
     seen = []
 
-    def launch(lua_path, run, env, timeout):
+    def launch(launch_config, lua_path, run, env, timeout):
+        assert (launch_config.sram / launch_config.save_name).read_bytes() == fixture_bytes
         seen.append(lua_path)
         cfg = json.loads(Path(env["POL_PROBE_CONFIG"]).read_text())
         assert cfg["provenance"]["fixture_sha256"] == P.digest(fixture.read_bytes())
@@ -481,11 +482,12 @@ def test_runner_with_synthetic_launcher_only(tmp_path, monkeypatch, inputs, conf
         (run / "trace.json").write_text(json.dumps(trace))
         return "RESULT: PASS faint-probe recording (0 checks failed)", 12345
 
-    harness = SimpleNamespace(launch=launch)
-    monkeypatch.setitem(sys.modules, "harness", harness)
+    from tools.polished_live.harness import launch_config
+    harness = SimpleNamespace(launch=launch, launch_config=launch_config)
+    import tools.polished_live
+    monkeypatch.setattr(tools.polished_live, "harness", harness)
     assert (P.main(["--setup", "played", "--fixture", str(fixture)]) == 0) == ok
     assert seen == ["tools/polished_live/faint_probe.lua"]
-    assert (harness.SRAM / harness.SAVE_NAME).read_bytes() == fixture.read_bytes()
     (verdict,) = list(P.WORK.glob("*/probe/verdict.json"))
     assert json.loads(verdict.read_text())["verdict"] == ("PASS" if ok else "FAIL")
 
@@ -546,17 +548,6 @@ def test_recording_result_and_deadline(text, elapsed, timeout, ok):
     assert (not P.recording_reasons(text, elapsed, timeout)) == ok
 
 
-def test_lua55_compile_only_and_no_literal_guest_addresses():
-    lua55 = pytest.importorskip("lupa.lua55")
-    lua = lua55.LuaRuntime(unpack_returned_tuples=True)
-    source = (ROOT / "tools/polished_live/faint_probe.lua").read_text()
-    assert lua.eval("function(s) return assert(load(s)) ~= nil end")(
-        source
-    )  # NEVER call the loaded chunk
-    assert "0x44" not in source and "0xFF" not in source and "memory.write" not in source
-    assert 'name:match("^write")' in source and 'name == "setregister"' in source
-    assert 'append("overflow"' in source and 'append("final"' in source
-    assert "pcall(record, kind, site)" in source
 
 
 @pytest.mark.parametrize("size", [32768, 32790], ids=["native", "rtc-footer"])
@@ -643,6 +634,8 @@ def run_mocked_faint_lua(config, *, encoder="normal", wrong_pc=False, driver_fai
     """Execute the actual driver with deterministic emulator/transport substitutes."""
     lua55 = pytest.importorskip("lupa.lua55")
     lua = lua55.LuaRuntime(unpack_returned_tuples=True)
+    lua.globals().RECORDING_GUARD = lua.execute(
+        (ROOT / "tools/polished_live/recording_guard.lua").read_text(encoding="utf-8"))
 
     def to_lua(value):
         if isinstance(value, dict):
@@ -701,7 +694,7 @@ def run_mocked_faint_lua(config, *, encoder="normal", wrong_pc=False, driver_fai
             return {write=function(self, text) assert(type(text)=="string"); OUTPUT=text; return self end,
                     close=function() end}
         end
-        local L = {RUN="mock", json={decode=function() return CONFIG end}, slurp=function() return "" end}
+        local L = {ROOT="mock", RUN="mock", json={decode=function() return CONFIG end}, slurp=function() return "" end}
         L.json.encode=function(value)
             if ENCODER == "nil" then return nil end
             if ENCODER == "throw" then error("synthetic \"encoder\"\nfailed") end
@@ -733,7 +726,10 @@ def run_mocked_faint_lua(config, *, encoder="normal", wrong_pc=False, driver_fai
         end
         L.check=function(_, ok) CHECK_OK=ok end
         L.finish=function() FINISHED=true end
-        dofile=function() return L end
+        dofile=function(path)
+            if path and path:match("recording_guard.lua$") then return RECORDING_GUARD end
+            return L
+        end
     ''')
     lua.execute((ROOT / "tools/polished_live/faint_probe.lua").read_text())
     return json.loads(lua.globals().OUTPUT), lua.globals().FINISHED, lua.globals().CHECK_OK

@@ -408,6 +408,8 @@ def run_mocked_driver(*, encoder_fault="", trace_cap=5, floating_banks=False):
     from lupa.lua55 import LuaRuntime
 
     lua = LuaRuntime(unpack_returned_tuples=True)
+    lua.globals().RECORDING_GUARD = lua.execute(
+        (REPO / "tools/polished_live/recording_guard.lua").read_text(encoding="utf-8"))
     lua.globals().CODEC = lua.execute((REPO / "lua/json_codec.lua").read_text(encoding="utf-8"))
     lua.globals().CONFIG_JSON = json.dumps({
         "contract": P.derive_contract(symbols()), "trace_cap": trace_cap, "frames": 4,
@@ -437,7 +439,7 @@ def run_mocked_driver(*, encoder_fault="", trace_cap=5, floating_banks=False):
             if field == "script_mode" then return frame == 4 and 1 or 0 end
             return 0
         end
-        L = {json=CODEC, RUN="mock", SYM=syms, bus=bus}
+        L = {json=CODEC, ROOT="mock", RUN="mock", SYM=syms, bus=bus}
         L.slurp = function() return CONFIG_JSON end
         L.hex = function(bytes)
             local parts = {}
@@ -471,7 +473,10 @@ def run_mocked_driver(*, encoder_fault="", trace_cap=5, floating_banks=False):
                 error('throw "fault"\n\\tail', 0)
             end
         end
-        dofile = function() return L end
+        dofile = function(path)
+            if path and path:match("recording_guard.lua$") then return RECORDING_GUARD end
+            return L
+        end
         os = {getenv=function(name) return name end}
         memory = {}
         emu = {framecount=function() return frame end,

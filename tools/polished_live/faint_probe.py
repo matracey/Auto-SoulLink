@@ -24,6 +24,7 @@ from collections import Counter
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO))
 WORK = Path("F:/slink-work/lanes/pol-faint-probe")
 RELEASE = Path("F:/slink-work/cache/polished/release/polishedcrystal-3.2.3.gbc")
 SCHEMA = "polished-faint-probe-v1"
@@ -59,15 +60,8 @@ def canonical(value):
 
 
 def read_symbols(path):
-    out = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
-        parts = line.split()
-        if len(parts) == 2 and ":" in parts[0]:
-            row = tuple(int(n, 16) for n in parts[0].split(":"))
-            if parts[1] in out:
-                raise ValueError(f"duplicate symbol {parts[1]}")
-            out[parts[1]] = row
-    return out
+    from tools.polished_live.runtime import read_symbols as read
+    return read(path, reject_duplicates=True)
 
 
 def derive_contract(symbols, rom):
@@ -134,16 +128,9 @@ def prepare():
     prov = json.loads(prov_raw)
     if digest(sym_raw) != prov["symbols"][sym_path.name]:
         raise ValueError("symbols differ from overlay provenance")
-    clean = RELEASE.read_bytes()
-    if digest(clean, "sha1") != prov["base_sha1"]:
-        raise ValueError("release ROM differs from provenance")
-    sys.path.insert(0, str(REPO))
-    from patch.tools.make_ups import ups_apply
-
+    from tools.polished_live.runtime import pinned_rom_bytes
     ups = ups_path.read_bytes()
-    rom = ups_apply(clean, ups)
-    if digest(rom, "sha1") != prov["output"]["sha1"]:
-        raise ValueError("overlay ROM differs from provenance")
+    rom = pinned_rom_bytes(RELEASE, prov["output"]["sha1"], patch=ups_path, base_sha1=prov["base_sha1"])
     contract = derive_contract(read_symbols(sym_path), rom)
     provenance = {
         "rom_sha1": digest(rom, "sha1"),
@@ -518,22 +505,20 @@ def main(argv=None):
     run.mkdir()
     config_path = run / "input.json"
     config_path.write_text(json.dumps(config), encoding="utf-8")
-    os.environ.update(
-        POL_LANE=str(lane), POL_KIND="overlay", POL_FIXTURE=str(args.fixture.resolve())
-    )
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    import harness
+    from dataclasses import replace
 
-    harness.ROM_SRC = harness.ROM = path
-    harness.SRAM = lane / "sram"
-    harness.SAVE_NAME = path.stem + ".SaveRAM"
-    harness.SRAM.mkdir()
+    from tools.polished_live import harness
+    launch_config = replace(harness.launch_config(dict(os.environ, POL_LANE=str(lane), POL_KIND="overlay")),
+                            rom_src=path, rom=path, sram=lane / "sram", save_name=path.stem + ".SaveRAM")
+    launch_config.sram.mkdir()
     # Copy the exact bytes verified before launch, not a possibly changed external file.
-    (harness.SRAM / harness.SAVE_NAME).write_bytes(args.fixture_bytes)
+    (launch_config.sram / launch_config.save_name).write_bytes(args.fixture_bytes)
     started = time.monotonic()
     pid = None
     try:
         text, pid = harness.launch(
+            launch_config,
             "tools/polished_live/faint_probe.lua",
             run,
             {"POL_PROBE_CONFIG": config_path.as_posix()},

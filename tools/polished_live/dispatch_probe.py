@@ -18,7 +18,6 @@ import argparse
 import hashlib
 import json
 import os
-import shutil
 import sys
 import tempfile
 import time
@@ -26,6 +25,7 @@ from collections import Counter
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO))
 WORK = Path("F:/slink-work/lanes/pol-dispatch-probe")
 RELEASE = Path("F:/slink-work/cache/polished/release/polishedcrystal-3.2.3.gbc")
 SYMBOLS = REPO / "data/polished/polished_slink.sym"
@@ -42,12 +42,9 @@ FIELDS = {"script_mode": "wScriptMode", "battle_mode": "wBattleMode", "link_mode
 
 
 def read_symbols(path: Path) -> dict:
-    rows = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
-        parts = line.split()
-        if len(parts) == 2 and ":" in parts[0]:
-            rows.setdefault(parts[1], tuple(int(v, 16) for v in parts[0].split(":")))
-    return rows
+    from tools.polished_live.runtime import read_symbols as read
+    # This probe's public symbol reader has always returned immutable bank/address pairs.
+    return {name: tuple(pair) for name, pair in read(path).items()}
 
 
 def derive_contract(symbols: dict) -> dict:
@@ -292,16 +289,11 @@ def check_rom(rom: bytes, contract: dict) -> None:
 
 
 def stage(lane: Path, contract: dict, provenance: dict) -> tuple[Path, str]:
-    clean = RELEASE.read_bytes()
-    if hashlib.sha1(clean).hexdigest() != provenance["base_sha1"]:
-        raise ValueError("release ROM differs from provenance base_sha1")
-    sys.path.insert(0, str(REPO))
-    from patch.tools.make_ups import ups_apply
-
-    rom_bytes = ups_apply(clean, (REPO / provenance["output"]["ups"]["file"]).read_bytes())
+    from tools.polished_live.runtime import pinned_rom_bytes
+    rom_bytes = pinned_rom_bytes(RELEASE, provenance["output"]["sha1"],
+                                 patch=REPO / provenance["output"]["ups"]["file"],
+                                 base_sha1=provenance["base_sha1"])
     sha1 = hashlib.sha1(rom_bytes).hexdigest()
-    if sha1 != provenance["output"]["sha1"]:
-        raise ValueError("staged overlay differs from provenance output.sha1")
     check_rom(rom_bytes, contract)
     rom = lane / "rom/pol_overlay.gbc"
     rom.parent.mkdir(parents=True)
@@ -332,15 +324,14 @@ def main(argv=None) -> int:
     WORK.mkdir(parents=True, exist_ok=True)
     lane = Path(tempfile.mkdtemp(prefix="played-", dir=WORK))
     rom, sha1 = stage(lane, contract, provenance)
-    os.environ.update(POL_LANE=str(lane), POL_KIND="overlay", POL_FIXTURE=str(args.fixture.resolve()))
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    import harness
+    from tools.polished_live import harness
 
     extra = ("SlinkTradeDispatch", "SlinkTradePromptEntry", *FIELDS.values())
-    harness.SYMBOLS = tuple(harness.SYMBOLS) + tuple(s for s in extra if s not in harness.SYMBOLS)
-    harness.ROM_SRC = harness.ROM = rom
-    harness.SRAM.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(args.fixture, harness.SRAM / harness.SAVE_NAME)
+    from dataclasses import replace
+    launch_config = replace(harness.launch_config(dict(os.environ, POL_LANE=str(lane), POL_KIND="overlay")),
+                            rom_src=rom, rom=rom, symbols=tuple(dict.fromkeys((*harness.SYMBOLS, *extra))))
+    harness.prepare_save(launch_config, args.fixture)
     plan["fixture_sha256"] = hashlib.sha256(args.fixture.read_bytes()).hexdigest()
     run = lane / "probe"
     run.mkdir()
@@ -348,7 +339,7 @@ def main(argv=None) -> int:
     config.write_text(json.dumps({"contract": contract, "steps": args.steps, "frames": args.frames,
                                  "trace_cap": args.trace_cap}), encoding="utf-8")
     started = time.monotonic()
-    text, pid = harness.launch("tools/polished_live/dispatch_probe.lua", run,
+    text, pid = harness.launch(launch_config, "tools/polished_live/dispatch_probe.lua", run,
                                {"POL_PROBE_CONFIG": config.as_posix()}, args.timeout)
     reasons = recording_reasons(text, time.monotonic() - started, args.timeout)
     trace = []

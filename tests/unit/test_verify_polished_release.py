@@ -54,6 +54,20 @@ def _receipt(root: pathlib.Path, *, rom: str = ROM, name: str = "r.json",
         evidence = root / "lane" / "result.txt"
         evidence.parent.mkdir(parents=True, exist_ok=True)
         evidence.write_text(EVIDENCE, encoding="utf-8")
+    witness_path = root / "lane" / "WITNESS.json"
+    witness_body = {
+        "source_head": "c" * 40, "head": "c" * 40,
+        "code_digest": verifier.compute_code_digest(root, [CODE]),
+        "overlay_sha1": ROM, "evidence_root": str(root / "lane"),
+    }
+    witness_path.write_text(json.dumps(witness_body), encoding="utf-8")
+    witness = {
+        "path": str(witness_path), "sha256": hashlib.sha256(witness_path.read_bytes()).hexdigest(),
+        "scope": str(root / "lane"), "source_head": "c" * 40,
+        "code_digest": witness_body["code_digest"],
+    }
+    support = root / "lane" / "support.txt"
+    support.write_text("native observation\n", encoding="utf-8")
     doc = {
         "schema": verifier.RECEIPT_SCHEMA,
         "grade": grade,
@@ -67,6 +81,11 @@ def _receipt(root: pathlib.Path, *, rom: str = ROM, name: str = "r.json",
             (root / "data" / "polished" / "overlay_provenance.json").read_bytes()).hexdigest(),
         "code_digest": verifier.compute_code_digest(root, [CODE]),
         "synth": ["none"],
+        "run_witness": witness,
+        "secondary_evidence": [{
+            "path": str(support), "sha256": hashlib.sha256(support.read_bytes()).hexdigest(),
+            "run_witness": witness,
+        }],
         "checks": [{"name": "run verdict", "result": "PASS", "observed": "RESULT: PASS"}],
     }
     path = root / "tests" / "fixtures" / "polished" / "receipts" / name
@@ -1112,3 +1131,138 @@ def test_every_shipped_live_item_declares_its_scenario_and_checks():
         receipt = json.loads((REPO / item["receipt"]).read_text(encoding="utf-8"))
         assert item["expect_scenario"] == receipt["scenario_id"], item["id"]
         assert item["expect_checks"], item["id"]
+
+
+@pytest.mark.parametrize("target", ["secondary", "witness"])
+@pytest.mark.parametrize("mutation", ["missing", "corrupt"])
+def test_live_supporting_bytes_are_required_and_rehashed(tmp_path, target, mutation):
+    root, manifest = _root(tmp_path, [_live_item()])
+    _, receipt = _receipt(root)
+    record = receipt["secondary_evidence"][0] if target == "secondary" else receipt["run_witness"]
+    artifact = pathlib.Path(record["path"])
+    if mutation == "missing":
+        artifact.unlink()
+    else:
+        artifact.write_text("corrupted evidence", encoding="utf-8")
+    rows, _ = verifier.verify(root, manifest)
+    assert not _row(rows).ok, "missing/corrupt supporting evidence must revoke the LIVE verdict"
+
+
+@pytest.mark.parametrize("field", ["run_witness", "secondary_evidence"])
+def test_live_receipt_cannot_omit_supporting_bindings(tmp_path, field):
+    root, manifest = _root(tmp_path, [_live_item()])
+    _write_receipt(root, lambda doc: doc.pop(field))
+    assert not _row(verifier.verify(root, manifest)[0]).ok
+
+
+@pytest.mark.parametrize("field,value", [
+    ("source_head", "d" * 40), ("code_digest", "f" * 64),
+    ("overlay_sha1", OTHER_ROM), ("evidence_root", "unrelated-run"),
+])
+def test_hashed_witness_must_agree_with_execution_binding(tmp_path, field, value):
+    root, manifest = _root(tmp_path, [_live_item()])
+    path, receipt = _receipt(root)
+    witness_path = pathlib.Path(receipt["run_witness"]["path"])
+    witness = json.loads(witness_path.read_text())
+    witness[field] = value
+    witness_path.write_text(json.dumps(witness), encoding="utf-8")
+    new_hash = hashlib.sha256(witness_path.read_bytes()).hexdigest()
+    receipt["run_witness"]["sha256"] = new_hash
+    receipt["secondary_evidence"][0]["run_witness"]["sha256"] = new_hash
+    path.write_text(json.dumps(receipt), encoding="utf-8")
+    assert not _row(verifier.verify(root, manifest)[0]).ok
+
+
+@pytest.mark.parametrize("producer", [
+    "RESULT: FAIL fake (1 checks failed)\n",
+    '{"verdict": "FAIL", "reasons": ["native observation missing"]}',
+    '{"ok": false, "reasons": ["native observation missing"]}',
+    "no producer verdict",
+])
+def test_rehashing_a_failed_or_absent_producer_verdict_cannot_make_it_pass(tmp_path, producer):
+    root, manifest = _root(tmp_path, [_live_item()])
+    path, receipt = _receipt(root)
+    evidence = pathlib.Path(receipt["evidence_file"])
+    evidence.write_text(producer, encoding="utf-8")
+    receipt["evidence_sha256"] = hashlib.sha256(evidence.read_bytes()).hexdigest()
+    path.write_text(json.dumps(receipt), encoding="utf-8")
+    assert not _row(verifier.verify(root, manifest)[0]).ok
+
+
+@pytest.mark.parametrize("scenario", [
+    "duo/play-faint-natural", "duo/play-whiteout-natural", "panel/real-host-paging",
+    "trade/shipped-native-commit-cold-continue",
+])
+def test_producer_claim_does_not_replace_replay_observations(tmp_path, scenario):
+    root, manifest = _root(tmp_path, [_live_item(expect_scenario=scenario)])
+    path, receipt = _receipt(root)
+    evidence = pathlib.Path(receipt["evidence_file"])
+    evidence.write_text('{"verdict":"PASS","reasons":[]}', encoding="utf-8")
+    receipt.update(scenario_id=scenario, evidence_sha256=hashlib.sha256(evidence.read_bytes()).hexdigest())
+    path.write_text(json.dumps(receipt), encoding="utf-8")
+    assert not _row(verifier.verify(root, manifest)[0]).ok, "replay observations are mandatory"
+
+
+def test_receipt_duplicate_binding_cannot_shadow_the_wrong_execution(tmp_path):
+    root, manifest = _root(tmp_path, [_live_item()])
+    path, receipt = _receipt(root)
+    encoded = json.dumps(receipt)
+    path.write_text('{"code_digest":"' + "0" * 64 + '",' + encoded[1:], encoding="utf-8")
+    assert not _row(verifier.verify(root, manifest)[0]).ok
+
+
+def _runtime_digest_fixture(tmp_path):
+    repo = pathlib.Path(__file__).resolve().parents[2]
+    config = json.loads((repo / "tests/polished_release_requirements.json").read_text(encoding="utf-8"))
+    additions = {"lua/gb_panel.lua", "server/adapters/polished_rom_scan.py",
+                 "server/adapters/gen2_encounter_presentation.py"}
+    for tree in ("lua/core", "data/games/polished_crystal"):
+        additions.update(p.relative_to(repo).as_posix() for p in (repo / tree).rglob("*")
+                         if p.is_file() and p.suffix.lower() not in (".md", ".txt"))
+    files = set(additions)
+    for pattern in config["code_digest_files"]:
+        files.update(p.relative_to(repo).as_posix() for p in repo.glob(pattern) if p.is_file())
+    for relative in files:
+        target = tmp_path / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(b"initial\n")
+    return config, additions
+
+
+def test_declared_runtime_digest_covers_and_reacts_to_every_added_input(tmp_path):
+    config, additions = _runtime_digest_fixture(tmp_path)
+    declared = {p.relative_to(tmp_path).as_posix() for pattern in config["code_digest_files"]
+                for p in tmp_path.glob(pattern) if p.is_file()}
+    assert additions <= declared
+    baseline = verifier.compute_code_digest(tmp_path, config["code_digest_files"],
+                                            excludes=config.get("code_digest_exclude", []))
+    for relative in sorted(additions):
+        target = tmp_path / relative
+        original = target.read_bytes()
+        target.write_bytes(original + b"changed\n")
+        assert verifier.compute_code_digest(tmp_path, config["code_digest_files"],
+                                            excludes=config.get("code_digest_exclude", [])) != baseline, relative
+        target.write_bytes(original)
+
+
+def test_runtime_digest_ignores_only_pack_prose_not_runtime_bytes(tmp_path):
+    config, _ = _runtime_digest_fixture(tmp_path)
+    baseline = verifier.compute_code_digest(tmp_path, config["code_digest_files"],
+                                            excludes=config.get("code_digest_exclude", []))
+    for name in ("README.md", "notes.txt", "overlay/design.md"):
+        target = tmp_path / "data/games/polished_crystal" / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(b"prose\n")
+    assert verifier.compute_code_digest(tmp_path, config["code_digest_files"],
+                                        excludes=config.get("code_digest_exclude", [])) == baseline
+    (tmp_path / "data/games/polished_crystal/overlay/runtime.bin").write_bytes(b"runtime\n")
+    assert verifier.compute_code_digest(tmp_path, config["code_digest_files"],
+                                        excludes=config.get("code_digest_exclude", [])) != baseline
+
+
+@pytest.mark.parametrize("excluded", [["lua/**/*"], ["data/games/polished_crystal/**/*.json"], "bad", [None]])
+def test_digest_exclusions_cannot_hide_runtime_code(tmp_path, excluded):
+    root, path = _root(tmp_path, [_live_item()])
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    doc["code_digest_exclude"] = excluded
+    assert verifier.manifest_errors(doc)

@@ -549,15 +549,14 @@ def prepare():
     if digest(sym_raw) != provenance["symbols"][sym_path.name]:
         raise ValueError("symbol SHA256 differs from overlay provenance")
     clean = RELEASE.read_bytes()
-    if digest(clean, "sha1") != provenance["base_sha1"]:
-        raise ValueError("base ROM SHA1 differs from overlay provenance")
     ups = (REPO / "patch/dist/SLink-Polished.ups").read_bytes()
     patch = provenance["output"]["ups"]
     if digest(ups) != patch["sha256"] or len(ups) != patch["size"]:
         raise ValueError("UPS SHA256/size differs from overlay provenance")
-    from patch.tools.make_ups import ups_apply
-    rom = ups_apply(clean, ups)
-    if digest(rom, "sha1") != provenance["output"]["sha1"] or len(rom) != provenance["output"]["size"]:
+    from tools.polished_live.runtime import pinned_rom_bytes
+    rom = pinned_rom_bytes(RELEASE, provenance["output"]["sha1"],
+                           patch=REPO / "patch/dist/SLink-Polished.ups", base_sha1=provenance["base_sha1"])
+    if len(rom) != provenance["output"]["size"]:
         raise ValueError("overlay ROM SHA1/size differs from provenance")
     contract = derive_contract(read_symbols(sym_path), rom, provenance)
     proof = {"base_sha1": digest(clean, "sha1"), "rom_sha1": digest(rom, "sha1"), "ups_sha256": digest(ups),
@@ -654,37 +653,26 @@ def main(argv=None):
               "trace_cap": args.trace_cap, "steps": args.steps}
     config_path = run / "input.json"
     config_path.write_text(json.dumps(config), encoding="utf-8")
-    env_values = {"POL_LANE": str(lane), "POL_KIND": "overlay", "POL_FIXTURE": str(args.fixture.resolve())}
-    saved_env = {key: os.environ.get(key) for key in env_values}
-    old_harness, pid, errors = {}, None, []
+    pid, errors = None, []
     try:
-        os.environ.update(env_values)
         sys.path.insert(0, str(Path(__file__).resolve().parent))
-        import harness
-        old_harness = {key: getattr(harness, key) for key in ("ROM_SRC", "ROM", "SRAM", "SAVE_NAME", "KIND")}
-        harness.KIND = "overlay"  # launch reads its module global, even after a cached import
-        harness.ROM_SRC = harness.ROM = rom_path
-        harness.SRAM, harness.SAVE_NAME = lane / "sram", rom_path.stem + ".SaveRAM"
-        harness.SRAM.mkdir()
-        (harness.SRAM / harness.SAVE_NAME).write_bytes(args.fixture_bytes)
+        from dataclasses import replace
+
+        from tools.polished_live import harness
+        launch_config = replace(harness.launch_config(dict(os.environ, POL_LANE=str(lane), POL_KIND="overlay")),
+                                rom_src=rom_path, rom=rom_path, sram=lane / "sram",
+                                save_name=rom_path.stem + ".SaveRAM")
+        launch_config.sram.mkdir()
+        (launch_config.sram / launch_config.save_name).write_bytes(args.fixture_bytes)
         started = time.monotonic()
         # Existing harness owns exactly the process it launches, including exception/timeout cleanup.
-        text, pid = harness.launch("tools/polished_live/reload_probe.lua", run,
+        text, pid = harness.launch(launch_config, "tools/polished_live/reload_probe.lua", run,
                                    {"POL_PROBE_CONFIG": config_path.as_posix()}, args.timeout)
         results = [row for row in text.splitlines() if row.startswith("RESULT:")]
         if len(results) != 1 or not results[0].startswith("RESULT: PASS reload-probe recording ") or time.monotonic() - started >= args.timeout:
             errors.append("FAIL: missing successful recording RESULT or deadline reached")
     except Exception as exc:
         errors.append(f"FAIL: launch/recording {type(exc).__name__}: {exc}")
-    finally:
-        for key, value in saved_env.items():
-            if value is None:
-                os.environ.pop(key, None)
-            else:
-                os.environ[key] = value
-        if old_harness:
-            for key, value in old_harness.items():
-                setattr(harness, key, value)
     try:
         trace = json.loads((run / "trace.json").read_text(encoding="utf-8"))
         verdict, reasons = evaluate(trace, args.manifest, config)

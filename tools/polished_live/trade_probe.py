@@ -47,17 +47,8 @@ HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parent.parent))
 
-WORK = pathlib.Path(os.environ.get("POL_WORK_ROOT", "F:/slink-work/lanes/pol-trade2"))
-os.environ.setdefault("POL_LANE", str(WORK))
-os.environ.setdefault("POL_EXPLORE", "B")
-os.environ.setdefault("POL_POSMODE", "warp")
 
-import harness  # noqa: E402
-
-# The shared cache is never read or written: point the driver at this lane's own copy.
-harness.CACHE = WORK / "cache" / "polished"
-harness.ROM_SRC = harness.CACHE / "companion-overlay" / "polishedcrystal-3.2.3.gbc"
-harness.ROM = harness.LANE / "rom" / f"pol_{harness.KIND}.gbc"
+from tools.polished_live import harness  # noqa: E402
 
 # The six positions TRADE.md §10.3 pins, expressed in DISPATCH-entry bytes, and where each one
 # comes from. sp+5 is hROMBank; the rest are bridge-entry words shifted by the frame depth.
@@ -130,8 +121,17 @@ def report(run: pathlib.Path) -> int:
 
 
 def main() -> int:
-    rc = harness.cmd_explore()
-    run = harness.LANE / f"explore_{os.environ.get('POL_EXPLORE', 'B')}"
+    from dataclasses import replace
+    work = pathlib.Path(os.environ.get("POL_WORK_ROOT", "F:/slink-work/lanes/pol-trade2"))
+    env = dict(os.environ)
+    env.setdefault("POL_LANE", str(work))
+    env.setdefault("POL_EXPLORE", "B")
+    env.setdefault("POL_POSMODE", "warp")
+    config = harness.launch_config(env)
+    cache = work / "cache/polished"
+    config = replace(config, cache=cache, rom_src=cache / "companion-overlay/polishedcrystal-3.2.3.gbc")
+    rc = harness.cmd_explore(config)
+    run = config.lane / f"explore_{config.explore}"
     rc |= report(run)
     print(f"[trade-probe] explore rc={rc} run={run}")
     return rc

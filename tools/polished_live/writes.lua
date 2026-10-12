@@ -33,19 +33,11 @@ end
 
 -- ── the write tap: every memory.write_* the client makes, in order ────────────────────────────
 local writes = {}
-for _, k in ipairs({"write_u8", "write_s8", "write_u16_le", "write_u16_be", "write_s16_le", "write_s16_be",
-                    "write_u24_le", "write_u24_be", "write_u32_le", "write_u32_be", "write_s32_le",
-                    "write_s32_be", "writebyte", "writebyterange", "write_bytes_as_array",
-                    "write_bytes_as_dict", "writefloat"}) do
-    local fn = memory[k]
-    if fn ~= nil then
-        memory[k] = function(...)
-            local a = {...}
-            writes[#writes + 1] = { op = k, addr = a[1], v = a[2], domain = a[3], frame = emu.framecount() }
-            return fn(...)
-        end
-    end
-end
+local G = dofile(L.ROOT .. "/tools/polished_live/recording_guard.lua")
+memory = G.observe_memory(memory, function(k, ...)
+    local a = {...}
+    writes[#writes + 1] = {op=k, addr=a[1], v=a[2], domain=a[3], frame=emu.framecount()}
+end)
 local function write_report(since)
     local seen, rows, n = {}, {}, 0
     for i = (since or 0) + 1, #writes do

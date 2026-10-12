@@ -38,10 +38,14 @@ Fail-closed rules, all of them load-bearing:
     sha1 the CURRENT `data/polished/overlay_provenance.json` publishes, the item is STALE and
     fails, printing both hashes. The phone-card commit moved the overlay from 29ea04c2 to
     34942315, so every earlier receipt is stale until it is re-run: that is the gate working.
-  * The primary evidence file's bytes are re-hashed when the file is reachable. A mismatch is a
-    tampering failure. A file that is NOT reachable is also a failure, loudly: the receipts are
-    transcriptions of lane evidence, and a transcription nobody can check is not evidence. The
-    RC therefore runs this on the lane host (F:/slink-work/lanes present).
+  * Every primary/secondary artifact and every run witness is re-hashed. The witness must
+    bind the declared execution cut, current digest/overlay and artifact scope. Missing,
+    corrupt or contradictory supporting evidence fails; a receipt cannot vouch for itself.
+    Producer verdicts are interpreted, and supported scenario oracles replay the retained
+    observations with the current judge. This consumes evidence, never launches an emulator.
+    The digest includes the shared panel/core, ROM scan/encounter presentation, and runtime
+    pack tree. Only the pack's *.md/*.txt prose may be excluded. A missing declared runtime
+    file is red; widening this scope requires a fresh execution, never a receipt restamp.
   * A MANAGER item is an import and an assertion against the live server modules. The jar pin is
     compared both to `data/upr_jars.json` and, when the jar file is reachable, to its own bytes.
   * A RELEASE item builds with companion patches and must pass ZIP hygiene. Its Polished UPS
@@ -77,6 +81,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 _PY = sys.executable
 
 MANIFEST = "tests/polished_release_requirements.json"
@@ -162,11 +168,12 @@ def _sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def compute_code_digest(root: Path, patterns: list[str]) -> str:
+def compute_code_digest(root: Path, patterns: list[str], *, excludes: list[str] | tuple[str, ...] = ()) -> str:
     """sha256 over the LF-normalised bytes of every file the patterns match, in sorted path order.
 
     Each file contributes `<posix path>\0<bytes with CRLF -> LF>\0`. A pattern that matches no
     file raises ValueError: a digest over fewer files than declared is not the digest.
+    Explicit exclusion patterns remove prose only; an empty exclusion match is harmless.
     """
     found: set[str] = set()
     for pat in patterns:
@@ -174,6 +181,8 @@ def compute_code_digest(root: Path, patterns: list[str]) -> str:
         if not hits:
             raise ValueError(f"code_digest_files pattern {pat!r} matches no file under {root}")
         found.update(p.relative_to(root).as_posix() for p in hits)
+    for pattern in excludes:
+        found.difference_update(p.relative_to(root).as_posix() for p in root.glob(pattern) if p.is_file())
     digest = hashlib.sha256()
     for rel in sorted(found):
         digest.update(rel.encode("utf-8") + b"\0")
@@ -275,7 +284,7 @@ def check_model(item: dict, root: Path) -> Row:
 _RECEIPT_FIELDS = {
     "scenario_id": str, "date": str, "lane": str, "evidence_file": str,
     "evidence_sha256": str, "rom_sha1_executed": str, "code_digest": str,
-    "synth": list, "checks": list,
+    "synth": list, "checks": list, "secondary_evidence": list, "run_witness": dict,
 }
 
 
@@ -313,6 +322,150 @@ def receipt_schema_errors(doc: object) -> list[str]:
     return errs
 
 
+def _evidence_bytes(record: object, label: str, row: Row) -> bytes | None:
+    """Read once: the bytes hashed are also the bytes interpreted."""
+    if not isinstance(record, dict):
+        row.fail(f"{label}: missing artifact binding")
+        return None
+    path, expected = record.get("path"), record.get("sha256")
+    if not isinstance(path, str) or not path or not isinstance(expected, str) or not _HEX64.fullmatch(expected):
+        row.fail(f"{label}: needs path and lowercase sha256")
+        return None
+    try:
+        raw = Path(path).read_bytes()
+    except OSError as exc:
+        row.fail(f"{label}: evidence file not reachable: {path}: {exc}")
+        return None
+    if hashlib.sha256(raw).hexdigest() != expected:
+        row.fail(f"{label}: evidence sha256 mismatch: {path}")
+        return None
+    return raw
+
+
+def _check_witness(record: object, artifact: Path, doc: dict, current_rom: str | None,
+                   label: str, row: Row) -> None:
+    from tools.polished_live.runtime import loads_json
+
+    raw = _evidence_bytes(record, label, row)
+    if raw is None:
+        return
+    try:
+        witness = loads_json(raw.decode("utf-8"))
+        if not isinstance(witness, dict):
+            raise ValueError("witness must be an object")
+        scope = record.get("scope")
+        if not isinstance(scope, str) or not scope:
+            raise ValueError("missing scope")
+        base = Path(scope).resolve()
+        if not artifact.resolve().is_relative_to(base):
+            raise ValueError(f"artifact outside witness scope: {artifact}")
+        evidence_root = witness.get("evidence_root")
+        if not isinstance(evidence_root, str) or Path(evidence_root).resolve() != base:
+            raise ValueError("evidence_root does not equal declared scope")
+        source = record.get("source_head")
+        if not isinstance(source, str) or not _HEX40.fullmatch(source):
+            raise ValueError("missing source_head execution cut")
+        if witness.get("source_head") != source or witness.get("head", source) != source:
+            raise ValueError("source_head disagrees with recorded execution cut")
+        if record.get("code_digest") != doc["code_digest"] or witness.get("code_digest") != doc["code_digest"]:
+            raise ValueError("code_digest disagrees with receipt execution binding")
+        if witness.get("overlay_sha1") != current_rom:
+            raise ValueError("overlay_sha1 disagrees with current provenance")
+    except (UnicodeError, ValueError, TypeError, OSError) as exc:
+        row.fail(f"{label}: invalid witness binding: {exc}")
+
+
+def _producer_errors(item: dict, raw: bytes) -> list[str]:
+    """Interpret the producer, not the receipt's handwritten PASS transcription."""
+    from tools.polished_live.runtime import loads_json
+
+    try:
+        text = raw.decode("utf-8")
+        scenario = item["expect_scenario"]
+        if scenario == "live/hello-panel-true":
+            records = [loads_json(line) for line in text.splitlines() if line.strip()]
+            hellos = [r["msg"] for r in records if r.get("dir") == "c2s"
+                      and isinstance(r.get("msg"), dict) and r["msg"].get("event") == "hello"]
+            if not hellos or any(h.get("panel") is not True or h.get("panel_abi") != 3 for h in hellos):
+                return ["producer has no valid panel hello"]
+            return []
+        if text.lstrip().startswith("{"):
+            doc = loads_json(text)
+            if not isinstance(doc, dict):
+                return ["producer is not an object"]
+            if scenario == "title/wordmark-vs-clean-control":
+                runs = doc.get("runs", {})
+                overlay, clean = runs.get("overlay", {}), runs.get("clean", {})
+                valid = (overlay.get("result") == "PASS" and overlay.get("reasons") == []
+                         and clean.get("result") == "FAIL"
+                         and any("tile IDs differ" in r for r in clean.get("reasons", [])))
+                return [] if valid else ["title producer lacks overlay PASS / failing identical clean control"]
+            if scenario == "r1/manager-randomized-pair":
+                valid = (doc.get("mode") == "jar" and doc.get("cartridges_status") == 200
+                         and doc.get("contract_matches_downloads") is True
+                         and bool(doc.get("picker_polished")) and bool(doc.get("run_id"))
+                         and (doc.get("status") or {}).get("jar_found") is True)
+                return [] if valid else ["Manager producer provisioning/pin verdict failed"]
+            if "verdict" in doc:
+                good = doc["verdict"] == "PASS"
+            elif "ok" in doc:
+                good = doc["ok"] is True
+            else:
+                return ["producer verdict missing"]
+            if not good or doc.get("reasons") or doc.get("why"):
+                return ["producer verdict is not an unqualified PASS"]
+            return []
+        verdicts = re.findall(r"^RESULT:\s+(PASS|FAIL)\b.*$", text, re.MULTILINE)
+        if verdicts != ["PASS"] or re.search(r"^\s*\[(?:fail|FAIL)\]", text, re.MULTILINE):
+            return ["producer needs one PASS verdict and no failed checks"]
+        if scenario == "live/capture-party-only":
+            contract = loads_json((ROOT / "tools/polished_live/capture_contract.json").read_text(encoding="utf-8"))
+            label = "STAGE2 " + contract["failed_throw_check"]
+            if not re.search(r"^\s*\[ok\] " + re.escape(label) + r"\b", text, re.MULTILINE):
+                return ["producer missing observed failed-throw negative"]
+        return []
+    except (OSError, UnicodeError, ValueError, TypeError, KeyError, AttributeError) as exc:
+        return [f"producer evidence malformed: {exc}"]
+
+
+def _replay_errors(item: dict, primary: bytes, evidence: Path,
+                   artifacts: dict[Path, bytes]) -> list[str]:
+    """Re-judge supported observations; absent raw inputs cannot inherit an old PASS."""
+    from tools.polished_live.runtime import loads_json
+
+    scenario = item["expect_scenario"]
+    try:
+        if scenario in ("duo/play-faint-natural", "duo/play-whiteout-natural"):
+            from tools.polished_live import duo
+
+            recorded = loads_json(primary.decode("utf-8"))
+            observations = recorded.get("evidence")
+            if not isinstance(observations, dict):
+                return ["replay missing raw natural-loss observations"]
+            oracle = duo.oracle_faint_natural if scenario.endswith("faint-natural") else duo.oracle_whiteout_natural
+            verdict, reasons, _ = oracle(observations)
+            return [] if verdict == "PASS" else ["natural-loss replay: " + str(r) for r in reasons]
+        if scenario == "panel/real-host-paging":
+            from tools.polished_live.panel_host_live import judge_pages
+
+            recorded = loads_json(primary.decode("utf-8"))
+            traces = [raw for path, raw in artifacts.items() if path.name == "panel_host.json"]
+            if len(traces) != 1:
+                return ["replay needs one hashed panel_host.json with runtime page counts"]
+            observations = loads_json(traces[0].decode("utf-8"))
+            _, reasons = judge_pages(recorded.get("server_rows"), observations.get("pages"),
+                                     observations.get("lines_per_page", 2))
+            return ["panel replay: " + str(r) for r in reasons]
+        if scenario == "trade/shipped-native-commit-cold-continue":
+            from tools.polished_live.trade_duo_live import replay_saved
+
+            verdict, reasons = replay_saved(evidence.parent, bound_artifacts=frozenset(artifacts))
+            return [] if verdict == "PASS" else ["trade replay: " + str(r) for r in reasons]
+        return []
+    except (UnicodeError, ValueError, KeyError, TypeError, AttributeError, OSError) as exc:
+        return [f"replay observations missing or malformed: {exc}"]
+
+
 def check_live(item: dict, root: Path, current_rom: str | None,
                code_digest: str | None = None) -> Row:
     """A committed DEV receipt, schema- and byte-checked, bound to the overlay published NOW."""
@@ -323,8 +476,10 @@ def check_live(item: dict, root: Path, current_rom: str | None,
     path = root / rel
     if not path.is_file():
         return row.fail(f"missing receipt: {rel}")
+    from tools.polished_live.runtime import loads_json
+
     try:
-        doc = json.loads(path.read_text(encoding="utf-8"))
+        doc = loads_json(path.read_text(encoding="utf-8"))
     except ValueError as exc:
         return row.fail(f"receipt is not valid JSON: {exc}")
     errs = receipt_schema_errors(doc)
@@ -393,15 +548,27 @@ def check_live(item: dict, root: Path, current_rom: str | None,
     if not item.get("expect_checks"):
         row.fail("item declares no expect_checks")
 
-    # 3. the evidence bytes themselves
-    if not evidence.is_file():
-        row.fail(f"evidence file not reachable: {evidence} — the receipt is an unverified "
-                 f"transcription; run this on the lane host")
-    else:
-        actual = _sha256_file(evidence)
-        if actual != doc["evidence_sha256"]:
-            row.fail(f"evidence sha256 mismatch: receipt says {doc['evidence_sha256'][:12]}, "
-                     f"{evidence} hashes {actual[:12]}")
+    # Re-hash every declared artifact and witness before consuming any producer result.
+    primary = _evidence_bytes({"path": str(evidence), "sha256": doc["evidence_sha256"]}, "primary", row)
+    _check_witness(doc["run_witness"], evidence, doc, current_rom, "primary witness", row)
+    secondary = doc["secondary_evidence"]
+    if not secondary:
+        row.fail("secondary_evidence is empty: supporting evidence is required")
+    artifacts: dict[Path, bytes] = {}
+    for index, record in enumerate(secondary):
+        label = f"secondary_evidence[{index}]"
+        raw = _evidence_bytes(record, label, row)
+        if raw is not None:
+            artifacts[Path(record["path"]).resolve()] = raw
+        if isinstance(record, dict) and isinstance(record.get("path"), str):
+            _check_witness(record.get("run_witness"), Path(record["path"]), doc, current_rom,
+                           label + " witness", row)
+    if primary is not None:
+        for error in _producer_errors(item, primary):
+            row.fail(error)
+        if row.ok:
+            for error in _replay_errors(item, primary, evidence, artifacts):
+                row.fail(error)
 
     for note in doc.get("checks", []):
         if note.get("result") == "FAIL":
@@ -694,6 +861,10 @@ def manifest_errors(doc: object) -> list[str]:
     if (not isinstance(digest_files, list) or not digest_files
             or not all(isinstance(p, str) and p for p in digest_files)):
         errs.append("code_digest_files must be a non-empty list of path patterns")
+    excludes = doc.get("code_digest_exclude", [])
+    prose = {"data/games/polished_crystal/**/*.md", "data/games/polished_crystal/**/*.txt"}
+    if not isinstance(excludes, list) or any(not isinstance(p, str) or p not in prose for p in excludes):
+        errs.append("code_digest_exclude may contain only Polished pack *.md/*.txt prose patterns")
     seen: set[str] = set()
     for i, item in enumerate(items):
         if not isinstance(item, dict):
@@ -774,7 +945,7 @@ def verify(root: Path | None = None, manifest_path: Path | None = None,
         return [], errs
 
     try:
-        digest = compute_code_digest(root, doc["code_digest_files"])
+        digest = compute_code_digest(root, doc["code_digest_files"], excludes=doc.get("code_digest_exclude", ()))
     except (OSError, ValueError) as exc:
         return [], [f"cannot compute the code digest: {exc}"]
     items = list(doc["items"]) + list(doc.get("open") or [])
@@ -838,7 +1009,8 @@ def main(argv: list[str] | None = None) -> int:
     manifest_path = Path(args.manifest).resolve() if args.manifest else root / MANIFEST
     if args.print_code_digest:
         try:
-            print(compute_code_digest(root, load_manifest(manifest_path)["code_digest_files"]))
+            doc = load_manifest(manifest_path)
+            print(compute_code_digest(root, doc["code_digest_files"], excludes=doc.get("code_digest_exclude", ())))
         except (OSError, ValueError, KeyError) as exc:
             print(f"cannot compute the code digest: {exc}", file=sys.stderr)
             return 2

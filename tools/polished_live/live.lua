@@ -4,6 +4,30 @@
 -- registers READ-ONLY probes (frame/bank/SP/PC/stack reads). Client writes are recorded; acquisition quarantine is expected.
 -- Stages (POL_STAGES, default 1234): 1 hello, 4 frame-wait stack fingerprint, 2 wild catch (+ run/fail-shake
 -- negatives), 3 box arrival (full-party catch) + census + native save.
+-- Capture-negative replay uses the same oracle as STAGE2; zero failed throws is not evidence.
+-- capture_contract.json owns the check label shared with the release verifier.
+local Oracle = {}
+function Oracle.evaluate_failed_throws(throws)
+    local count, hits, clean = 0, 0, true
+    for _, t in ipairs(throws) do
+        if not t.caught then
+            count = count + 1
+            hits = hits + t.cap_hits
+            clean = clean and t.cap_hits == 0
+        end
+    end
+    return {failed_throw_count = count, capture_hits = hits, ok = count > 0 and clean}
+end
+function Oracle.report_failed_throws(throws, lib)
+    local contract = assert(lib.json.decode(lib.slurp(lib.ROOT .. "/tools/polished_live/capture_contract.json")))
+    local name = assert(contract.failed_throw_check)
+    local negative = Oracle.evaluate_failed_throws(throws)
+    lib.check("STAGE2 " .. name, negative.ok,
+              string.format("failed throws %d; capture hits during failed throws %d",
+                            negative.failed_throw_count, negative.capture_hits))
+    return negative
+end
+if POL_ORACLE_ONLY then return Oracle end
 local L = dofile(os.getenv("SLINK_ROOT") .. "/tools/polished_live/pol_lib.lua")
 local fmt = string.format
 local J = L.json
@@ -77,18 +101,11 @@ SLINK_HOST, SLINK_PORT, SLINK_PLAYER = os.getenv("SLINK_HOST"), tonumber(os.gete
 -- write tap: every Lua-originated memory write (the client's io.write_u8 is memory.write_u8) is counted and logged;
 -- this driver itself writes nothing in the live run, so any count here is the client's
 local lua_writes = {}
-for _, k in ipairs({"write_u8", "write_s8", "write_u16_le", "write_u16_be", "write_s16_le", "write_s16_be", "write_u24_le",
-                    "write_u24_be", "write_u32_le", "write_u32_be", "write_s32_le", "write_s32_be", "writebyte",
-                    "writebyterange", "write_bytes_as_array", "write_bytes_as_dict", "writefloat"}) do
-    local fn = memory[k]
-    if fn ~= nil then
-        memory[k] = function(...)
-            local a = {...}
-            lua_writes[#lua_writes + 1] = fmt("%s(%s) frame %d", k, table.concat({tostring(a[1]), tostring(a[2]), tostring(a[3])}, ","), emu.framecount())
-            return fn(...)
-        end
-    end
-end
+local G = dofile(L.ROOT .. "/tools/polished_live/recording_guard.lua")
+memory = G.observe_memory(memory, function(k, ...)
+    local a = {...}
+    lua_writes[#lua_writes + 1] = fmt("%s(%s) frame %d", k, table.concat({tostring(a[1]), tostring(a[2]), tostring(a[3])}, ","), emu.framecount())
+end)
 local P, sent = {}, {hello = {}, capture = {}, other = {}}
 local last_gen, ticks, gen_changes, last_battle_end = nil, 0, {}, nil
 local function append(path, s) local f = io.open(path, "a") if f then f:write(s .. "\n") f:close() end end
@@ -329,15 +346,14 @@ if want(2) then
 
     -- catch into the party (5 -> 6), failed shakes on the way are the second negative
     local caught = false
+    local observed_throws = {}
     for attempt = 1, 4 do
         walk_for_battle("STAGE2-catch" .. attempt)
         local party_before = L.rw("wPartyCount")
         local captures_before = #sent.capture
         local pcc_before = #pc_changes
         local throws, hits = battle("throw", "STAGE2-catch" .. attempt)
-        for _, t in ipairs(throws) do
-            if not t.caught then L.check("STAGE2 failed throw does not fire the capture site", t.cap_hits == 0, t.cap_hits) end
-        end
+        for _, t in ipairs(throws) do observed_throws[#observed_throws + 1] = t end
         local last = throws[#throws]
         if last and last.caught then
             caught = true
@@ -366,6 +382,9 @@ if want(2) then
         end
     end
     L.check("STAGE2 a wild mon was caught into the party", caught)
+    local negative = Oracle.report_failed_throws(observed_throws, L)
+    local nf = assert(io.open(L.RUN .. "/capture_negative.json", "w"))
+    nf:write(J.encode(negative)) nf:close()
 end
 
 if PREPARE then

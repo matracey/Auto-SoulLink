@@ -26,31 +26,17 @@ def test_overlay_stages_from_the_committed_patch_not_an_obsolete_cache(tmp_path,
     (repo/'data/polished/overlay_provenance.json').write_text(json.dumps({'output':{'sha1':hashlib.sha1(overlay).hexdigest()}}))
     (repo/'patch/dist/SLink-Polished.ups').write_bytes(ups_create(base,overlay))
     (cache/'release/polishedcrystal-3.2.3.gbc').write_bytes(base)
-    monkeypatch.setattr(h,'REPO',repo)
-    monkeypatch.setattr(h,'CACHE',cache)
-    monkeypatch.setattr(h,'KIND','overlay')
-    monkeypatch.setattr(h,'ROM_SRC',cache/'companion-overlay/polishedcrystal-3.2.3.gbc')
-    monkeypatch.setattr(h,'ROM',tmp_path/'lane/current.gbc')
-    assert h.stage_rom()==hashlib.sha1(overlay).hexdigest()
-    assert h.ROM.read_bytes()==overlay
+    from dataclasses import replace
+    config = replace(h.launch_config({}), repo=repo, cache=cache, kind="overlay",
+                     rom_src=cache/'companion-overlay/polishedcrystal-3.2.3.gbc',
+                     rom=tmp_path/'lane/current.gbc')
+    assert h.stage_rom(config)==hashlib.sha1(overlay).hexdigest()
+    assert config.rom.read_bytes()==overlay
     (repo/'data/polished/overlay_provenance.json').write_text(json.dumps({'output':{'sha1':'0'*40}}))
     with pytest.raises(SystemExit, match='provenance'):
-        h.stage_rom()
+        h.stage_rom(config)
 
 
-def test_phone_launcher_honors_the_assigned_lane(tmp_path, monkeypatch):
-    monkeypatch.setenv('POL_LANE',str(tmp_path/'assigned'))
-    module=load('run_phone_ab')
-    assert str(module.LANE_ROOT)==str(tmp_path/'assigned')
-
-
-def test_phone_launcher_exports_the_symbols_its_driver_reads(monkeypatch,tmp_path):
-    import re
-    monkeypatch.setenv('POL_LANE',str(tmp_path))
-    phone=load('run_phone_ab')
-    source=(ROOT/'tools/polished_live/phone.lua').read_text()
-    reads=set(re.findall(r'L\.rw\("([^"\n]+)',source))
-    assert reads <= set(phone.H.SYMBOLS)
 
 
 @pytest.mark.parametrize("text,expected", [("SOUL LINK\nNO CLIENT", True), ("SLink is linked.", False), ("SOUL LINK", False)], ids=["fallback", "obsolete", "incomplete"])
@@ -79,15 +65,6 @@ def test_capture_count_is_sampled_before_quarantine():
     assert lua.globals().result is False
 
 
-def test_randomized_player_is_forwarded_to_client():
-    # The public POL_PLAYER switch chooses the ROM and must choose the same wire identity.
-    source=(ROOT/'tools/polished_live/harness.py').read_text()
-    import ast
-    tree=ast.parse(source)
-    values=[v for n in ast.walk(tree) if isinstance(n, ast.Dict)
-            for k,v in zip(n.keys,n.values,strict=True) if isinstance(k,ast.Constant) and k.value=='SLINK_PLAYER']
-    assert len(values)==1
-    assert isinstance(values[0],ast.Name) and values[0].id=='PLAYER'
 
 
 

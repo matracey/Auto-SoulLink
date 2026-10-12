@@ -27,57 +27,46 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "tools"))
 sys.path.insert(0, str(REPO))
 
-os.environ.setdefault("POL_LANE", "F:/slink-work/lanes/pol-sounds2")
-os.environ.setdefault("POL_FIXTURE", "F:/slink-work/lanes/pol-live/fixture/polished_overlay_warp.SaveRAM")
 
-import harness  # noqa: E402  (tools/polished_live/harness.py)
-from patch.tools.make_ups import ups_apply  # noqa: E402
+from tools.polished_live import harness  # noqa: E402  (tools/polished_live/harness.py)
 
-LANE = harness.LANE
+  # noqa: E402
+
+DEFAULT_LANE = "F:/slink-work/lanes/pol-sounds2"
 PROV = json.loads((REPO / "data/polished/overlay_provenance.json").read_text(encoding="utf-8"))
 RELEASE = Path("F:/slink-work/cache/polished/release/polishedcrystal-3.2.3.gbc")
 UPS = REPO / "patch/dist/SLink-Polished.ups"
-STAGED = LANE / "rom" / "pol_sounds.gbc"
 # the sound driver reads three audio WRAM words the client harness does not
 EXTRA = ("wCurSFX", "wChannel5Flags", "wMusicFade")
 
 
-def stage() -> str:
-    """release + committed UPS -> lane/rom/pol_sounds.gbc, refused unless the sha1 is the pin."""
-    clean = RELEASE.read_bytes()
-    if hashlib.sha1(clean).hexdigest() != PROV["base_sha1"]:
+def stage(config) -> str:
+    """Committed patch staging through the shared pin-before-write gate."""
+    if hashlib.sha1(RELEASE.read_bytes()).hexdigest() != PROV["base_sha1"]:
         raise SystemExit("cached release ROM is not the pinned base")
-    data = ups_apply(clean, UPS.read_bytes())
-    sha1 = hashlib.sha1(data).hexdigest()
-    if sha1 != PROV["output"]["sha1"]:
-        raise SystemExit(f"staged overlay sha1 {sha1} != provenance {PROV['output']['sha1']}")
-    STAGED.parent.mkdir(parents=True, exist_ok=True)
-    STAGED.write_bytes(data)
-    return sha1
+    return harness.stage_pinned_rom(RELEASE, config.rom, PROV["output"]["sha1"], patch=UPS)
 
 
 def main() -> int:
-    sha1 = stage()
-    print(f"[pol-sounds] staged {STAGED} sha1 {sha1}", flush=True)
-    harness.ROM_SRC = STAGED                 # the committed UPS, not a build tree
-    harness.ROM = STAGED                    # harness.ROM is what EmuHawk is handed
-    harness.SYMBOLS = tuple(harness.SYMBOLS) + EXTRA
-    harness.SYM = REPO / "data" / "polished" / "polished_slink.sym"
-
-    # own the fixture: the source lane belongs to another card and can be rewritten mid-run
-    source = harness.FIXTURE
+    from dataclasses import replace
+    env = dict(os.environ)
+    env.setdefault("POL_LANE", DEFAULT_LANE)
+    env.setdefault("POL_FIXTURE", "F:/slink-work/lanes/pol-live/fixture/polished_overlay_warp.SaveRAM")
+    config = harness.launch_config(env)
+    config = replace(config, rom=config.lane / "rom/pol_sounds.gbc",
+                     symbols=tuple(dict.fromkeys((*config.symbols, *EXTRA))))
+    sha1 = stage(config)
+    print(f"[pol-sounds] staged {config.rom} sha1 {sha1}", flush=True)
+    source = config.fixture
     if not source.is_file():
         raise SystemExit(f"no save fixture at {source}; the game never gets past the intro")
-    fixture = LANE / "fixture" / "pol_sounds.SaveRAM"
+    fixture = config.lane / "fixture" / "pol_sounds.SaveRAM"
     fixture.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(source, fixture)
     print(f"[pol-sounds] fixture sha256 {hashlib.sha256(fixture.read_bytes()).hexdigest()}", flush=True)
-    sram = harness.SRAM
-    sram.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(fixture, sram / harness.SAVE_NAME)
-
-    run = LANE / "sounds"
-    text, pid = harness.launch("tools/polished_live/sounds.lua", run, {}, 180)
+    harness.prepare_save(config, fixture)
+    run = config.lane / "sounds"
+    text, pid = harness.launch(config, "tools/polished_live/sounds.lua", run, {}, 180)
     print(text)
     data = [line for line in text.splitlines() if line.startswith("RESULT-DATA ")]
     if data:

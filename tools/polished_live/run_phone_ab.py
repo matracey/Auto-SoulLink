@@ -11,21 +11,19 @@ emulator config are identical. That is what separates "the panel overlay breaks 
 import hashlib
 import os
 import pathlib
-import shutil
 import sys
 
-LANE_ROOT = pathlib.Path(os.environ.get("POL_LANE", "F:/slink-work/lanes/pol-panel2"))
-os.environ["POL_LANE"] = str(LANE_ROOT)
-os.environ.setdefault("POL_FIXTURE", "F:/slink-work/lanes/g2int-live/pol/fixture/polished_overlay_warp.SaveRAM")
 REPO = pathlib.Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "tools"))
 sys.path.insert(0, str(REPO / "patch" / "tools"))
 sys.path.insert(0, str(REPO / "tools" / "polished_live"))
 
-import harness as H  # noqa: E402
 from make_ups import ups_apply  # noqa: E402
 
-H.SYMBOLS = H.SYMBOLS + (
+from tools.polished_live import harness as H  # noqa: E402
+
+EXTRA_SYMBOLS = (
     "wPhoneList", "wNumSetBits", "wCurCaller", "wPokegearPhoneCursorPosition", "wPokegearPhoneScrollPosition",
     "wPokegearPhoneSelectedPerson", "wPokegearPhoneSubmenuCursor", "PokegearPhoneContactSubmenu", "PokegearPhoneContactSubmenu.Delete",
     "MakePhoneCallFromPokegear", "SlinkPhone_CallGate", "SlinkPhone_CallerName", "SlinkPhone_CanDelete",
@@ -34,26 +32,29 @@ H.SYMBOLS = H.SYMBOLS + (
     # one line after the boot log -- a harness defect that looked exactly like a boot failure.
     "SlinkPanel", "SlinkPanelEnd", "SlinkPanelFallback",
 )
-H.ROM = LANE_ROOT / "rom" / os.environ.get("POL_ROM_OUT", "pol_overlay.gbc")
 
 RELEASE = pathlib.Path("F:/slink-work/cache/polished/release/polishedcrystal-3.2.3.gbc")
-UPS = pathlib.Path(os.environ["POL_ROM_UPS"]) if os.environ.get("POL_ROM_UPS") else (
-    REPO / "patch" / "dist" / "SLink-Polished.ups")
+DEFAULT_UPS = REPO / "patch/dist/SLink-Polished.ups"
 
 
 def main() -> int:
-    data = ups_apply(RELEASE.read_bytes(), UPS.read_bytes())
+    from dataclasses import replace
+
+    from tools.polished_live.runtime import stage_pinned_rom
+    env = dict(os.environ)
+    env.setdefault("POL_LANE", "F:/slink-work/lanes/pol-panel2")
+    env.setdefault("POL_FIXTURE", "F:/slink-work/lanes/g2int-live/pol/fixture/polished_overlay_warp.SaveRAM")
+    config = H.launch_config(env)
+    config = replace(config, rom=config.lane / "rom" / env.get("POL_ROM_OUT", "pol_overlay.gbc"),
+                     symbols=tuple(dict.fromkeys((*config.symbols, *EXTRA_SYMBOLS))))
+    ups = pathlib.Path(env.get("POL_ROM_UPS", str(DEFAULT_UPS)))
+    # Deliberate A/B cartridges may differ from production; pin their exact UPS output.
+    data = ups_apply(RELEASE.read_bytes(), ups.read_bytes())
     sha1 = hashlib.sha1(data).hexdigest()
-    print(f"[ab] ups {UPS.name} -> {H.ROM.name} sha1 {sha1}", flush=True)
-    H.ROM.parent.mkdir(parents=True, exist_ok=True)
-    H.ROM.write_bytes(data)
-    H.SRAM.mkdir(parents=True, exist_ok=True)
-    for stale in H.SRAM.glob("*.SaveRAM*"):
-        stale.unlink()
-    shutil.copyfile(H.FIXTURE, H.SRAM / H.SAVE_NAME)
-    print(f"[ab] fixture {H.FIXTURE} -> {H.SRAM / H.SAVE_NAME}", flush=True)
-    run = LANE_ROOT / os.environ.get("POL_RUNNAME", "phone_ab")
-    text, pid = H.launch(os.environ.get("POL_DRIVER", "tools/polished_live/phone.lua"), run, {}, 900)
+    stage_pinned_rom(RELEASE, config.rom, sha1, patch=ups)
+    H.prepare_save(config, clear=True)
+    run = config.lane / env.get("POL_RUNNAME", "phone_ab")
+    text, pid = H.launch(config, env.get("POL_DRIVER", "tools/polished_live/phone.lua"), run, {}, 900)
     print(f"sha1 {sha1} pid {pid}")
     print(text[-6000:])
     (run / "rom_sha1.txt").write_text(sha1 + "\n", encoding="utf-8")

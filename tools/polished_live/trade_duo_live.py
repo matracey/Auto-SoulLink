@@ -3,6 +3,18 @@
 SYNTH: retained receptionist fixture, derived second identity, exactly one link
 seeded through State hello/capture events. Receptionist onward uses native input,
 real clients/server and native commit/save. Only owned process PIDs are stopped.
+
+The judge consumes both sides' ordered, qualified APPLY/commit/native-save/
+save-readback/publish/exit witnesses, not a producer PASS or protocol ACK alone.
+Cold CONTINUE and both checksummed save copies must preserve trainer ID AND name,
+and every received/surviving record byte, OT and nickname. Native slot rotation
+is allowed. For this unchanged-key fixture, the sole record transformation is
+non-egg happiness -> BASE_HAPPINESS (70): native engine/pokemon/move_mon.asm
+AddTempMonToParty, and patch/polished/src/trade_commit.asm .CheckAppend. Eggs keep
+their happiness. Trade evolution can change species/item/stats/default nickname;
+this gate's deliberately non-evolving exchanged fixture does not certify those
+paths, and cannot waive bytes for them. Missing raw/native evidence fails closed.
+Shipped composition never falls back to the isolated development binder.
 """
 from __future__ import annotations
 
@@ -10,6 +22,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -37,8 +50,8 @@ def sha(data):
 def probe_symbols(syms):
     from tools.polished_live import harness
     # The full ~70k-label SYM exceeds json_codec's 100k-value bound (each row is an array).
-    return {name: syms[name] for name in (*harness.SYMBOLS, "NoYesBox", "SlinkTradeCommit", "SlinkTradeApplyCommit",
-                                         "SlinkTradePublishDone", "SlinkTradeExit", "SlinkTradeResponderService", "SlinkTradeResponderExit")}
+    return {name: syms[name] for name in (*harness.SYMBOLS, "NoYesBox", *NATIVE_SITES,
+                                         "SlinkTradeResponderService")}
 
 
 def party(data):
@@ -76,10 +89,105 @@ def seed_server(path, saves, rom_sha=SHIPPED):
     return events
 
 
-def judge(wire, before, cold, state):
+NATIVE_SITES = ("SlinkTradeApplyCommit", "SlinkTradeCommit", "ForceGameSave",
+                "SlinkTradeCommit.CheckSave", "SlinkTradePublishDone", "SlinkTradeExit",
+                "SlinkTradeResponderExit")
+
+
+def native_sites(syms, rom):
+    """Expected hook bytes come from the staged artifact, never the live hook itself."""
+    sites = {}
+    for name in NATIVE_SITES:
+        bank, addr = syms[name]
+        offset = bank * 0x4000 + addr - 0x4000 if bank else addr
+        sites[name] = {"bank": bank, "pc": addr, "rom_offset": offset,
+                       "expected_hex": rom[offset:offset + 4].hex()}
+    return sites
+
+
+def _blob(row):
+    """Require the complete physical 48+11+11 record; no decoded-field fallback."""
+    if not isinstance(row, dict):
+        raise ValueError("record missing")
+    if "blob_hex" in row:
+        text = row["blob_hex"]
+    else:
+        fields = (("record_hex", 48), ("ot_hex", 11), ("nickname_hex", 11))
+        if any(not isinstance(row.get(field), str) or not re.fullmatch(
+                r"[0-9a-fA-F]{" + str(size * 2) + r"}", row[field]) for field, size in fields):
+            raise ValueError("raw record/name arrays missing")
+        text = "".join(row[field] for field, _ in fields)
+    if not isinstance(text, str) or not re.fullmatch(r"[0-9a-fA-F]{140}", text):
+        raise ValueError("full party blob missing")
+    raw = bytes.fromhex(text)
+    key = pc.key(pc.decode_party_blob(raw))
+    if row.get("key") is not None and row["key"] != key:
+        raise ValueError("record key disagrees with bytes")
+    return key, raw
+
+
+def _identity(snapshot):
+    if "player_id_hex" in snapshot:
+        text = snapshot.get("player_id_hex")
+        name = snapshot.get("player_name_hex")
+        if (not isinstance(text, str) or not re.fullmatch(r"[0-9a-fA-F]{4}", text)
+                or not isinstance(name, str) or not re.fullmatch(r"[0-9a-fA-F]{16}", name)):
+            raise ValueError("raw trainer identity missing")
+        return int(text, 16), pc.decode_text(bytes.fromhex(name))
+    if type(snapshot.get("ot_id")) is not int or not isinstance(snapshot.get("trainer_name"), str):
+        raise ValueError("trainer identity missing")
+    return snapshot["ot_id"], snapshot["trainer_name"]
+
+
+def _record_reasons(role, label, snapshot, expected, identity):
+    reasons = []
+    try:
+        if _identity(snapshot) != (identity["player_id"], identity["name"]):
+            reasons.append(f"{role}: {label} identity differs")
+        rows = snapshot.get("party")
+        if not isinstance(rows, list) or len(rows) != len(expected):
+            raise ValueError("party count differs")
+        actual = dict(_blob(row) for row in rows)
+        if len(actual) != len(rows) or actual != expected:
+            reasons.append(f"{role}: {label} full party differs")
+    except (KeyError, TypeError, ValueError) as exc:
+        reasons.append(f"{role}: {label} raw evidence invalid: {exc}")
+    return reasons
+
+
+def _milestone_reasons(role, rows, sites=None):
+    required = (*NATIVE_SITES[:5], "SlinkTradeExit" if role == "a" else "SlinkTradeResponderExit")
+    rows = rows if isinstance(rows, list) else []
+    last_index, last_frame = -1, -1
+    reasons = []
+    for name in required:
+        matches = [(i, row) for i, row in enumerate(rows) if isinstance(row, dict)
+                   and row.get("kind") == "native" and row.get("detail") == name]
+        if len(matches) != 1:
+            reasons.append(f"{role}: native milestone not exactly one: {name}")
+            continue
+        index, row = matches[0]
+        frame = row.get("frame")
+        if (row.get("qualified") is not True or type(frame) is not int
+                or type(row.get("pc")) is not int or type(row.get("bank")) is not int
+                or not isinstance(row.get("expected_hex"), str)
+                or not re.fullmatch(r"(?:[0-9a-fA-F]{2})+", row["expected_hex"])):
+            reasons.append(f"{role}: native milestone unqualified: {name}")
+            continue
+        if sites is not None and any(row.get(field) != (sites.get(name) or {}).get(field)
+                                     for field in ("pc", "bank", "expected_hex")):
+            reasons.append(f"{role}: native milestone differs from staged site: {name}")
+        if index <= last_index or frame < last_frame:
+            reasons.append(f"{role}: native milestone out of order: {name}")
+        last_index, last_frame = index, frame
+    return reasons
+
+
+def judge(wire, before, cold, state, *, milestones=None, durable=None, sites=None):
     reasons = []
     original = {r: party(before[r]) for r in ("a", "b")}
     tokens = []
+    milestones, durable = milestones or {}, durable or {}
     for r, other in (("a", "b"), ("b", "a")):
         events = [row["msg"] for row in wire[r] if row.get("dir") == "c2s"]
         done = [m for m in events if m.get("event") == "trade_done"]
@@ -96,14 +204,22 @@ def judge(wire, before, cold, state):
             reasons.append(r+": trade_done not one exact received key")
         if any(m.get("event") in ("faint", "whiteout") for m in events):
             reasons.append(r+": false death")
-        if not cold.get(r):
-            reasons.append(r+": cold CONTINUE missing")
-            continue
-        expected = [m["key"] for m in original[r][1:]]+[original[other][0]["key"]]
-        if [m["key"] for m in cold[r].get("party", [])] != expected:
-            reasons.append(r+": cold party differs")
-        if cold[r].get("trainer_name") != duo.fixture_identity(before[r])["name"]:
-            reasons.append(r+": cold identity differs")
+        reasons.extend(_milestone_reasons(r, milestones.get(r), sites))
+        identity = duo.fixture_identity(before[r])
+        expected = dict(_blob(mon) for mon in original[r][1:])
+        received_key, incoming = _blob(original[other][0])
+        incoming = bytearray(incoming)
+        if not incoming[21] & 0x40:
+            incoming[26] = 70
+        expected[received_key] = bytes(incoming)
+        reasons.extend(_record_reasons(r, "cold CONTINUE", cold.get(r) or {}, expected, identity))
+        proof = durable.get(r) or {}
+        copies, integrity = proof.get("copies") or {}, proof.get("integrity") or {}
+        for copy in ("main", "backup"):
+            if (integrity.get(copy) or {}).get("valid") is not True or (
+                    integrity.get(copy) or {}).get("markers_valid") is not True:
+                reasons.append(f"{r}: durable {copy} corrupt or missing")
+            reasons.extend(_record_reasons(r, "durable " + copy, copies.get(copy) or {}, expected, identity))
     if len(tokens) != 2 or tokens[0] != tokens[1]:
         reasons.append("two sides did not complete the same transaction")
     links = state.get("links", [])
@@ -116,6 +232,39 @@ def judge(wire, before, cold, state):
     if state.get("pending_trade") is not None:
         reasons.append("server trade still pending")
     return ("FAIL" if reasons else "PASS"), reasons
+
+
+def replay_saved(run_dir, *, bound_artifacts=None):
+    """Rejudge bound physical inputs; never trust verdict.json or an unbound save.
+
+    Local inspection may omit bound_artifacts. The release verifier supplies its
+    resolved secondary-artifact set; every source byte opened here must belong to it.
+    """
+    run_dir = Path(run_dir)
+    bound = None if bound_artifacts is None else {Path(p).resolve() for p in bound_artifacts}
+
+    def source(relative):
+        path = run_dir / relative
+        if bound is not None and path.resolve() not in bound:
+            raise ValueError(f"unbound replay source: {relative}")
+        return path
+
+    try:
+        manifest = json.loads(source("manifest.json").read_text())
+        if manifest.get("test_build") is not False or manifest.get("rom_sha1") != overlay_sha1():
+            return "FAIL", ["retained run is not the shipped overlay"]
+        before = {r: source(f"before-{r}.SaveRAM").read_bytes() for r in ("a", "b")}
+        wire = {r: duo.read_jsonl(source(f"wire/wire_{r}.jsonl")) for r in ("a", "b")}
+        cold = {r: json.loads(source(f"{r}/g2/ready.json").read_text()) for r in ("a", "b")}
+        milestones = {r: duo.read_jsonl(source(f"{r}/g1/milestones.jsonl")) for r in ("a", "b")}
+        durable = {r: reload_probe.extract_save(source(f"after-{r}.SaveRAM").read_bytes()) for r in ("a", "b")}
+        state = json.loads(source("state-after-trade.json").read_text())
+        sites = manifest.get("native_sites")
+        if not isinstance(sites, dict) or any(name not in sites for name in NATIVE_SITES):
+            return "FAIL", ["retained staged native site evidence missing"]
+        return judge(wire, before, cold, state, milestones=milestones, durable=durable, sites=sites)
+    except (OSError, KeyError, TypeError, ValueError) as exc:
+        return "FAIL", [f"retained trade evidence invalid or missing: {exc}"]
 
 
 def stage_root(enabled):
@@ -149,19 +298,19 @@ def stage_root(enabled):
 
 
 def run(args):
-    from tools.build_gen2_companion import _symbols, ups_apply
-    from tools.gen1_playthrough import BIZHAWK_CONFIG, EMUHAWK, write_run_config
+    from dataclasses import replace
+
     from tools.polished_live import harness
+    from tools.polished_live.runtime import pinned_rom_bytes, read_symbols, start_owned
     if args.test_build:
         enabled = LANE/"enabled"
         rom = (enabled/"cache/polished/companion-overlay/polishedcrystal-3.2.3.gbc").read_bytes()
         root, syms, rom_sha = stage_root(enabled)
     else:
         root = ROOT
-        syms = _symbols(ROOT/"data/polished/polished_slink.sym")
-        rom = ups_apply(duo.RELEASE.read_bytes(), (ROOT/"patch/dist/SLink-Polished.ups").read_bytes())
+        syms = read_symbols(ROOT / "data/polished/polished_slink.sym")
+        rom = pinned_rom_bytes(duo.RELEASE, overlay_sha1(), patch=ROOT / "patch/dist/SLink-Polished.ups")
         rom_sha = hashlib.sha1(rom).hexdigest()
-        assert rom_sha == overlay_sha1(), "shipped overlay differs from provenance"
     gate_bank, gate_addr = syms["SlinkTradeCommitEnabled"]
     assert rom[gate_bank*0x4000+gate_addr-0x4000] == 1
     run_dir = args.lane/args.name
@@ -179,22 +328,27 @@ def run(args):
     manifest = {"disclosure": DISCLOSURE, "derivation": derivation, "seed_events": events,
                 "rom_sha1": rom_sha, "shipped_overlay_sha1": overlay_sha1(), "test_build": args.test_build,
                 "gate": {"bank": gate_bank, "addr": gate_addr, "value": 1}, "source_head": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()}
+    sites = native_sites(syms, rom)
+    manifest["native_sites"] = sites
     (run_dir/"manifest.json").write_text(json.dumps(manifest, indent=2))
     port, http = harness.free_port(), harness.free_port()
     processes = {}
     paths = {}
+    config = replace(harness.launch_config(), symbols=tuple(probe_symbols(syms)),
+                     sym=(enabled if args.test_build else ROOT) / "data/polished/polished_slink.sym")
     def launch(role, cold=False):
         paths[role] = p = duo.side_paths(run_dir, role, 2 if cold else 1)
         Path(p["run"]).mkdir(parents=True)
         if not cold:
             duo.stage_side(p, rom, run_dir/f"before-{role}.SaveRAM")
-        write_run_config(BIZHAWK_CONFIG, p["config"], saveram_dir=p["sram_dir"], purergb=True)
-        Path(p["run"], "syms.json").write_text(json.dumps(probe_symbols(syms)))
+        Path(p["run"], "trade-sites.json").write_text(json.dumps(sites))
         env = dict(os.environ, **duo.side_env(p, role, "127.0.0.1", port))
         env.update(SLINK_ROOT=root.as_posix(), POL_DRIVER_ROOT=ROOT.as_posix(), POL_COLD="1" if cold else "0",
                    POL_TRADE_DEV="1" if args.test_build else "0")
-        proc = subprocess.Popen([EMUHAWK, "--lua="+(ROOT/"tools/polished_live/trade_duo_live.lua").as_posix(),
-                                 "--config="+p["config"], p["rom"]], cwd=ROOT, env=env)
+        side_config = replace(config, rom=Path(p["rom"]), sram=Path(p["sram_dir"]),
+                              save_name=Path(p["saveram"]).name)
+        proc = start_owned(side_config, "tools/polished_live/trade_duo_live.lua", Path(p["run"]),
+                           env, config_path=p["config"])
         processes[role] = proc
         Path(p["run"], "pid.txt").write_text(str(proc.pid))
     with (run_dir/"server.log").open("w") as log:
@@ -235,17 +389,15 @@ def run(args):
             (run_dir/"state-after-trade.json").write_text(json.dumps(state, indent=2))
             traded = all(Path(paths[r]["run"], "done.json").exists() for r in ("a", "b"))
             cold = {}
-            durable_failures = []
+            durable = {}
+            milestones = {r: duo.read_jsonl(run_dir / r / "g1/milestones.jsonl") for r in ("a", "b")}
             if traded:
                 for r in ("a", "b"):
                     data = Path(paths[r]["saveram"]).read_bytes()
                     proof = reload_probe.extract_save(data)
+                    durable[r] = proof
+                    (run_dir / f"after-{r}.SaveRAM").write_bytes(data)
                     (run_dir/f"durable-{r}.json").write_text(json.dumps(proof, indent=2))
-                    expected = [m["key"] for m in party(saves[r])[1:]]+[party(saves["b" if r == "a" else "a"])[0]["key"]]
-                    for copy, snapshot in proof["copies"].items():
-                        if (not proof["integrity"][copy]["valid"] or not proof["integrity"][copy]["markers_valid"]
-                                or [m["key"] for m in reload_probe.decode_snapshot(snapshot)["party"]] != expected):
-                            durable_failures.append(r+": durable "+copy+" differs or is corrupt")
                     launch(r, cold=True)
                 deadline = time.monotonic()+120
                 while time.monotonic() < deadline and not all(Path(paths[r]["run"], "ready.json").exists() for r in ("a", "b")):
@@ -254,14 +406,13 @@ def run(args):
                     path = Path(paths[r]["run"], "ready.json")
                     if path.exists():
                         cold[r] = json.loads(path.read_text())
-            verdict, reasons = judge(wire, saves, cold, state)
-            if durable_failures:
-                verdict, reasons = "FAIL", reasons+durable_failures
+            verdict, reasons = judge(wire, saves, cold, state, milestones=milestones, durable=durable, sites=sites)
             for role in ("a", "b"):
                 for failure in (run_dir/role).glob("g*/failure.json"):
                     verdict = "FAIL"
                     reasons.append(role+": "+json.loads(failure.read_text())["reason"])
             (run_dir/"verdict.json").write_text(json.dumps({"verdict": verdict, "reasons": reasons, "cold": cold,
+                                                          "milestones": milestones, "durable": durable,
                                                           "disclosure": DISCLOSURE}, indent=2))
             print(run_dir, verdict, reasons)
             return 0 if verdict == "PASS" else 1

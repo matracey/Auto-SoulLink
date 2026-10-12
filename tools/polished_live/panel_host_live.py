@@ -17,12 +17,14 @@ Oracle (written to <lane>/run/oracle.json):
   O2 those rows equal what the SERVER STATE says (links.json + /api/status: pair names/levels, pairs alive, dead zones, badges),
   O3 the link_panel on the server's own wire log is the one the client held,
   O4 the client's panel-permit receipts attribute every mailbox write (and the driver made none).
+Pagination is replayable through evaluate/judge_pages without a live process: the expected
+count comes from the server's rows and the pinned panel geometry, never the observed count.
+Malformed wire evidence is an error, not a line silently omitted from the proof.
 SYNTH disclosure: the fixture save (g2int-live warp fixture), wPokegearFlags=$87, wPhoneList=0, the scripted partner identity.
 """
 from __future__ import annotations
 
 import argparse
-import contextlib
 import hashlib
 import json
 import os
@@ -35,8 +37,10 @@ import time
 import urllib.request
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
-for sub in ("", "tools", "patch/tools", "tools/polished_live"):
-    sys.path.insert(0, str(REPO / sub))
+if __name__ == "__main__":
+    sys.path.insert(0, str(REPO))
+
+from tools.polished_live.runtime import read_jsonl  # noqa: E402
 
 LANE_DEFAULT = "F:/slink-work/lanes/pol-panelhost"
 
@@ -46,13 +50,6 @@ def popcount(v) -> int:
     return badge_count(v)
 
 
-def read_jsonl(path: pathlib.Path) -> list:
-    out = []
-    if path.exists():
-        for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
-            with contextlib.suppress(ValueError):
-                out.append(json.loads(line))
-    return out
 
 
 def judge_server_rows(rows, links, area_states, badges, line_max=16) -> tuple[list, list]:
@@ -85,6 +82,59 @@ def judge_server_rows(rows, links, area_states, badges, line_max=16) -> tuple[li
                  + f"{e0['a']['nickname'][:8]}-{e0['b']['nickname'][:8]}")[:line_max]
     need("O2 pair line names player a's mon then the PARTNER's mon, whole", want_pair in rows, f"want {want_pair!r} in {rows}")
     return checks, fails
+
+
+def judge_pages(rows, pages, lines_per_page) -> tuple[list, list]:
+    """Require the complete ordered 1..ceil(server rows / panel lines) observation."""
+    expected = (len(rows) + lines_per_page - 1) // lines_per_page
+    indexes = [p.get("page") for p in pages]
+    counts = [p.get("pages") for p in pages]
+    checks = [
+        {"check": "pages: every server-derived page rendered exactly once in order",
+         "ok": expected > 0 and indexes == list(range(1, expected + 1))
+         and all(type(index) is int for index in indexes),
+         "detail": {"expected": expected, "rendered": indexes}},
+        {"check": "pages: runtime counts are stable and equal the server-derived count",
+         "ok": bool(pages) and all(type(count) is int and count == expected for count in counts),
+         "detail": {"expected": expected, "runtime_counts": counts}},
+    ]
+    return checks, [f"{c['check']}: {c['detail']}" for c in checks if not c["ok"]]
+
+
+def evaluate(ev, links_doc, status, wire, sha1, *, lua_pass, lines_per_page=2) -> dict:
+    """Replay the real-host oracle from retained JSON payloads; no emulator or server."""
+    why, checks = [], []
+    if not lua_pass:
+        why.append("LUA_RESULT_NOT_PASS (see result.txt)")
+    pair_rows = ev.get("pair_rows") or []
+    server_panels = [c["rows"] for r in wire if r.get("dir") == "s2c"
+                     for c in (r.get("msg") or {}).get("commands", []) if c.get("cmd") == "link_panel"]
+    checks.append({"check": "O3 the server's wire log carries the link_panel the client held",
+                   "ok": bool(pair_rows) and pair_rows in server_panels,
+                   "detail": f"{len(server_panels)} link_panel(s) on the wire; held {pair_rows}"})
+    badges = (status.get("players", {}).get("a", {}) or {}).get("badges", 0)
+    c2, _ = judge_server_rows(pair_rows, links_doc.get("links", []), links_doc.get("area_states", {}), badges)
+    checks += c2
+    hello_a = next((r["msg"] for r in wire if r.get("dir") == "c2s"
+                    and (r.get("msg") or {}).get("event") == "hello"), {})
+    checks.append({"check": "hello: panel=true, panel_abi=3, companion_abi=3, overlay sha1",
+                   "ok": hello_a.get("panel") is True and hello_a.get("panel_abi") == 3
+                   and hello_a.get("companion_abi") == 3 and hello_a.get("rom_sha1") == sha1,
+                   "detail": {k: hello_a.get(k) for k in ("panel", "panel_abi", "companion_abi", "rom_sha1", "artifact_kind")}})
+    rec = ev.get("client_receipts") or []
+    checks.append({"check": "O4 the client's permit logged the mailbox writes; the driver wrote 6 SYNTH bytes outside it",
+                   "ok": len(rec) > 0 and len(ev.get("driver_writes", [])) == 6,
+                   "detail": {"client_receipts": len(rec), "driver_writes": ev.get("driver_writes"),
+                              "mailbox": ev.get("mailbox")}})
+    page_checks, _ = judge_pages(pair_rows, ev.get("pages", []), lines_per_page)
+    checks += page_checks
+    failed = [c for c in checks if not c["ok"]]
+    why += [f"{c['check']}: {c['detail']}" for c in failed]
+    return {"verdict": "PASS" if lua_pass and not failed and not why else "FAIL", "why": why,
+            "checks": checks, "rom_sha1": sha1, "server_rows": pair_rows,
+            "expected_pages": (len(pair_rows) + lines_per_page - 1) // lines_per_page,
+            "pages_rendered": [{"page": p.get("page"), "box_rows": p.get("box_rows"),
+                                "staged": p.get("staged_text")} for p in ev.get("pages", [])]}
 
 
 class Partner:
@@ -137,23 +187,19 @@ def main(argv=None) -> int:
     ap.add_argument("--timeout", type=int, default=2400)
     args = ap.parse_args(argv)
     lane = pathlib.Path(args.lane)
-    os.environ["POL_LANE"] = str(lane)
-    os.environ["POL_KIND"] = "overlay"
 
-    import harness as H
+    for sub in ("tools", "patch/tools", "tools/polished_live"):
+        sys.path.insert(0, str(REPO / sub))
     import rival_swap_live as R
-    import run_pol_panel as RP  # stages from the committed UPS; extends harness.SYMBOLS with the panel/phone symbols
+    import run_pol_panel as RP
 
-    from tools.polished_live import duo
+    from tools.polished_live import duo, harness as H
 
-    sha1 = RP.stage_from_committed_ups()
-    H.SRAM.mkdir(parents=True, exist_ok=True)
-    for stale in H.SRAM.glob("*.SaveRAM*"):
-        stale.unlink()
-    H.FIXTURE.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(RP.FIXTURE_SRC, H.FIXTURE)
-    shutil.copyfile(H.FIXTURE, H.SRAM / H.SAVE_NAME)
-    fixture = RP.FIXTURE_SRC.read_bytes()
+    config = RP.panel_config(dict(os.environ, POL_LANE=str(lane), POL_KIND="overlay"))
+    sha1 = RP.stage_from_committed_ups(config)
+    source = pathlib.Path(os.environ.get("POL_FIXTURE", RP.DEFAULT_FIXTURE))
+    H.prepare_save(config, source, clear=True)
+    fixture = source.read_bytes()
     hello_b, partner_disclosure = R.partner_from_save(fixture)
     if hello_b["rom_sha1"] != sha1:
         raise SystemExit("overlay changed; the partner hello pins another sha1")
@@ -171,7 +217,7 @@ def main(argv=None) -> int:
                            cwd=str(REPO), stdout=srv_log, stderr=subprocess.STDOUT)
     print(f"[panelhost] server pid {srv.pid} tcp {port} http {http}", flush=True)
     partner = None
-    verdict, why, checks = "FAIL", [], []
+    verdict, why = "FAIL", []
     text = ""
     try:
         time.sleep(4)
@@ -182,7 +228,7 @@ def main(argv=None) -> int:
                                  in_box=False, key=m["key"], level=m["level"], nickname=m["nickname"],
                                  species_id=m["species_id"], stats={"level": m["level"], "maxHP": m["max_hp"]})
         print(f"[panelhost] partner capture reply: {json.dumps(cap_reply)[:300]}", flush=True)
-        text, pid = H.launch("tools/polished_live/panel_host_live.lua", run,
+        text, pid = H.launch(config, "tools/polished_live/panel_host_live.lua", run,
                              {"SLINK_HOST": "127.0.0.1", "SLINK_PORT": str(port), "SLINK_PLAYER": "a"}, args.timeout)
         # server state, read while the server is still up
         try:
@@ -194,47 +240,20 @@ def main(argv=None) -> int:
         shutil.copyfile(srv_dir / "links.json", run / "links_final.json")
         (run / "status_final.json").write_text(json.dumps(status), encoding="utf-8")
 
-        lua_pass = "RESULT: PASS pol-panel-host" in text
-        if not lua_pass:
-            why.append("LUA_RESULT_NOT_PASS (see result.txt)")
         ev = json.loads((run / "panel_host.json").read_text(encoding="utf-8")) if (run / "panel_host.json").exists() else {}
         links_doc = json.loads((run / "links_final.json").read_text(encoding="utf-8"))
-        pair_rows = ev.get("pair_rows") or []
-        # O3: the link_panel on the server's own wire to a
         wire = read_jsonl(wire_dir / "wire_a.jsonl")
-        server_panels = [c["rows"] for r in wire if r.get("dir") == "s2c"
-                         for c in (r.get("msg") or {}).get("commands", []) if c.get("cmd") == "link_panel"]
-        checks.append({"check": "O3 the server's wire log carries the link_panel the client held",
-                       "ok": bool(pair_rows) and pair_rows in server_panels,
-                       "detail": f"{len(server_panels)} link_panel(s) on the wire; held {pair_rows}"})
-        # O2: rows vs server state
-        badges = (status.get("players", {}).get("a", {}) or {}).get("badges", 0)
-        c2, f2 = judge_server_rows(pair_rows, links_doc.get("links", []), links_doc.get("area_states", {}), badges)
-        checks += c2
-        # the hello the server saw: panel=true bound to the overlay sha1
-        hello_a = next((r["msg"] for r in wire if r.get("dir") == "c2s" and (r.get("msg") or {}).get("event") == "hello"), {})
-        checks.append({"check": "hello: panel=true, panel_abi=3, companion_abi=3, overlay sha1",
-                       "ok": hello_a.get("panel") is True and hello_a.get("panel_abi") == 3
-                       and hello_a.get("companion_abi") == 3 and hello_a.get("rom_sha1") == sha1,
-                       "detail": {k: hello_a.get(k) for k in ("panel", "panel_abi", "companion_abi", "rom_sha1", "artifact_kind")}})
-        # O4: attribution
-        rec = ev.get("client_receipts") or []
-        checks.append({"check": "O4 the client's permit logged the mailbox writes; the driver wrote 6 SYNTH bytes outside it",
-                       "ok": len(rec) > 0 and len(ev.get("driver_writes", [])) == 6, "detail":
-                       {"client_receipts": len(rec), "driver_writes": ev.get("driver_writes"), "mailbox": ev.get("mailbox")}})
-        checks.append({"check": "pages: >= 2 distinct pages rendered", "ok": len(ev.get("pages", [])) >= 2,
-                       "detail": [p.get("box_rows") for p in ev.get("pages", [])]})
-        failed = [c for c in checks if not c["ok"]]
+        profile = json.loads((REPO / "data/games/polished_crystal/profile.json").read_text(encoding="utf-8"))
+        lines_per_page = profile["titles"]["polished"]["overlay"]["panel"]["lines"]
+        oracle = evaluate(ev, links_doc, status, wire, sha1,
+                          lua_pass="RESULT: PASS pol-panel-host" in text, lines_per_page=lines_per_page)
         if partner.error:
-            why.append("PARTNER: " + partner.error)
-        verdict = "PASS" if lua_pass and not failed and not why else "FAIL"
-        why += [f"{c['check']}: {c['detail']}" for c in failed]
-        oracle = {"verdict": verdict, "why": why, "checks": checks, "rom_sha1": sha1, "server_rows": pair_rows,
-                  "pages_rendered": [{"page": p["page"], "box_rows": p["box_rows"], "staged": p["staged_text"]}
-                                     for p in ev.get("pages", [])],
-                  "partner": {"name": hello_b["trainer_name"], "disclosure": partner_disclosure},
-                  "synth": "fixture save (g2int-live warp), wPokegearFlags=$87, wPhoneList=0, scripted partner b",
-                  "fixture_sha256": hashlib.sha256(fixture).hexdigest()}
+            oracle["why"].append("PARTNER: " + partner.error)
+            oracle["verdict"] = "FAIL"
+        verdict, why = oracle["verdict"], oracle["why"]
+        oracle.update(partner={"name": hello_b["trainer_name"], "disclosure": partner_disclosure},
+                      synth="fixture save (g2int-live warp), wPokegearFlags=$87, wPhoneList=0, scripted partner b",
+                      fixture_sha256=hashlib.sha256(fixture).hexdigest())
         (run / "oracle.json").write_text(json.dumps(oracle, indent=2, default=str), encoding="utf-8")
         print(json.dumps({"verdict": verdict, "why": why, "evidence": str(run)}, indent=2), flush=True)
     finally:

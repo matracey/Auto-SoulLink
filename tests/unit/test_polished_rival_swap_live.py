@@ -324,7 +324,11 @@ def test_lua_recorder_producer_shape_reaches_oracle(tmp_path):
           end
         end
         os.getenv=function(n) return ({SLINK_ROOT=repo_path,POL_SWAP_CONFIG='model',SLINK_HOST='localhost',SLINK_PORT='1'})[n] end
-        dofile=function(path) if path:match('pol_lib.lua$') then return L else assert(path:match('/lua/slink.lua$')) end end
+        dofile=function(path)
+            if path:match('pol_lib.lua$') then return L end
+            if path:match('recording_guard.lua$') then return original_dofile(path) end
+            assert(path:match('/lua/slink.lua$'))
+        end
     ''')
     lua.execute(Path(r.__file__).with_suffix(".lua").read_text())
     recorded = json.loads((tmp_path/"trace.json").read_text())

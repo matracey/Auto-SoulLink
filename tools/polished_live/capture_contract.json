@@ -1,0 +1,3 @@
+{
+  "failed_throw_check": "an observed failed throw does not fire the capture site"
+}
