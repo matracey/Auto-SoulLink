@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from types import SimpleNamespace
 
 import pytest
 
@@ -164,7 +165,7 @@ def test_the_server_reads_the_contracted_file_for_a_sha1_bound_randomized_hello(
     assert server._contracted_rom("a", hello) == {"rom": b"cart", "rom_type": "Crystal", "rom_sha1": "ab" * 20}
     assert server._contracted_rom("b", hello)["rom"] is None      # no file: ingest fails, no tables shown
     assert server._contracted_rom("a", {**hello, "artifact_kind": "overlay"}) is None
-    server.adapter = object()                                      # a foundation not bound by sha1
+    server.adapter = SimpleNamespace(rom_contract_by_sha1=False)    # a foundation not bound by sha1
     assert server._contracted_rom("a", hello) is None
 
 
