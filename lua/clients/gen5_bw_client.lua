@@ -851,6 +851,7 @@ local post_battle_frames   = 0
 local POST_BATTLE_GRACE    = 90
 local pending_safe         = false
 local battle_box_snapshot  = nil
+local pending_box_captures = {}
 local battle_enc_species   = 0
 local battle_enc_level     = 0
 
@@ -1141,30 +1142,53 @@ local function on_frame()
             if not snap.pids[pid_hex] then new_keys[#new_keys + 1] = pid_hex end
         end
         if #new_keys == 1 then
-            local new_key = new_keys[1]
-            local box_addr = nil
-            for slot = 0, 29 do
-                local addr = M.pcBoxAddr(snap.box, slot)
-                if addr and fmt("%08X", mem_u32(addr)) == new_key then
-                    box_addr = addr; break
-                end
-            end
-            local species_id = 0
-            if box_addr then
-                local sp = M.decrypt_block_a(box_addr)
-                if sp then species_id = sp end
-            end
+            pending_box_captures[#pending_box_captures + 1] = {
+                pid=new_keys[1], box=snap.box, area_id=battle_area_id or area,
+            }
             captured_this_battle = true
-            local evt_area = battle_area_id or area
-            resolved_areas[evt_area] = true
-            all_known_keys[new_key] = true
-            send({event="capture", key=new_key, species_id=species_id,
-                  area_id=evt_area, box_capture=true},
-                 "capture(box):" .. new_key:sub(1,8), true)
         elseif #new_keys > 1 then
             captured_this_battle = true
         end
         battle_box_snapshot = nil
+    end
+
+    if not in_battle then
+        local i, held_areas = 1, {}
+        while pending_box_captures[i] do
+            local pending = pending_box_captures[i]
+            if held_areas[pending.area_id] then
+                i = i + 1
+            else
+                local box_addr = nil
+                for slot = 0, 29 do
+                    local addr = M.pcBoxAddr(pending.box, slot)
+                    if addr and fmt("%08X", mem_u32(addr)) == pending.pid then
+                        box_addr = addr; break
+                    end
+                end
+                local species_id, ot_id
+                if box_addr then
+                    species_id, ot_id = M.decrypt_block_a(box_addr)
+                end
+                if species_id and ot_id then
+                    local new_key = pending.pid .. ":" .. fmt("%08X", ot_id)
+                    resolved_areas[pending.area_id] = true
+                    all_known_keys[new_key] = true
+                    send({event="capture", key=new_key, species_id=species_id,
+                          area_id=pending.area_id, box_capture=true},
+                         "capture(box):" .. new_key:sub(1,8), true)
+                    table.remove(pending_box_captures, i)
+                else
+                    if not pending.logged then
+                        pending.logged = true
+                        console.log("[SLink] box capture held: identity unavailable for " .. pending.pid)
+                        hud_show("!! Box capture pending: identity unavailable", 255, 200, 60, 600)
+                    end
+                    held_areas[pending.area_id] = true
+                    i = i + 1
+                end
+            end
+        end
     end
 
     -- 9. Read current party
