@@ -5637,27 +5637,14 @@ class SLinkServer:
 
         s = self.state
 
-        # If override requested, unlink existing entries for these keys
         if override:
             if any(s.link_in_trade(s.entry_for(pid, k)) for pid, k in (("a", a_key), ("b", b_key))):
                 return aiohttp_web.json_response(
                 {"ok": False, "error": "This pair is in a trade. Settle the trade first."}, status=409)
-            for pid, key_to_free in (("a", a_key), ("b", b_key)):
-                old_entry = s.entry_for(pid, key_to_free)
-                if old_entry:
-                    s.unindex_entry(old_entry)
-                    if old_entry in s.links:
-                        s.links.remove(old_entry)
-                    old_area = old_entry.area_id
-                    if old_area and old_area != area and old_area not in s.pending_captures:
-                        s.area_states[old_area] = AreaStatus.UNSEEN
-                    log.info(f"[inject_link] override: removed old link on {old_area}")
-
-        # Reject already-linked keys (unless override already cleared them)
-        if s.entry_for("a", a_key) is not None:
+        elif s.entry_for("a", a_key) is not None:
             return aiohttp_web.json_response(
                 {"ok": False, "error": f"Player A mon {a_key[:8]} is already linked."}, status=400)
-        if s.entry_for("b", b_key) is not None:
+        elif s.entry_for("b", b_key) is not None:
             return aiohttp_web.json_response(
                 {"ok": False, "error": f"Player B mon {b_key[:8]} is already linked."}, status=400)
 
@@ -5695,6 +5682,17 @@ class SLinkServer:
                       level=b_det.get("level", 0)),
             status=LinkStatus.ALIVE,
         )
+        if override:
+            for pid, key_to_free in (("a", a_key), ("b", b_key)):
+                old_entry = s.entry_for(pid, key_to_free)
+                if old_entry:
+                    s.unindex_entry(old_entry)
+                    if old_entry in s.links:
+                        s.links.remove(old_entry)
+                    old_area = old_entry.area_id
+                    if old_area and old_area != area and old_area not in s.pending_captures:
+                        s.area_states[old_area] = AreaStatus.UNSEEN
+                    log.info(f"[inject_link] override: removed old link on {old_area}")
         s.links.append(entry)
         s._index_entry(entry)
         s.area_states[area] = AreaStatus.LINKED

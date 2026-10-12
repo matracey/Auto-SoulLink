@@ -1,3 +1,4 @@
+import json
 from types import SimpleNamespace
 
 import pytest
@@ -33,6 +34,53 @@ async def test_manual_link_clears_stale_encounter_lock(tmp_path):
     assert response.status == 200
     assert "mt_moon" not in server.state.encounter_locks
     assert "mt_moon" not in server.state.retry_areas["b"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("linked_player", ["a", "b"])
+@pytest.mark.parametrize("force", [False, True])
+async def test_override_preserves_old_pair_until_conflicts_are_accepted(tmp_path, linked_player, force):
+    server = SLinkServer(data_dir=str(tmp_path))
+    state = server.state
+    entry = LinkEntry(area_id="route_1", a=MonInfo(key="A:OLD"), b=MonInfo(key="B:OLD"),
+                      status=LinkStatus.ALIVE)
+    state.links.append(entry)
+    state._index_entry(entry)
+    pending_player = "b" if linked_player == "a" else "a"
+    pending = MonInfo(key=f"{pending_player.upper()}:PENDING", nickname="Pending")
+    state.pending_captures["route_2"] = {pending_player: pending}
+    state.area_states = {
+        "route_1": AreaStatus.LINKED,
+        "route_2": AreaStatus.PENDING_A if pending_player == "b" else AreaStatus.PENDING_B,
+    }
+    state.encounter_locks["route_2"] = {pending_player: EncounterLock(species=1, level=5)}
+    state._save()
+    before = (tmp_path / "links.json").read_bytes()
+    keys = {"a": "A:OLD", "b": "B:OLD"}
+    keys[pending_player] = pending.key
+
+    async def body():
+        return {"a_key": keys["a"], "b_key": keys["b"], "area_id": "route_3",
+                "override": True, "force": force}
+
+    response = await server.handle_inject_link_api(SimpleNamespace(json=body))
+    result = json.loads(response.text)
+    assert response.status == 200
+    if not force:
+        assert result["requires_force"] and not result["ok"]
+        assert state.links == [entry]
+        assert state.entry_for("a", "A:OLD") is entry
+        assert state.entry_for("b", "B:OLD") is entry
+        state._save()
+        assert (tmp_path / "links.json").read_bytes() == before
+    else:
+        assert result["ok"]
+        assert entry not in state.links
+        assert len(state.links) == 1 and state.links[0].area_id == "route_3"
+        assert state.entry_for("a", keys["a"]) is state.links[0]
+        assert state.entry_for("b", keys["b"]) is state.links[0]
+        assert state.area_states["route_1"] == AreaStatus.UNSEEN
+        assert "route_2" not in state.pending_captures
 
 
 @pytest.mark.asyncio
