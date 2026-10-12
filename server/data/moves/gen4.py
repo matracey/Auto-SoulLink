@@ -1,12 +1,13 @@
-"""server/data/moves/gen4.py — Move name + stat tables for moves introduced in Gen 4 (IDs 355-467).
+"""Gen 4 move tables and category overrides for inherited moves.
 
 Source: pret/pokeheartgold data/battle/moves.h + data/text/moves_en.s.
-Move IDs 1-354 overlap with Gen 3 — those are served by gen3_vanilla.
+Move IDs 1-354 inherit Gen 3 stats with per-move category overrides below.
 Gen 4 introduced per-move physical/special split (Gen 3 used per-type).
 Split values: 0 = Physical, 1 = Special, 2 = Status.
 PP is base PP (excludes PP-Ups, which add ⌊base*ups/5⌋ at runtime).
 """
 
+from .gen3_vanilla import MOVE_DATA as _GEN3_MOVE_DATA
 
 MOVE_NAMES: dict[int, str] = {
     355: 'Roost',          356: 'Gravity',        357: 'Miracle Eye',
@@ -167,3 +168,19 @@ MOVE_DATA: dict[int, dict] = {
     466: {'type': 7,  'power':  60, 'accuracy': 100, 'pp':  5, 'split': 1},
     467: {'type': 7,  'power': 120, 'accuracy': 100, 'pp':  5, 'split': 0},
 }
+
+# Gen 4 categories from calc/calc/src/data/moves.ts (DPP_PATCH).
+_SPLIT_OVERRIDES = {
+    7: 0, 8: 0, 9: 0, 13: 1, 16: 1, 22: 0, 44: 0, 49: 1, 51: 1,
+    63: 1, 75: 0, 101: 1, 123: 1, 124: 1, 127: 0, 128: 0, 129: 1,
+    152: 0, 161: 1, 168: 0, 172: 0, 173: 1, 174: 2, 177: 1,
+    185: 0, 188: 1, 189: 1, 200: 0, 209: 0, 221: 0, 228: 0,
+    237: 1, 242: 0, 246: 1, 247: 1, 251: 0, 253: 1, 255: 1,
+    282: 0, 291: 0, 299: 0, 301: 0, 302: 0, 304: 1, 311: 1,
+    314: 1, 318: 1, 324: 1, 331: 0, 333: 0, 337: 0, 341: 1,
+    344: 0, 348: 0, 353: 1,
+}
+MOVE_DATA.update({
+    move_id: {**_GEN3_MOVE_DATA[move_id], "split": split}
+    for move_id, split in _SPLIT_OVERRIDES.items()
+})

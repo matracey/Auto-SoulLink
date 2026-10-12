@@ -8,7 +8,7 @@ its own submodule; this package exposes a single ``move_name`` /
 Lookup chains (most-specific first, fall-through to the previous gen):
   gen 3 vanilla  → gen3_vanilla
   gen 3 RR       → gen3_rr (Radical Red has a completely different table)
-  gen 4          → gen4   → gen3_vanilla
+  gen 4          → gen4 (including category overrides) → gen3_vanilla
   gen 5          → gen5   → gen3_vanilla
 
 Gen 1 / Gen 2 load their move data from data/games/<gen>/moves.json inside

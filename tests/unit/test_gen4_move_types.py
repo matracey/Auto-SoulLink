@@ -18,12 +18,11 @@ def test_native_move_type_matches_display(move_id, type_id, type_name):
     assert (shown["type_id"], shown["type_name"]) == (type_id, type_name)
 
 
-@pytest.mark.parametrize("move_id", sorted(gen4.MOVE_DATA))
+@pytest.mark.parametrize("move_id", range(355, 468))
 def test_native_types_match_the_same_moves_in_gen5(move_id):
     assert gen4.MOVE_DATA[move_id]["type"] == gen5.MOVE_DATA[move_id]["type"]
 
 
 def test_inherited_move_types_are_not_shifted_again():
     for move_id, raw in gen3_vanilla.MOVE_DATA.items():
-        if move_id not in gen4.MOVE_DATA:
-            assert move_data(move_id, generation=4)["type"] == raw["type"]
+        assert move_data(move_id, generation=4)["type"] == raw["type"]
