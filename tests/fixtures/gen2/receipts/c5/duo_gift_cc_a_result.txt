@@ -1,7 +1,7 @@
-DUO_GEN2 {"artifact_kind":"overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","case":"crystal_town","fixture_sha256":"e9939e7afb087d620be716e06ea4ec93b0439453ee79e32e8dfac2bb7b039596","player":"a","rom_sha1":"41d23c2f10a7b69a3c0035c6a84ab31f9facb278","scenario":"gen2_gift","synth":"crystal_synth_bill","title":"crystal"}
-CLIENT {"artifact_kind":"rand_overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"41d23c2f10a7b69a3c0035c6a84ab31f9facb278","title":"crystal"}
+DUO_GEN2 {"artifact_kind":"overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","case":"crystal_town","fixture_sha256":"e9939e7afb087d620be716e06ea4ec93b0439453ee79e32e8dfac2bb7b039596","player":"a","rom_sha1":"a1e714c5f3f71a80730596856b81fc16af7c54a7","scenario":"gen2_gift","synth":"crystal_synth_bill","title":"crystal"}
+CLIENT {"artifact_kind":"rand_overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"a1e714c5f3f71a80730596856b81fc16af7c54a7","title":"crystal"}
 JITTER requested=0 applied=0 attempt=1
-  phase title @1
+  phase title @0
   phase continue @3182
 TX {"area_id":"new_bark_town","artifact_kind":"rand_overlay","badges":0,"ball_count":0,"companion_abi":3,"event":"hello","foundation":"gen2_gsc","has_pokeballs":false,"in_battle":false,"kanto_badges":0,"loc_name":"NEW BARK 
 HELLO {"ball_count":0,"frame":3306,"has_pokeballs":false,"ot_id":46401}
@@ -12,31 +12,30 @@ RX dead_keys
 RX link_panel
 BOOTED {"frame":3336,"map_group":24,"map_number":5,"party_count":1,"x":5,"y":3}
 MYKEY 0 4C29:B541:A1
-  phase poison @3368 xy=5,3
-ENGINE_FAINT {"cause":"poison","frame":3396,"key":"4C29:B541:A1","site_id":"poison_faint","slot":0}
-TX {"area_id":"new_bark_town","event":"faint","key":"4C29:B541:A1","player":"a","seq":5}
-FAINT_SENT {"frame":3396,"key":"4C29:B541:A1","seq":5}
-ENGINE_WHITEOUT {"frame":3628,"party":[{"hp":0,"key":"4C29:B541:A1"}],"site_id":"whiteout_before_heal"}
-TX {"event":"whiteout","player":"a","seq":11}
-TX {"area_id":"goldenrod_city","event":"area_enter","loc_name":"GOLDENROD CITY","player":"a","seq":12}
-  phase to-house @3662 xy=15,28
-  phase talk @4210 xy=2,7
-ENGINE_CAPTURE {"acquisition":"gift","area_id":"goldenrod_city","destination":"party","frame":4937,"key":"5BA2:B541:8E","level":20,"site_id":"gift_party_finalized","slot":1,"species_id":142}
-TX {"area_id":"goldenrod_city","event":"capture","gift":true,"held_item_id":0,"hp":66,"in_box":false,"key":"5BA2:B541:8E","level":20,"maxHP":66,"nickname":"AERODACTYL","player":"a","seq":56,"species_id":142,"stats":{"level"
-CAPTURE_SENT {"frame":4937,"key":"5BA2:B541:8E","seq":56}
-RX hud_show
-RX_TEXT {"cmd":"hud_show","frame":4939,"text":"Partner caught NOCTOWL in Gift Goldenrod City"}
+  phase poison @3336 xy=5,3
+ENGINE_FAINT {"cause":"poison","frame":3364,"key":"4C29:B541:A1","site_id":"poison_faint","slot":0}
+TX {"area_id":"new_bark_town","event":"faint","key":"4C29:B541:A1","player":"a","seq":4}
+FAINT_SENT {"frame":3364,"key":"4C29:B541:A1","seq":4}
+ENGINE_WHITEOUT {"frame":3595,"party":[{"hp":0,"key":"4C29:B541:A1"}],"site_id":"whiteout_before_heal"}
+TX {"event":"whiteout","player":"a","seq":10}
+  phase to-house @3629 xy=15,28
+TX {"area_id":"goldenrod_city","event":"area_enter","loc_name":"GOLDENROD CITY","player":"a","seq":11}
+  phase talk @4177 xy=2,7
+ENGINE_CAPTURE {"acquisition":"gift","area_id":"goldenrod_city","destination":"party","frame":4904,"key":"2ED2:B541:58","level":20,"site_id":"gift_party_finalized","slot":1,"species_id":88}
+TX {"area_id":"goldenrod_city","event":"capture","gift":true,"held_item_id":0,"hp":62,"in_box":false,"key":"2ED2:B541:58","level":20,"maxHP":62,"nickname":"GRIMER","player":"a","seq":54,"species_id":88,"stats":{"level":20,"
+CAPTURE_SENT {"frame":4904,"key":"2ED2:B541:58","seq":54}
+RX resolved_areas
 RX play_sound sound=25
 RX msgbox
-RX_TEXT {"cmd":"msgbox","frame":4939,"text":"AERODACTYL and NOCTOWL linked!"}
-RX party_mon key=5BA2:B541:8E
+RX_TEXT {"cmd":"msgbox","frame":4953,"text":"GRIMER and QWILFISH linked!"}
+RX party_mon key=2ED2:B541:58
 RX link_panel
-TX {"event":"sync_retrieve_done","key":"5BA2:B541:8E","player":"a","seq":60}
-  phase done @5014 xy=1,3
-  phase save @5044 xy=1,3
-  phase saved @5384 xy=1,3
+TX {"event":"sync_retrieve_done","key":"2ED2:B541:58","player":"a","seq":58}
+  phase done @4982 xy=1,3
+  phase save @5012 xy=1,3
+  phase saved @5352 xy=1,3
 MYKEY 0 4C29:B541:A1
-MYKEY 1 5BA2:B541:8E
-SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"c1d7a72604bf3dc97853545d5e47533f82f8a03f2cc5aceb489d1c6d86140bb2","client_saves":1,"flushed_matches":true,"frame":5414,"gate_saves":1,"save_completed_frame":5384,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/f3-ddb586d2/c5/producer/r1/patch/build/saveram_gen2_gift_c5606451_a/g2r a.SaveRAM","snapshot_path":"F:/slink-work/lanes/f3-ddb586d2/c5/producer/r1/patch/build/e2e_gen2_gift_c5606451_a_witness.SaveRAM"}
-RECEIPT {"artifact_kind":"rand_overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","capture":{"acquisition":"gift","area_id":"goldenrod_city","destination":"party","frame":4937,"key":"5BA2:B541:8E","level":20,"site_id":"gift_party_finalized","slot":1,"species_id":142},"case":"crystal_town","client":{"artifact_kind":"rand_overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"41d23c2f10a7b69a3c0035c6a84ab31f9facb278","title":"crystal"},"fixture_sha256":"e9939e7afb087d620be716e06ea4ec93b0439453ee79e32e8dfac2bb7b039596","harness_write_scopes":[],"input_mode":"normal_buttons","key":"5BA2:B541:8E","player":"a","rom_sha1":"41d23c2f10a7b69a3c0035c6a84ab31f9facb278","save":{"cartram_bytes":32768,"cartram_sha256":"c1d7a72604bf3dc97853545d5e47533f82f8a03f2cc5aceb489d1c6d86140bb2","client_saves":1,"flushed_matches":true,"frame":5414,"gate_saves":1,"save_completed_frame":5384,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/f3-ddb586d2/c5/producer/r1/patch/build/saveram_gen2_gift_c5606451_a/g2r a.SaveRAM","snapshot_path":"F:/slink-work/lanes/f3-ddb586d2/c5/producer/r1/patch/build/e2e_gen2_gift_c5606451_a_witness.SaveRAM"},"scenario":"gen2_gift","schema":"gen2-duo-gift-v1","synth":"crystal_synth_bill","title":"crystal"}
-RESULT: PASS (bill linked 5BA2:B541:8E)
+MYKEY 1 2ED2:B541:58
+SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"07d050ff816ca3ad2263042af76b0ca8010b8c6c10bed428087655af655092d5","client_saves":1,"flushed_matches":true,"frame":5382,"gate_saves":1,"save_completed_frame":5352,"saveram_bytes":32790,"saveram_path":"/home/matracey/.copilot/session-state/bd4b9b68-2efb-48f2-b02b-6ca899552d36/files/upstream-rebase/c5-lane/r1/patch/build/saveram_gen2_gift_c5213581_a/g2r a.SaveRAM","snapshot_path":"/home/matracey/.copilot/session-state/bd4b9b68-2efb-48f2-b02b-6ca899552d36/files/upstream-rebase/c5-lane/r1/patch/build/e2e_gen2_gift_c5213581_a_witness.SaveRAM"}
+RECEIPT {"artifact_kind":"rand_overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","capture":{"acquisition":"gift","area_id":"goldenrod_city","destination":"party","frame":4904,"key":"2ED2:B541:58","level":20,"site_id":"gift_party_finalized","slot":1,"species_id":88},"case":"crystal_town","client":{"artifact_kind":"rand_overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"a1e714c5f3f71a80730596856b81fc16af7c54a7","title":"crystal"},"fixture_sha256":"e9939e7afb087d620be716e06ea4ec93b0439453ee79e32e8dfac2bb7b039596","harness_write_scopes":[],"input_mode":"normal_buttons","key":"2ED2:B541:58","player":"a","rom_sha1":"a1e714c5f3f71a80730596856b81fc16af7c54a7","save":{"cartram_bytes":32768,"cartram_sha256":"07d050ff816ca3ad2263042af76b0ca8010b8c6c10bed428087655af655092d5","client_saves":1,"flushed_matches":true,"frame":5382,"gate_saves":1,"save_completed_frame":5352,"saveram_bytes":32790,"saveram_path":"/home/matracey/.copilot/session-state/bd4b9b68-2efb-48f2-b02b-6ca899552d36/files/upstream-rebase/c5-lane/r1/patch/build/saveram_gen2_gift_c5213581_a/g2r a.SaveRAM","snapshot_path":"/home/matracey/.copilot/session-state/bd4b9b68-2efb-48f2-b02b-6ca899552d36/files/upstream-rebase/c5-lane/r1/patch/build/e2e_gen2_gift_c5213581_a_witness.SaveRAM"},"scenario":"gen2_gift","schema":"gen2-duo-gift-v1","synth":"crystal_synth_bill","title":"crystal"}
+RESULT: PASS (bill linked 2ED2:B541:58)

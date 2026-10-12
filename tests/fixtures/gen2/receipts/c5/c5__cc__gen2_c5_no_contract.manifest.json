@@ -9,8 +9,8 @@
  "pair": "cc",
  "game": "gen2_new",
  "scenario": "gen2_c5_no_contract",
- "sha": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
- "code_digest": "7dd9ac4b8e372689df51339fffa839c4818ec1d33e4964a4b9d7e48e91013dcc",
+ "sha": "db92f5fae7f0e4ca2a3fd743f602bce908ab9502",
+ "code_digest": "76aace89a4f3234cce77fcfc49658ad9a7bf3bd2713c76ba628e9b86a23e7e5b",
  "contract": {
   "upr_version": "4.6.1-slink3",
   "settings_sha256": "4fd067816f27c0ab4567c8249ebd70c2875eb0e3d3b9b22b87fdc7baa42e4a2c",
@@ -23,13 +23,13 @@
   "players": {
    "a": {
     "fingerprint": "",
-    "rom_sha1": "41d23c2f10a7b69a3c0035c6a84ab31f9facb278",
-    "seed": "92044554669400"
+    "rom_sha1": "a1e714c5f3f71a80730596856b81fc16af7c54a7",
+    "seed": "33216349793814"
    },
    "b": {
     "fingerprint": "",
-    "rom_sha1": "337f491e8f4c2d3d1f5ff36087c9aee883282662",
-    "seed": "120255497111368"
+    "rom_sha1": "d1a3abfbeaadfc3e3c87590ebfbc482183ca130b",
+    "seed": "263590357700629"
    }
   }
  },
@@ -39,7 +39,7 @@
    "a": "crystal",
    "b": "crystal"
   },
-  "jar_sha256": "2f68d35249a220999d18dcb08f971244611b502a0286c0531d62092137fbccdf",
+  "jar_sha256": "a50bed324c39fad0f22ed1fbfbef08eb997594ee0b9e60fe8f1404808620e2e3",
   "spec": {
    "wild": "random",
    "wild_restriction": "none",
@@ -79,25 +79,25 @@
   "summary": "wild encounters random, minimum catch rate 5, starters random, static encounters random, trainer teams random, in-game trades random given and requested",
   "players": {
    "a": {
-    "rom_sha1": "41d23c2f10a7b69a3c0035c6a84ab31f9facb278",
+    "rom_sha1": "a1e714c5f3f71a80730596856b81fc16af7c54a7",
     "kind": "rand_companion",
-    "seed": 92044554669400,
+    "seed": 33216349793814,
     "overlay_sha1": "d5f342db9c8745fcb0df97932a83d0205c165a00"
    },
    "b": {
-    "rom_sha1": "337f491e8f4c2d3d1f5ff36087c9aee883282662",
+    "rom_sha1": "d1a3abfbeaadfc3e3c87590ebfbc482183ca130b",
     "kind": "rand_companion",
-    "seed": 120255497111368,
+    "seed": 263590357700629,
     "overlay_sha1": "d5f342db9c8745fcb0df97932a83d0205c165a00"
    }
   }
  },
  "receipts": {
-  "receipts/c5/duo_c5_no_contract_cc_a_result.txt": "9b4e19d4c154467701e450441155185489f6ce662195809a7b6fcd53af52fa3f",
-  "receipts/c5/duo_c5_no_contract_cc_a_witness.SaveRAM": "aeea99eeacedaf5bc20baf4bf609207eaa73f457502a700b2825546d1e8de4fd",
-  "receipts/c5/duo_c5_no_contract_cc_b_result.txt": "78a2839774f5d7067e8aa41dbadb81a17bc4c9a7a9ebd3898ba5cc2881ab3960",
-  "receipts/c5/duo_c5_no_contract_cc_b_witness.SaveRAM": "461f44fe042c96d4d7aae2f9ed997e402372f4c82825731757f0327e8aba22ba",
-  "receipts/c5/duo_c5_no_contract_cc_pydec_result.txt": "00e1f715d4410dacb51bb50c902f2bb56203c66460651601f2b7be2a7214f4a9"
+  "receipts/c5/duo_c5_no_contract_cc_a_result.txt": "0d03f753a8abd56b9d8cad999536f17b4f29fa1225051237a5b8c207bb0205bd",
+  "receipts/c5/duo_c5_no_contract_cc_a_witness.SaveRAM": "efbd09ceed6e5c4b34e55a75bb44c84d7ee8603b3f737422e141b6b4c54ea48e",
+  "receipts/c5/duo_c5_no_contract_cc_b_result.txt": "aa0dc030d0431098d35c5b61b703b41565a48aca1788e8c1c88fa91788e1eebe",
+  "receipts/c5/duo_c5_no_contract_cc_b_witness.SaveRAM": "942495546a1171d5ee9499fdd718cbeb92ce6f6b16477189897ab0bf71f12a32",
+  "receipts/c5/duo_c5_no_contract_cc_pydec_result.txt": "cd6dfc2750bd3028df5952bc2dde2049309ee71063bf22dda79bb156357e09bd"
  },
  "disclosures": {
   "SYNTH": [

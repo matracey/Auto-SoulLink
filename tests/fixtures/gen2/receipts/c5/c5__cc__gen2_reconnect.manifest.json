@@ -9,8 +9,8 @@
  "pair": "cc",
  "game": "gen2_new",
  "scenario": "gen2_reconnect",
- "sha": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
- "code_digest": "7dd9ac4b8e372689df51339fffa839c4818ec1d33e4964a4b9d7e48e91013dcc",
+ "sha": "db92f5fae7f0e4ca2a3fd743f602bce908ab9502",
+ "code_digest": "76aace89a4f3234cce77fcfc49658ad9a7bf3bd2713c76ba628e9b86a23e7e5b",
  "contract": {
   "upr_version": "4.6.1-slink3",
   "settings_sha256": "4fd067816f27c0ab4567c8249ebd70c2875eb0e3d3b9b22b87fdc7baa42e4a2c",
@@ -23,13 +23,13 @@
   "players": {
    "a": {
     "fingerprint": "",
-    "rom_sha1": "41d23c2f10a7b69a3c0035c6a84ab31f9facb278",
-    "seed": "92044554669400"
+    "rom_sha1": "a1e714c5f3f71a80730596856b81fc16af7c54a7",
+    "seed": "33216349793814"
    },
    "b": {
     "fingerprint": "",
-    "rom_sha1": "337f491e8f4c2d3d1f5ff36087c9aee883282662",
-    "seed": "120255497111368"
+    "rom_sha1": "d1a3abfbeaadfc3e3c87590ebfbc482183ca130b",
+    "seed": "263590357700629"
    }
   }
  },
@@ -39,7 +39,7 @@
    "a": "crystal",
    "b": "crystal"
   },
-  "jar_sha256": "2f68d35249a220999d18dcb08f971244611b502a0286c0531d62092137fbccdf",
+  "jar_sha256": "a50bed324c39fad0f22ed1fbfbef08eb997594ee0b9e60fe8f1404808620e2e3",
   "spec": {
    "wild": "random",
    "wild_restriction": "none",
@@ -79,30 +79,30 @@
   "summary": "wild encounters random, minimum catch rate 5, starters random, static encounters random, trainer teams random, in-game trades random given and requested",
   "players": {
    "a": {
-    "rom_sha1": "41d23c2f10a7b69a3c0035c6a84ab31f9facb278",
+    "rom_sha1": "a1e714c5f3f71a80730596856b81fc16af7c54a7",
     "kind": "rand_companion",
-    "seed": 92044554669400,
+    "seed": 33216349793814,
     "overlay_sha1": "d5f342db9c8745fcb0df97932a83d0205c165a00"
    },
    "b": {
-    "rom_sha1": "337f491e8f4c2d3d1f5ff36087c9aee883282662",
+    "rom_sha1": "d1a3abfbeaadfc3e3c87590ebfbc482183ca130b",
     "kind": "rand_companion",
-    "seed": 120255497111368,
+    "seed": 263590357700629,
     "overlay_sha1": "d5f342db9c8745fcb0df97932a83d0205c165a00"
    }
   }
  },
  "receipts": {
-  "receipts/c5/duo_reconnect_cc_a_initial_result.txt": "3d8dfd8e06dabc5114a8ea032181e5b998c95900e9db1d7b1c2304486e0ce05c",
-  "receipts/c5/duo_reconnect_cc_a_result.txt": "03fbabb63f0c61df1fdb3514cbd6e6871bba3de4b19eb3ffab2893d93b3af6a1",
-  "receipts/c5/duo_reconnect_cc_a_same_save_result.txt": "ef976e22902a452a0e9f014bd9fb9ec057fa9f0fa50398a81e7b003ba2fbf1d6",
-  "receipts/c5/duo_reconnect_cc_a_same_save_seed.SaveRAM": "624231fa775cb8f5508972ed5dc31d449baa1d4a2305b81ad4359937ce5f11f2",
-  "receipts/c5/duo_reconnect_cc_a_witness.SaveRAM": "624231fa775cb8f5508972ed5dc31d449baa1d4a2305b81ad4359937ce5f11f2",
-  "receipts/c5/duo_reconnect_cc_a_wrong_save_result.txt": "03fbabb63f0c61df1fdb3514cbd6e6871bba3de4b19eb3ffab2893d93b3af6a1",
+  "receipts/c5/duo_reconnect_cc_a_initial_result.txt": "73d1932e8644d386e8c06dfa31970b7a4fcf7a9fd19265d8f310508adc49f150",
+  "receipts/c5/duo_reconnect_cc_a_result.txt": "5b0857121e4f68b9a694f7bc2f7de492c31715e4b81901000876adcfb05cf736",
+  "receipts/c5/duo_reconnect_cc_a_same_save_result.txt": "c12448afbd8726571c4cbc86907942812a41415f44fed80a3c43d09be7474d56",
+  "receipts/c5/duo_reconnect_cc_a_same_save_seed.SaveRAM": "60d00d74c3a068c11e682a933933140ad708adec2fb6631bb98fc20d57441e62",
+  "receipts/c5/duo_reconnect_cc_a_witness.SaveRAM": "60d00d74c3a068c11e682a933933140ad708adec2fb6631bb98fc20d57441e62",
+  "receipts/c5/duo_reconnect_cc_a_wrong_save_result.txt": "5b0857121e4f68b9a694f7bc2f7de492c31715e4b81901000876adcfb05cf736",
   "receipts/c5/duo_reconnect_cc_a_wrong_save_seed.SaveRAM": "e2298243d3b10965b354184f1778d946a0909402c57b4ccaff574f819cfcc6dd",
-  "receipts/c5/duo_reconnect_cc_b_result.txt": "69cc594de5478ad9c504121bcddd50ff68c3d266efbb575a552146b94603c23c",
-  "receipts/c5/duo_reconnect_cc_b_witness.SaveRAM": "56487ccd147c155edcfa2dee1e7ffeffdd1a2a7492478bc5ec881d496e4b232e",
-  "receipts/c5/duo_reconnect_cc_pydec_result.txt": "7a3c7a5d6a6b8af8fc073c56a32d32dded1f780d48891d6077990e4730ea57de"
+  "receipts/c5/duo_reconnect_cc_b_result.txt": "dba5254e5ebc71aa53c6dcd0bba7f69f92e8cfec2734589442fa144f763600f6",
+  "receipts/c5/duo_reconnect_cc_b_witness.SaveRAM": "771ad45bbdef8bb31725dd7f76670da5dad9ee0c06de1c83a62cab88fbd7b3b6",
+  "receipts/c5/duo_reconnect_cc_pydec_result.txt": "9028f9cf72a1166beea819e2b06a3c7da528ad16a59b8350c885d408d3bdb026"
  },
  "disclosures": {
   "SYNTH": [

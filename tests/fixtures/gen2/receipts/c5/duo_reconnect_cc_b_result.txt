@@ -1,7 +1,7 @@
-DUO_GEN2 {"artifact_kind":"overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","case":"crystal_battle_ot2","fixture_sha256":"e2298243d3b10965b354184f1778d946a0909402c57b4ccaff574f819cfcc6dd","player":"b","rom_sha1":"337f491e8f4c2d3d1f5ff36087c9aee883282662","scenario":"gen2_reconnect","title":"crystal"}
-CLIENT {"artifact_kind":"rand_overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"337f491e8f4c2d3d1f5ff36087c9aee883282662","title":"crystal"}
+DUO_GEN2 {"artifact_kind":"overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","case":"crystal_battle_ot2","fixture_sha256":"e2298243d3b10965b354184f1778d946a0909402c57b4ccaff574f819cfcc6dd","player":"b","rom_sha1":"d1a3abfbeaadfc3e3c87590ebfbc482183ca130b","scenario":"gen2_reconnect","title":"crystal"}
+CLIENT {"artifact_kind":"rand_overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"d1a3abfbeaadfc3e3c87590ebfbc482183ca130b","title":"crystal"}
 JITTER requested=0 applied=0 attempt=1
-  phase title @1
+  phase title @0
   phase continue @3182
 TX {"area_id":"route_29","artifact_kind":"rand_overlay","badges":0,"ball_count":10,"companion_abi":3,"event":"hello","foundation":"gen2_gsc","has_pokeballs":true,"in_battle":false,"kanto_badges":0,"loc_name":"ROUTE 29","ot_
 HELLO {"ball_count":10,"frame":3305,"has_pokeballs":true,"ot_id":44068}
@@ -14,26 +14,27 @@ BOOTED {"frame":3335,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12
 MYKEY 0 21BC:AC24:9E
   phase walk @3335 xy=53,12
   phase battle @3610 xy=52,12
-ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":4953,"key":"C25F:AC24:B8","level":2,"site_id":"capture_party_finalized","slot":1,"species_id":184}
-TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":16,"in_box":false,"key":"C25F:AC24:B8","level":2,"maxHP":16,"nickname":"AZUMARILL","player":"b","seq":29,"species_id":184,"stats":{"level":2,"max
-CAPTURE_SENT {"frame":4953,"key":"C25F:AC24:B8","seq":29}
-CAUGHT C25F:AC24:B8
-RX box_mon key=C25F:AC24:B8
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"b","seq":30}
-TX {"event":"stats_cache","key":"C25F:AC24:B8","player":"b","seq":33,"stats":{"level":2,"maxHP":16}}
+ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":4950,"key":"DA83:AC24:5B","level":2,"site_id":"capture_party_finalized","slot":1,"species_id":91}
+TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":14,"in_box":false,"key":"DA83:AC24:5B","level":2,"maxHP":14,"nickname":"CLOYSTER","player":"b","seq":30,"species_id":91,"stats":{"level":2,"maxHP
+CAPTURE_SENT {"frame":4950,"key":"DA83:AC24:5B","seq":30}
+CAUGHT DA83:AC24:5B
+RX box_mon key=DA83:AC24:5B
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"b","seq":32}
+TX {"event":"stats_cache","key":"DA83:AC24:5B","player":"b","seq":35,"stats":{"level":2,"maxHP":14}}
+RX resolved_areas
 RX play_sound sound=25
 RX msgbox
-RX_TEXT {"cmd":"msgbox","frame":5102,"text":"HOPPIP and AZUMARILL linked!"}
-RX party_mon key=C25F:AC24:B8
+RX_TEXT {"cmd":"msgbox","frame":5192,"text":"ARBOK and CLOYSTER linked!"}
+RX party_mon key=DA83:AC24:5B
 RX link_panel
-TX {"event":"sync_retrieve_done","key":"C25F:AC24:B8","player":"b","seq":37}
-  phase save @5104 xy=52,12
+TX {"event":"sync_retrieve_done","key":"DA83:AC24:5B","player":"b","seq":42}
+  phase save @5193 xy=52,12
 RX link_panel
-  phase saved @5444 xy=52,12
+  phase saved @5532 xy=52,12
 MYKEY 0 21BC:AC24:9E
-MYKEY 1 C25F:AC24:B8
-SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"d217e5f405d85f910a4565afbb474f716667d9feb94a71d6b8e1da339422b43b","client_saves":1,"flushed_matches":true,"frame":5474,"gate_saves":1,"save_completed_frame":5444,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/f3-ddb586d2/c5/producer/r1/patch/build/saveram_gen2_reconnect_c5603961_b/g2r b.SaveRAM","snapshot_path":"F:/slink-work/lanes/f3-ddb586d2/c5/producer/r1/patch/build/e2e_gen2_reconnect_c5603961_b_witness.SaveRAM"}
-RECONNECT_READY {"frame":5474,"key":"C25F:AC24:B8","phase":"initial","player":"b"}
-B_STAYED {"box_mon":0,"force_faint":0,"frame":16443,"hellos":1}
-RECEIPT {"artifact_kind":"rand_overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","booted":{"frame":3335,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":4953,"key":"C25F:AC24:B8","level":2,"site_id":"capture_party_finalized","slot":1,"species_id":184},"case":"crystal_battle_ot2","client":{"artifact_kind":"rand_overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"337f491e8f4c2d3d1f5ff36087c9aee883282662","title":"crystal"},"fixture_sha256":"e2298243d3b10965b354184f1778d946a0909402c57b4ccaff574f819cfcc6dd","harness_write_scopes":[],"hello":{"ball_count":10,"frame":3305,"has_pokeballs":true,"ot_id":44068},"input_mode":"normal_buttons","key":"C25F:AC24:B8","phase":"initial","player":"b","ready":{"frame":5474,"key":"C25F:AC24:B8","phase":"initial","player":"b"},"rom_sha1":"337f491e8f4c2d3d1f5ff36087c9aee883282662","save":{"cartram_bytes":32768,"cartram_sha256":"d217e5f405d85f910a4565afbb474f716667d9feb94a71d6b8e1da339422b43b","client_saves":1,"flushed_matches":true,"frame":5474,"gate_saves":1,"save_completed_frame":5444,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/f3-ddb586d2/c5/producer/r1/patch/build/saveram_gen2_reconnect_c5603961_b/g2r b.SaveRAM","snapshot_path":"F:/slink-work/lanes/f3-ddb586d2/c5/producer/r1/patch/build/e2e_gen2_reconnect_c5603961_b_witness.SaveRAM"},"scenario":"gen2_reconnect","schema":"gen2-duo-reconnect-v1","title":"crystal"}
+MYKEY 1 DA83:AC24:5B
+SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"b36033acc3c2be31ce76e9f27efa4583ef460a47b92596ac12c51f5948651678","client_saves":1,"flushed_matches":true,"frame":5562,"gate_saves":1,"save_completed_frame":5532,"saveram_bytes":32790,"saveram_path":"/home/matracey/.copilot/session-state/bd4b9b68-2efb-48f2-b02b-6ca899552d36/files/upstream-rebase/c5-lane/r1/patch/build/saveram_gen2_reconnect_c5203771_b/g2r b.SaveRAM","snapshot_path":"/home/matracey/.copilot/session-state/bd4b9b68-2efb-48f2-b02b-6ca899552d36/files/upstream-rebase/c5-lane/r1/patch/build/e2e_gen2_reconnect_c5203771_b_witness.SaveRAM"}
+RECONNECT_READY {"frame":5562,"key":"DA83:AC24:5B","phase":"initial","player":"b"}
+B_STAYED {"box_mon":0,"force_faint":0,"frame":17157,"hellos":1}
+RECEIPT {"artifact_kind":"rand_overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","booted":{"frame":3335,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":4950,"key":"DA83:AC24:5B","level":2,"site_id":"capture_party_finalized","slot":1,"species_id":91},"case":"crystal_battle_ot2","client":{"artifact_kind":"rand_overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"d1a3abfbeaadfc3e3c87590ebfbc482183ca130b","title":"crystal"},"fixture_sha256":"e2298243d3b10965b354184f1778d946a0909402c57b4ccaff574f819cfcc6dd","harness_write_scopes":[],"hello":{"ball_count":10,"frame":3305,"has_pokeballs":true,"ot_id":44068},"input_mode":"normal_buttons","key":"DA83:AC24:5B","phase":"initial","player":"b","ready":{"frame":5562,"key":"DA83:AC24:5B","phase":"initial","player":"b"},"rom_sha1":"d1a3abfbeaadfc3e3c87590ebfbc482183ca130b","save":{"cartram_bytes":32768,"cartram_sha256":"b36033acc3c2be31ce76e9f27efa4583ef460a47b92596ac12c51f5948651678","client_saves":1,"flushed_matches":true,"frame":5562,"gate_saves":1,"save_completed_frame":5532,"saveram_bytes":32790,"saveram_path":"/home/matracey/.copilot/session-state/bd4b9b68-2efb-48f2-b02b-6ca899552d36/files/upstream-rebase/c5-lane/r1/patch/build/saveram_gen2_reconnect_c5203771_b/g2r b.SaveRAM","snapshot_path":"/home/matracey/.copilot/session-state/bd4b9b68-2efb-48f2-b02b-6ca899552d36/files/upstream-rebase/c5-lane/r1/patch/build/e2e_gen2_reconnect_c5203771_b_witness.SaveRAM"},"scenario":"gen2_reconnect","schema":"gen2-duo-reconnect-v1","title":"crystal"}
 RESULT: PASS (B remained online through both A relaunches)

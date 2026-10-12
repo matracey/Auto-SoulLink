@@ -1,7 +1,7 @@
-DUO_GEN2 {"artifact_kind":"overlay","attempt":1,"binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","case":"gold_battle","fixture_sha256":"6864b34a79e63fa9c8954c37cb805a690da4cf36447bda179ecf0742a072a3b6","player":"b","rom_sha1":"ea8eb9d97eeb4caebc9715af7280913cbb07fe5c","scenario":"link","title":"gold"}
-CLIENT {"artifact_kind":"rand_overlay","binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","pack":"gen2_gold","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"ea8eb9d97eeb4caebc9715af7280913cbb07fe5c","title":"gold"}
+DUO_GEN2 {"artifact_kind":"overlay","attempt":1,"binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","case":"gold_battle","fixture_sha256":"6864b34a79e63fa9c8954c37cb805a690da4cf36447bda179ecf0742a072a3b6","player":"b","rom_sha1":"516056500fb5ce1073d1818d5cbede59489ed7b5","scenario":"link","title":"gold"}
+CLIENT {"artifact_kind":"rand_overlay","binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","pack":"gen2_gold","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"516056500fb5ce1073d1818d5cbede59489ed7b5","title":"gold"}
 JITTER requested=0 applied=0 attempt=1
-  phase title @1
+  phase title @0
   phase continue @3224
 TX {"area_id":"route_29","artifact_kind":"rand_overlay","badges":0,"ball_count":10,"companion_abi":3,"event":"hello","foundation":"gen2_gsc","has_pokeballs":true,"in_battle":false,"kanto_badges":0,"loc_name":"ROUTE 29","ot_
 HELLO {"ball_count":10,"frame":3344,"has_pokeballs":true,"ot_id":50342}
@@ -14,24 +14,26 @@ BOOTED {"frame":3374,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12
 MYKEY 0 EC63:C4A6:9E
   phase walk @3374 xy=53,12
   phase battle @3727 xy=53,12
-ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":5037,"key":"87B6:C4A6:E8","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":232}
-TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":18,"in_box":false,"key":"87B6:C4A6:E8","level":3,"maxHP":18,"nickname":"DONPHAN","player":"b","seq":58,"species_id":232,"stats":{"level":3,"maxHP
-CAPTURE_SENT {"frame":5037,"key":"87B6:C4A6:E8","seq":58}
-CAUGHT 87B6:C4A6:E8
-RX box_mon key=87B6:C4A6:E8
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"b","seq":60}
-TX {"event":"stats_cache","key":"87B6:C4A6:E8","player":"b","seq":62,"stats":{"level":3,"maxHP":18}}
+ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":5039,"key":"AAEB:C4A6:5C","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":92}
+TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":14,"in_box":false,"key":"AAEB:C4A6:5C","level":3,"maxHP":14,"nickname":"GASTLY","player":"b","seq":57,"species_id":92,"stats":{"level":3,"maxHP":
+CAPTURE_SENT {"frame":5039,"key":"AAEB:C4A6:5C","seq":57}
+CAUGHT AAEB:C4A6:5C
+RX hud_show
+RX_TEXT {"cmd":"hud_show","frame":5041,"text":"Partner caught PORYGON in Route 29"}
+RX resolved_areas
 RX play_sound sound=25
 RX msgbox
-RX_TEXT {"cmd":"msgbox","frame":5522,"text":"MEOWTH and DONPHAN linked!"}
-RX party_mon key=87B6:C4A6:E8
+RX_TEXT {"cmd":"msgbox","frame":5041,"text":"PORYGON and GASTLY linked!"}
+RX party_mon key=AAEB:C4A6:5C
 RX link_panel
-TX {"event":"sync_retrieve_done","key":"87B6:C4A6:E8","player":"b","seq":78}
-  phase save @5523 xy=53,12
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"b","seq":59}
+TX {"event":"sync_retrieve_done","key":"AAEB:C4A6:5C","player":"b","seq":61}
+  phase save @5099 xy=53,12
 RX link_panel
-  phase saved @5891 xy=53,12
+RX link_panel
+  phase saved @5467 xy=53,12
 MYKEY 0 EC63:C4A6:9E
-MYKEY 1 87B6:C4A6:E8
-SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"71c104f410faf6a45bebef4b5726b0f0bd9eef4fd83ab28b685461de5b25fca2","client_saves":1,"flushed_matches":true,"frame":5921,"gate_saves":1,"save_completed_frame":5891,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/f3-ddb586d2/c5/producer/r1/patch/build/saveram_link_c5603351_b/g2r b.SaveRAM","snapshot_path":"F:/slink-work/lanes/f3-ddb586d2/c5/producer/r1/patch/build/e2e_link_c5603351_b_witness.SaveRAM"}
-RECEIPT {"artifact_kind":"rand_overlay","attempt":1,"binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","booted":{"frame":3374,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":5037,"key":"87B6:C4A6:E8","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":232},"case":"gold_battle","client":{"artifact_kind":"rand_overlay","binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","pack":"gen2_gold","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"ea8eb9d97eeb4caebc9715af7280913cbb07fe5c","title":"gold"},"fixture_sha256":"6864b34a79e63fa9c8954c37cb805a690da4cf36447bda179ecf0742a072a3b6","harness_write_scopes":[],"hello":{"ball_count":10,"frame":3344,"has_pokeballs":true,"ot_id":50342},"input_mode":"normal_buttons","key":"87B6:C4A6:E8","player":"b","rom_sha1":"ea8eb9d97eeb4caebc9715af7280913cbb07fe5c","save":{"cartram_bytes":32768,"cartram_sha256":"71c104f410faf6a45bebef4b5726b0f0bd9eef4fd83ab28b685461de5b25fca2","client_saves":1,"flushed_matches":true,"frame":5921,"gate_saves":1,"save_completed_frame":5891,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/f3-ddb586d2/c5/producer/r1/patch/build/saveram_link_c5603351_b/g2r b.SaveRAM","snapshot_path":"F:/slink-work/lanes/f3-ddb586d2/c5/producer/r1/patch/build/e2e_link_c5603351_b_witness.SaveRAM"},"scenario":"link","schema":"gen2-duo-link-v1","title":"gold"}
-RESULT: PASS (caught 87B6:C4A6:E8)
+MYKEY 1 AAEB:C4A6:5C
+SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"dd4e39342ed73c3c1543bc104b4469ee10848968a69558b89da182d15be4a89a","client_saves":1,"flushed_matches":true,"frame":5497,"gate_saves":1,"save_completed_frame":5467,"saveram_bytes":32790,"saveram_path":"/home/matracey/.copilot/session-state/bd4b9b68-2efb-48f2-b02b-6ca899552d36/files/upstream-rebase/c5-lane/r1/patch/build/saveram_link_c5201781_b/g2r b.SaveRAM","snapshot_path":"/home/matracey/.copilot/session-state/bd4b9b68-2efb-48f2-b02b-6ca899552d36/files/upstream-rebase/c5-lane/r1/patch/build/e2e_link_c5201781_b_witness.SaveRAM"}
+RECEIPT {"artifact_kind":"rand_overlay","attempt":1,"binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","booted":{"frame":3374,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":5039,"key":"AAEB:C4A6:5C","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":92},"case":"gold_battle","client":{"artifact_kind":"rand_overlay","binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","pack":"gen2_gold","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"516056500fb5ce1073d1818d5cbede59489ed7b5","title":"gold"},"fixture_sha256":"6864b34a79e63fa9c8954c37cb805a690da4cf36447bda179ecf0742a072a3b6","harness_write_scopes":[],"hello":{"ball_count":10,"frame":3344,"has_pokeballs":true,"ot_id":50342},"input_mode":"normal_buttons","key":"AAEB:C4A6:5C","player":"b","rom_sha1":"516056500fb5ce1073d1818d5cbede59489ed7b5","save":{"cartram_bytes":32768,"cartram_sha256":"dd4e39342ed73c3c1543bc104b4469ee10848968a69558b89da182d15be4a89a","client_saves":1,"flushed_matches":true,"frame":5497,"gate_saves":1,"save_completed_frame":5467,"saveram_bytes":32790,"saveram_path":"/home/matracey/.copilot/session-state/bd4b9b68-2efb-48f2-b02b-6ca899552d36/files/upstream-rebase/c5-lane/r1/patch/build/saveram_link_c5201781_b/g2r b.SaveRAM","snapshot_path":"/home/matracey/.copilot/session-state/bd4b9b68-2efb-48f2-b02b-6ca899552d36/files/upstream-rebase/c5-lane/r1/patch/build/e2e_link_c5201781_b_witness.SaveRAM"},"scenario":"link","schema":"gen2-duo-link-v1","title":"gold"}
+RESULT: PASS (caught AAEB:C4A6:5C)
