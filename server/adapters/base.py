@@ -739,26 +739,12 @@ class GameAdapter(GameRulesAdapter, GamePresentationAdapter):
         Default for Gen 3/4/5 two-part key format.
         Gen 1 and Gen 2 override this (three-part DDDD:TTTT:SS format).
         """
-        try:
-            parts = key.split(":")
-            if len(parts) == 2:
-                return parts[1]
-        except (ValueError, IndexError):
-            pass
-        return ""
+        return key.split(":")[1] if self.is_valid_mon_key(key) else ""
 
     def is_valid_mon_key(self, key: str) -> bool:
-        """Validate PID:OTID format: two hex segments each ≤ 8 digits.
+        """Validate PID:OTID format: two ASCII hex segments of 1-8 digits.
 
         Default for Gen 3/4/5 two-part key format.
         Gen 1 and Gen 2 override this (three-part DDDD:TTTT:SS format).
         """
-        try:
-            parts = key.split(":")
-            if len(parts) != 2:
-                return False
-            int(parts[0], 16)
-            int(parts[1], 16)
-            return len(parts[0]) <= 8 and len(parts[1]) <= 8
-        except (ValueError, IndexError):
-            return False
+        return isinstance(key, str) and re.fullmatch(r"[0-9A-Fa-f]{1,8}:[0-9A-Fa-f]{1,8}", key) is not None
