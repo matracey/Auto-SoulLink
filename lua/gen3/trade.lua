@@ -277,9 +277,9 @@ function T.new(d)
     -- instead of refusing: T5 LG->FR 2026-09-27 answered ok=false for "native not authorized"
     -- 187 frames after its own mon_chosen and the server cancelled the whole trade.
     local held = nil
-    local function refuse(cmd, why)   -- every apply_ready ok=false names its reason once
+    local function refuse(cmd, why, epoch)   -- every apply_ready ok=false names its reason once
         if d.log then d.log("apply_prepare refused: " .. why) end
-        emit("apply_ready", {token=cmd.token, ok=false}); flush()
+        emit("apply_ready", {token=cmd.token, ok=false}, epoch); flush()
     end
     local function hold_journal(cmd, epoch, deadline)
         if held then return refuse(cmd, "another prepare held") end
@@ -383,6 +383,8 @@ function T.new(d)
         flush()
     end
     function self:reset()
+        local waiting = held
+        held = nil
         if journal then journal:discontinuity() end
         recovery_reports = {}
         if prepared then
@@ -405,6 +407,7 @@ function T.new(d)
                 end
             end
         end
+        if waiting then refuse(waiting.cmd, "cartridge reset", waiting.epoch) end
     end
     function self:apply(cmd)
         if not token(cmd.token) then return end

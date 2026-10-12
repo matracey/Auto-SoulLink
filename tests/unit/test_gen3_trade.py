@@ -986,6 +986,40 @@ def test_a_briefly_unauthorized_native_prepare_is_held_not_refused():
     assert len(pending) == 1 and world.events == []
 
 
+@pytest.mark.parametrize("hold", ["native", "journal"])
+@pytest.mark.parametrize("new_connection", [False, True])
+def test_reset_retires_held_readiness_in_its_original_epoch(hold, new_connection):
+    world = TradeWorld()
+    ready = {"ok": False}
+    pending = []
+    world.native.trade_authorized = lambda *_: ready["ok"]
+    world.native.prepare_trade = lambda _, cmd, done, valid: pending.append(cmd) or world.lua.table()
+    journal = world.deps.journal
+    original_ready = journal.ready
+    if hold == "journal":
+        journal.busy = True
+        journal.ready = lambda _: False
+    world.prepare()
+    assert not world.events and not pending
+
+    world.connected = False
+    if new_connection:
+        world.epoch += 1
+    world.trade.reset(world.trade)
+    journal.ready, journal.busy = original_ready, False
+    ready["ok"] = True
+    world.frame = 1
+    world.connected = True
+    world.tick()
+    world.tick()
+
+    assert not pending
+    assert world.events == ([] if new_connection else [("apply_ready", {"token": "t", "ok": False})])
+    assert any("reset" in line for line in world.logs)
+    world.command("prepare", token="fresh", old_key=world.rows[0]["key"])
+    assert len(pending) == 1 and pending[0].token == "fresh"
+
+
 def test_a_prepare_that_never_gets_authorized_still_refuses_at_the_deadline():
     world = TradeWorld()
     world.native.trade_authorized = lambda *_: False
