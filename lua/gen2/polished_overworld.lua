@@ -529,7 +529,8 @@ function O.boxes(deps)
             local box, refusal = nil, "no free box slot"
             for index = 1, c.NUM_BOXES do
                 if index ~= MEMORIAL then
-                    local hit = find_key(boxes[index], key)
+                    local hit, ambiguous = find_key(boxes[index], key)
+                    if ambiguous then refuse(ambiguous) end
                     if hit then refuse("key already boxed (box " .. index .. " slot " .. hit.slot .. ")") end
                     if not box and #boxes[index] < PER_BOX then box = index end
                 end
@@ -749,10 +750,10 @@ function O.boxes(deps)
             end
             local opts, owhy = live_options()
             if not opts then refuse(owhy) end
-            local record, view, swhy = STATS.party_from_savemon(entry, {
+            local record, view = STATS.party_from_savemon(entry, {
                 apply_evs = opts.apply_evs, natures_on = opts.natures_on, perfect_ivs = opts.perfect_ivs,
                 base_stats = BASE, variant_record = VARIANT, move_pp = MOVE_PP})
-            if not record then refuse("stat rebuild refused: " .. tostring(swhy)) end
+            if not record then refuse("stat rebuild refused: " .. tostring(view)) end
             -- nickname 11 B (already decoded back to the party-side encoding), OT 8 name bytes + 3 EXTRA
             -- (savemon bytes 30..32, which carry hyper training - bills_pc.asm:960 reads the mask from
             -- wTempMonOT + PLAYER_NAME_LENGTH)
@@ -1333,11 +1334,11 @@ function O.boxes(deps)
             if not composed then return guard(tostring(composition_why)) end
             local entry = hex_bytes(found.raw_hex, 49, "box entry")
             local opts = plan.identity.options
-            local built, record, view, why = pcall(STATS.party_from_savemon, entry, {
+            local built, record, view = pcall(STATS.party_from_savemon, entry, {
                 apply_evs = opts.apply_evs, natures_on = opts.natures_on, perfect_ivs = opts.perfect_ivs,
                 base_stats = BASE, variant_record = VARIANT, move_pp = MOVE_PP})
             if not built then return guard("stat rebuild refused: " .. tostring(record)) end
-            if not record then return guard("stat rebuild refused: " .. tostring(why)) end
+            if not record then return guard("stat rebuild refused: " .. tostring(view)) end
             local ot = hex_bytes(found.ot_raw_hex, 8, "OT name")
             for i = 1, 3 do ot[8 + i] = entry[29 + i] end
             local nick = hex_bytes(found.nickname_raw_hex, 11, "nickname")

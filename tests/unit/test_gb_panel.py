@@ -171,3 +171,25 @@ def test_abi_equality_probe_catches_a_drift():
     abi = dict(_abi(), SLINK_OFS_CAPS=9)
     G = lupa.LuaRuntime().eval(f'dofile("{GB_PANEL}")')
     assert _mismatches(G, abi) == ["OFF_CAPS != SLINK_OFS_CAPS"]
+
+
+def test_text_rows_are_terminated_before_the_write_window_opens():
+    b = Bus(0xCFD8)
+    b.lua.globals().panel_is_armed = lambda: b.allow is not None
+    text = b.lua.eval("""setmetatable({base=0xC600,stride=17,lines=2,line_max=16}, {
+        __index=function(_,k)
+            if k == 'terminator' then
+                assert(not panel_is_armed(), 'text payload constructed inside armed window')
+                return 0x53
+            end
+        end})""")
+    p = b.bind(b.spec(text=text, rows_per_page=2))
+    assert p.hold(p, b.lua.table("AB", "C"))
+    b.w.arm(b.w, "panel", p.allow)
+    assert p.stage(p) == 0
+    assert b.writes == [
+        (0xC600, [0x80, 0x80] + [0x7F] * 14 + [0x53]),
+        (0xC611, [0x80] + [0x7F] * 15 + [0x53]),
+        (0xCFE3, [1]),
+        (0xCFE1, [2]),
+    ]

@@ -1114,3 +1114,16 @@ def test_memorialize_of_a_mon_already_only_in_box_20_is_a_verified_no_op():
     rig = Rig(party(), img=img)
     rig.send_command({"cmd": "memorialize", "key": key_of(target)})
     assert _burials(rig) == ([key_of(target)], []) and rig.writes() == []
+
+
+def test_deposit_refuses_ambiguous_boxed_key_without_any_write():
+    mons = party()
+    img = seal_save(Image())
+    for slot in (1, 2):
+        plant(img, 1, slot, 1, slot, entry_for(mons[1]))
+    rig = Rig(mons, img=img)
+    before = rig.img.snap()
+    rig.send_command({"cmd": "box_mon", "key": key_of(mons[1])})
+    assert rig.writes() == []
+    assert rig.count() == len(mons) and rig.img.snap() == before
+    assert "ambiguous duplicate key" in rig.sent("box_mon_failed")[0]["reason"]

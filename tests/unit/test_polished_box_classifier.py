@@ -478,7 +478,7 @@ def test_rebuild_guards_are_proved_before_any_emission(refusal):
     old = "local STATS, BASE, VARIANT, MOVE_PP = deps.stats, deps.base_stats, deps.variant_record, deps.move_pp"
     codec = {
         "uncomposed": "nil",
-        "nil": "{party_from_savemon=function() return nil,nil,'rebuild guard' end}",
+        "nil": "{party_from_savemon=function() return nil,'rebuild guard' end}",
         "throw": "{party_from_savemon=function() error('rebuild guard',0) end}",
     }[refusal]
     rig, key = setup("party_mon")

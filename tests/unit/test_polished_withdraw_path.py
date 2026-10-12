@@ -21,21 +21,21 @@ import pytest
 
 from server.adapters import polished_codec as pc
 from tests.unit.test_polished_boxes import FLAG_FLAT, Image
+from tests.unit.test_polished_lua import ROOT
 from tests.unit.test_polished_write_path import (
     PARTY_COUNT,
     PARTY_MONS,
     SYM,
     Rig,
+    _pair,
     box_flat,
     entry_flat,
     entry_for,
     key_of,
     party,
     plant,
-    _pair,
     sysbus,  # noqa: F401
 )
-from tests.unit.test_polished_lua import ROOT
 
 lupa = pytest.importorskip("lupa")
 
@@ -73,9 +73,9 @@ def boxed_mon(rng_seed=909, species=99):
     # OPTION-SENSITIVE FIXTURE: six DV nibbles that are NOT 15 and six non-zero EV bytes, so that perfect IVs,
     # EVs and natures each provably change the rebuilt record (with all-15 DVs and zero EVs every option
     # combination yields the same bytes and the option tests pass vacuously).
-    for name, nibble in zip(pc.STAT_NAMES, (3, 7, 11, 5, 9, 13)):
+    for name, nibble in zip(pc.STAT_NAMES, (3, 7, 11, 5, 9, 13), strict=True):
         mon["dvs"][name] = nibble
-    for name, value in zip(pc.STAT_NAMES, (36, 52, 20, 68, 12, 28)):
+    for name, value in zip(pc.STAT_NAMES, (36, 52, 20, 68, 12, 28), strict=True):
         mon["evs"][name] = value
     mon["nature"] = 7                       # raised stat 3, lowered stat 2 -> not neutral
     mon["dv_bytes"] = int("".join(f"{mon['dvs'][n]:X}" for n in pc.STAT_NAMES), 16)
@@ -133,11 +133,6 @@ return function(parts, io, source)
                             variant_record = VARIANTS, move_pp = MOVE_PPT})
 end
 """
-
-
-def _stats_row(b):
-    return lua_table(rig, [b["hp"], b["attack"], b["defense"], b["speed"],
-                           b["special_attack"], b["special_defense"]])
 
 
 def build(rig, edits=(), io=None):
@@ -1061,3 +1056,23 @@ def test_a_party_count_that_moved_since_the_plan_refuses_the_reconcile():
     # RED: the check removed -> the box copy is erased though the party copy is no longer inside the count
     rig, done, why = run([(STALE_RECONCILE, "")])
     assert entries_byte(rig) == 0, "RED: the box copy was removed under a stale party slot"
+
+
+@pytest.mark.parametrize("classifier", [False, True], ids=["executor", "classifier"])
+def test_codec_nil_result_preserves_second_return_reason(classifier):
+    rig = Rig(party())
+    options(rig)
+    mon = boxed_mon()
+    boxed(rig, mon)
+    old = "local STATS, BASE, VARIANT, MOVE_PP = deps.stats, deps.base_stats, deps.variant_record, deps.move_pp"
+    raw = build(rig, [(old, old.replace("deps.stats", "{party_from_savemon=function() return nil,'unsupported variant stats' end}"))])
+    if classifier:
+        ctx = rig.lua.eval("{write_id='codec-refusal',session='test',generation=1,valid=function() return true end}")
+        result, plan = raw.attempt_box_write("party_mon", key_of(mon), ctx)
+        assert result.outcome == "PROVED_NOT_COMPLETE" and plan.guard_refusal
+        why = plan.reason
+    else:
+        done, why = _pair(_lua_withdraw(rig.lua)(raw, key_of(mon)))
+        assert done is None
+    assert why == "stat rebuild refused: unsupported variant stats"
+    assert rig.writes() == [] and rig.count() == 3

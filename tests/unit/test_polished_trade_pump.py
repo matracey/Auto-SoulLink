@@ -875,3 +875,56 @@ def test_complete_pump_mutant_is_red():
     assert source.count(anchor) == 1
     with pytest.raises(AssertionError):
         complete_received_mon(source.replace(anchor, 'if false then'))
+
+
+@pytest.mark.parametrize("role", ["proposer", "responder"])
+def test_published_arm_fault_requires_reset_and_warns_once(role):
+    p = Pump()
+    shown = []
+    p.lua.execute("return function(hud, rec) hud.show = function(text) rec(text) end end")(p.deps.hud, shown.append)
+    if role == "proposer":
+        p.accepted(p.apply_command())
+    else:
+        responder_accepted(p)
+    base = p.parts.profile.overlay.trade.lease.base
+    p.fail_after_once_address = base + 6
+    p.fail_after_once_value = (p.mem[base + 6] + 1) % 256
+    p.frame(3)
+    done = p.sent("trade_done")
+    assert len(done) == 1 and done[0].get("after_reset") is True
+    assert done[0]["uncertain"] is True and "new_key" not in done[0]
+    assert shown.count("TRADE UNCERTAIN - CHECK PARTY") == 1
+    before = p.writes()
+    p.put(5, 7)
+    p.put(7, p.mem[base + 6])
+    p.put(8, 2)
+    p.frame(3)
+    assert p.sent("trade_done") == done
+    assert shown.count("TRADE UNCERTAIN - CHECK PARTY") == 1
+    assert p.writes() == before
+
+
+@pytest.mark.parametrize("phase", ["query", "offer"])
+def test_poll_read_failure_is_logged_once_and_retries_without_outcome(phase):
+    p = Pump()
+    p.image("QUERY")
+    if phase == "offer":
+        p.frame()
+        p.command({"cmd": "trade_mask", "mask": 4})
+        p.frame()
+        p.put(5, 2)
+        p.put(6, 43)
+        p.put(7, 42)
+    method = "poll_" + phase
+    original = p.binder[method]
+    p.binder[method] = p.lua.eval('function() error("injected poll read failure") end')
+    before = p.writes()
+    p.frame(3)
+    diagnostics = [s for s in p.log.lines.values() if "injected poll read failure" in s]
+    assert len(diagnostics) == 1
+    assert method in diagnostics[0] and "UNCERTAIN" in diagnostics[0]
+    assert not p.sent("trade_done") and not p.sent("menu_result")
+    assert p.writes() == before
+    p.binder[method] = original
+    p.frame(2)
+    assert len(p.sent("trade_" + phase)) == 1

@@ -886,3 +886,26 @@ def test_changed_rival_modules_compile_in_lua55():
     lua = LuaRuntime(unpack_returned_tuples=True)
     for name in ("client.lua", "signals.lua", "polished_rival.lua"):
         assert lua.eval("function(s) return assert(load(s)) ~= nil end")((LUA / name).read_text())
+
+
+@pytest.mark.parametrize("throw", [False, True])
+def test_rival_success_log_is_deferred_and_cannot_change_result(throw):
+    rig = pending_native_swap(ready(fresh=True))
+    logged = []
+    rig.lua.execute("""return function(lines, capture, throwing)
+        setmetatable(lines, {__newindex=function(t,k,v)
+            if tostring(v):find("Polished rival team written",1,true) then
+                capture(v)
+                if throwing then error("logger unavailable") end
+            end
+            rawset(t,k,v)
+        end})
+    end""")(rig.log.lines, logged.append, throw)
+    fire_native_rival(rig)
+    assert len(rig.writes()) == 141
+    assert logged == []
+    assert rig.sent("rival_team_replaced") == []
+    rig.frame(1)
+    replies = rig.sent("rival_team_replaced")
+    assert len(replies) == 1 and not replies[0].get("error")
+    assert logged == ["[SLink-gen2] Polished rival team written: 2 mon(s)"]

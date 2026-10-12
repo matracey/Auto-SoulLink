@@ -280,7 +280,7 @@ function R.new(deps)
             if not ok then fail(p, why) end
             ok, why = pcall(function() gate:write_batch(p.last); verify(p.last) end)
             if not ok then fail(p, why) end
-            if log then log("[SLink-gen2] Polished rival team written: " .. p.count .. " mon(s)") end
+            -- The client reports/logs this verified result at frame end, outside the exec callback.
         end)
     end
     self.writes = proxy
