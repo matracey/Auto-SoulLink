@@ -5086,10 +5086,10 @@ class SLinkServer:
 
         # Remove from pending_memorials and re-add to party_keys
         if entry.a:
-            s.pending_memorials["a"].discard(entry.a.key)
+            s.cancel_retirement("a", entry.a.key)
             s.party_keys["a"].add(entry.a.key)
         if entry.b:
-            s.pending_memorials["b"].discard(entry.b.key)
+            s.cancel_retirement("b", entry.b.key)
             s.party_keys["b"].add(entry.b.key)
 
         a_name = entry.a.nickname if entry.a else "?"

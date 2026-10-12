@@ -122,3 +122,35 @@ async def test_unlink_preservation_cancels_only_that_players_retirement(tmp_path
     loaded = SoulLinkState.load(data_dir=str(tmp_path))
     assert loaded.pending_memorials == state.pending_memorials
     assert loaded.unpaired_mons["route_1"][preserved].key == key
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("status", [LinkStatus.DEAD, LinkStatus.MEMORIAL])
+async def test_revive_cancels_retirement_before_next_delivery(tmp_path, status):
+    server = SLinkServer(data_dir=str(tmp_path))
+    state = server.state
+    key = "AB:CD"
+    entry = LinkEntry(area_id="route_1", a=MonInfo(key=key), b=MonInfo(key=key), status=status)
+    state.links.append(entry)
+    state._index_entry(entry)
+    keep = [{"cmd": "hud_show", "key": key, "text": "Keep"},
+            {"cmd": "memorialize", "key": "EF:01"}]
+    for pid in ("a", "b"):
+        state.queued_commands[pid] = [
+            {"cmd": cmd, "key": key} for cmd in ("force_faint", "force_explode", "memorialize")
+        ] + keep
+        state.pending_memorials[pid] = {key, "EF:01"}
+
+    async def body():
+        return {"area_id": "route_1"}
+
+    response = await server.handle_debug_revive(SimpleNamespace(json=body))
+
+    assert response.status == 200
+    assert entry.status == LinkStatus.ALIVE
+    for pid in ("a", "b"):
+        assert state.pending_memorials[pid] == {"EF:01"}
+        assert state._deliver_commands(pid) == keep
+    loaded = SoulLinkState.load(data_dir=str(tmp_path))
+    assert loaded.links[0].status == LinkStatus.ALIVE
+    assert loaded.pending_memorials == state.pending_memorials
