@@ -3,7 +3,7 @@
 
     python patch/gen1/tools/build.py                 # both ROMs
     python patch/gen1/tools/build.py --rom red
-    python patch/gen1/tools/build.py --verify-only   # re-check an existing build
+    python patch/gen1/tools/build.py --verify-only   # check base ROMs without building
 
 Mirrors patch/tools/build.py (the Radical Red pipeline) with three differences that fall
 out of the platform:
@@ -184,6 +184,12 @@ def main():
                     help="shown on the main menu: dev (default) or vX.Y.Z[-dev]")
     args = ap.parse_args()
 
+    rom_keys = [args.rom] if args.rom else sorted(ROMS)
+    if args.verify_only:
+        for rom_key in rom_keys:
+            print("[gen1-patch] " + patch_rom(rom_key, b"", True, args.version), file=sys.stderr)
+        return 0
+
     bank = assemble()
     n = code_length(bank)
     if n > FREE_FROM - INJECT_OFFSET:
@@ -200,8 +206,8 @@ def main():
     print(f"[gen1-patch] payload -> {os.path.relpath(PAYLOAD_FILE, REPO)} ({n} bytes)",
           file=sys.stderr)
 
-    for rom_key in ([args.rom] if args.rom else sorted(ROMS)):
-        print("[gen1-patch] " + patch_rom(rom_key, bank, args.verify_only, args.version), file=sys.stderr)
+    for rom_key in rom_keys:
+        print("[gen1-patch] " + patch_rom(rom_key, bank, version=args.version), file=sys.stderr)
     return 0
 
 
