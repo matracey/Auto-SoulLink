@@ -79,6 +79,8 @@ function Session.new(p)
     local game, identity, deferred = assert(p.game, "game"), assert(p.identity, "identity"), assert(p.deferred, "deferred")
     local tag, sink = p.tag or "[SLink]", p.log or function() end
     local function log(msg) sink(tag .. " " .. msg) end
+    local outbox = p.outbox
+    local report_wait, report_sent_at
 
     local self = {
         player = p.player, seq = 0, frame = 0, hello_sent = false,
@@ -100,6 +102,19 @@ function Session.new(p)
         return true
     end
     local function send(name, fields)
+        if outbox and outbox.events[name] then
+            local ok,value=pcall(function()
+                outbox:load(game.report_ot and game.report_ot())
+                return outbox:append(name,fields)
+            end)
+            if not ok then
+                log(tostring(value))
+                hud.show("SLINK REPORT RECOVERY STOPPED - SEE LOG",255,60,60,1800)
+                error(value)
+            end
+            report_sent_at=nil
+            return value
+        end
         if name ~= "hello" and not self.hello_sent and net.connected() then
             local held = self.pre_hello
             if #held >= Session.MAX_PRE_HELLO then
@@ -121,6 +136,7 @@ function Session.new(p)
 
     function self:eligible()
         return self.writes_enabled == true and self.hello_sent == true and net.connected() == true
+            and (not outbox or (outbox.accepted and outbox:ready()))
     end
     -- the queue's shared seams are the session's own unless the caller bound others
     deferred.send = deferred.send or send
@@ -183,7 +199,7 @@ function Session.new(p)
             if why then
                 log(e.cmd .. " refused in battle: " .. why .. " " .. tostring(e.key))
                 res = "done"
-            elseif not self.writes_enabled then
+            elseif not self.writes_enabled or (outbox and not self:eligible()) then
                 -- a paused gate holds battle writes too (Gen 1 on_battle_loop_head gates on
                 -- writes_enabled, gen1/client.lua:1376): nothing lands while identity is unsure
                 res, rwhy = "hold", self.gate_revoked and "writes paused" or "writes not enabled yet"
@@ -273,6 +289,31 @@ function Session.new(p)
         self.arrivals = (self.arrivals or 0) + 1
         cmd.arrival = self.arrivals                         -- server order, kept across a battle hold
         if c == "noop" then return end
+        if c == "report_binding" and outbox then
+            local ok,why=pcall(outbox.bind,outbox,cmd.binding,game.report_ot and game.report_ot())
+            if not ok then
+                outbox:disconnect()
+                log("report binding refused: "..tostring(why))
+                hud.show("SLINK REPORT BINDING REFUSED - SEE LOG",255,60,60,1800)
+            end
+            report_sent_at=nil
+            return
+        end
+        if c == "report_ack" and outbox then
+            outbox:ack(cmd)
+            report_wait,report_sent_at=nil,nil
+            return
+        end
+        if c == "sync_cancel" then
+            if outbox then outbox:cancel(cmd) end
+            for i=#deferred.items,1,-1 do
+                local q=deferred.items[i]
+                if q.key==cmd.key and q.intent_revision and q.intent_revision<=cmd.intent_revision then
+                    table.remove(deferred.items,i)
+                end
+            end
+            return
+        end
         local own = game.commands and game.commands[c]
         if own and own(cmd) then return end
         if c == "force_faint" or c == "force_explode" then return route_force(cmd) end
@@ -413,6 +454,15 @@ function Session.new(p)
 
     function self:frame_end()
         self.frame = game.frame()
+        if outbox and outbox.failure then
+            self.writes_enabled=false
+            if not self.report_failure_shown then
+                self.report_failure_shown=true
+                log("gameplay journal stopped: "..outbox.failure)
+                hud.show("SLINK REPORT RECOVERY STOPPED - SEE LOG",255,60,60,1800)
+            end
+            return
+        end
         -- validation first: a pause decided this frame already gates this frame's posts
         if self.frame % Session.VALIDATE_EVERY == 0 then self:validate() end
         if game.pre_pump then game.pre_pump() end
@@ -421,6 +471,7 @@ function Session.new(p)
         if not connected then
             self.hello_sent = false
             self.pre_hello = {}
+            if outbox then outbox:disconnect(); report_wait=nil end
             if game.on_disconnect then game.on_disconnect() end
         end
         -- pump, THEN hello: the reconnect hello is the first line of a new connection
@@ -478,6 +529,30 @@ function Session.new(p)
             local ok, err = pcall(game.after_receive)
             if not ok then log("after_receive: " .. tostring(err)) end
         end
+        if outbox and connected and outbox.accepted then
+            local ok,why=pcall(function()
+                if not report_sent_at or self.frame-report_sent_at>=Session.TICK_INTERVAL then
+                    local row=outbox:head()
+                    report_sent_at=self.frame
+                    if row then
+                        transmit(row.event,row.fields)
+                        report_wait,report_sent_at=row.fields.report.number,self.frame
+                    end
+                end
+            end)
+            if not ok then
+                log(tostring(why)); hud.show("SLINK REPORT RECOVERY STOPPED - SEE LOG",255,60,60,1800)
+            end
+        end
+        if outbox and outbox.failure then
+            self.writes_enabled=false
+            if not self.report_failure_shown then
+                self.report_failure_shown=true
+                log("gameplay journal stopped: "..outbox.failure)
+                hud.show("SLINK REPORT RECOVERY STOPPED - SEE LOG",255,60,60,1800)
+            end
+            return
+        end
         flush_battle_writes()
         self:run_deferred()
     end
@@ -488,6 +563,7 @@ function Session.new(p)
                 return false, self.gate_revoked and "writes paused" or "writes not enabled yet"
             end
             if not net.connected() then return false, "not connected" end
+            if outbox and not self:eligible() then return false,"report binding not accepted" end
             return game.checkpoint_ok()
         end, self.frame, self.game_over)
     end

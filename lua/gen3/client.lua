@@ -141,6 +141,7 @@ function Client.new(p)
     local session
     local function send(event, fields) return session.send(event, fields) end
     local function owe(event, fields)
+        if io.report_outbox and io.report_outbox.events[event] then return send(event,fields) end
         -- INV-CLIENT-2: native removals use the same reply-bound outbox as trade.
         if not owed then error("durable reports unavailable for " .. event) end
         for _, report in ipairs(owed.list) do
@@ -482,7 +483,9 @@ function Client.new(p)
             local k = key(m)
             if m.hp == 0 and st.alive[k] then
                 st.alive[k] = nil
-                send("faint", { key = k, area_id = area_id })
+                send("faint", { key = k, area_id = area_id, level=m.level,
+                    battle_evidence={in_battle=st.battle~=nil or in_battle(),
+                        is_trainer=st.battle and st.battle.is_trainer==true or false} })
             end
         end
     end
@@ -857,7 +860,8 @@ function Client.new(p)
             if nature_completed then settle_nature(party) end
         end
         if f.whiteout and not st.frozen then
-            send("whiteout", {})
+            send("whiteout", {battle_evidence={in_battle=st.battle~=nil or in_battle(),
+                is_trainer=st.battle and st.battle.is_trainer==true or false}})
             hud.show("WHITED OUT", 255, 60, 60, 300)
         end
         if f.battle_end then finish_battle(area_id) end
@@ -1183,6 +1187,17 @@ function Client.new(p)
             return boxes:memorialize(k, hint)
         end,
         stats_of = stats_of,
+        command_state=function(cmd)
+            local party=party_read(true)
+            if not party or st.frozen or recovery_hidden() then return nil end
+            rescan_boxes()
+            if not st.boxes_ok then return nil end
+            local np,nb=0,0
+            for _,m in ipairs(party) do if key(m)==cmd.key then np=np+1 end end
+            for _,m in ipairs(st.box_cache) do if m.key==cmd.key then nb=nb+1 end end
+            if np+nb~=1 then return nil end
+            return cmd.cmd=="box_mon" and nb==1 or cmd.cmd=="party_mon" and np==1
+        end,
         -- every byte moves through the one sink; its ATTEMPT counter moves before each external
         -- write, so an error after the first attempted byte reads as a (possible) mutation
         write_count = function() return writes.attempted end,
@@ -1199,6 +1214,10 @@ function Client.new(p)
     local drv = { commands = {} }
     drv.frame = function() return io.framecount() end
     drv.read_party = party_read
+    function drv.report_ot()
+        local t=trainer()
+        return t and type(t.ot_id)=="number" and string.format("%08X",t.ot_id) or nil
+    end
     drv.in_battle = in_battle
     drv.battle_write = battle_write
     -- KEY-SCOPE-5: the core's key_change retry hook. st.box_generation only bumps on a complete
@@ -1339,6 +1358,10 @@ function Client.new(p)
                     pc_boxes_generation = gen_ok and gen or nil,
                     area_id = area_id, loc_name = loc, has_pokeballs = st.has_pokeballs,
                     in_battle = in_battle(), badges = badges(), ball_count = ball_count() }
+        if io.report_outbox then
+            f.report_delivery=1
+            f.report_backlog=io.report_outbox:pending_count()
+        end
         if session_nonce then
             -- capability declaration (card C5-10b): this client mints and enforces the battle
             -- request identity, so the server may refuse an identity-less manual rival inject for
@@ -1375,6 +1398,7 @@ function Client.new(p)
                     is_trainer_battle = b and b.is_trainer or false, is_doubles = b and b.is_doubles or false,
                     trainer_id = b and b.is_trainer and num(b.trainer_id) or nil,
                     enemy_party = enemy_wire(b), ball_count = n, badges = badges() }
+        if io.report_outbox then f.report_backlog=io.report_outbox:pending_count() end
         local hidden = st.frozen or (trade and trade:hide_party()) or recovery_hidden()
         if hidden then f.party_hidden = true else f.party = party_wire(party) end
         -- the ONE box-generation accessor, the same one hello_fields reads (review F4): the tick
@@ -2293,6 +2317,7 @@ function Client.new(p)
 
     local Id = core.Identity.new({ key = key })
     local Q = core.Deferred.new({ exec = exec, memorial_box = memorial_box })
+    Q.outbox=io.report_outbox
     local transport = setmetatable({
             send=function(line)
                 -- safe has no snapshot-building seam in the shared core. Mark only
@@ -2317,7 +2342,8 @@ function Client.new(p)
                 return line
             end}, {__index=p.net})
     session = core.Session.new({ net = transport, json = json, hud = hud, log = sink, tag = TAG,
-                                 player = p.player, game = drv, identity = Id, deferred = Q })
+                                 player = p.player, game = drv, identity = Id, deferred = Q,
+                                 outbox=io.report_outbox })
     session.driver, session.state = drv, st
     if native and (p.artifact_kind == "companion" or p.artifact_kind == "rand_companion") and native.request_match_call then
         local base_command = session.handle_command

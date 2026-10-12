@@ -84,3 +84,54 @@ def test_file_store_refuses_a_missing_guard_beside_existing_reports():
     with pytest.raises(lupa.LuaError, match="guard missing"):
         reopened.load(reopened, BINDING["ot_id"])
     assert reopened.failure is not None
+
+
+def world(disk=None, *, connected=True):
+    disk = disk or Disk()
+    w = World(outbox=disk.factory, connected=connected)
+    mask = w.profile["rom"]["PP_UP_GET_MASK_ADDR"] - 0x08000000
+    for i, value in enumerate((3, 12, 48, 192)):
+        w.rom[mask + i] = value
+    w.set_party([mon_record(A, OT), mon_record(B, OT)])
+    if connected:
+        w.step_to(60)
+        w.command(cmd="report_binding", binding=BINDING)
+        w.step()
+    return w, disk
+
+
+def rows(disk):
+    return json.loads(disk.files["reports.json"].split("\n", 2)[2])
+
+
+def ack(w, event):
+    w.command(cmd="report_ack", stream=event["report"]["stream"], number=event["report"]["number"])
+    w.step()
+
+
+def capture(w):
+    w.set_party([mon_record(A, OT), mon_record(B, OT), mon_record(C, OT, species=19)])
+    w.fire("mon_given")
+    w.step()
+
+
+def test_disconnected_capture_persists_area_and_replays_only_after_binding():
+    w, disk = world()
+    w.connected = False
+    w.step()
+    capture(w)
+    saved = rows(disk)["reports"]
+    assert len(saved) == 1 and saved[0]["event"] == "capture"
+    assert saved[0]["fields"]["area_id"] == "route_1"
+    assert saved[0]["fields"]["stats"]["spDef"] == 15
+    assert not w.events("capture")
+    w.set_location(3, 20)
+    w.connected = True
+    w.step()
+    assert not w.events("capture")
+    w.command(cmd="report_binding", binding=BINDING)
+    w.step()
+    event = w.events("capture")[0]
+    assert event["key"] == KC and event["area_id"] == "route_1"
+    ack(w, event)
+    assert rows(disk)["reports"] == []

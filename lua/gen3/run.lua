@@ -367,6 +367,14 @@ local function trade_file_adapter(import_type)
             local stream = File.Open(path,Mode.Open,Access.Write,Share.None)
             return finish(stream,function() stream:Seek(0,Seek.End); return write(stream,value,false) end)
         end,
+        replace_file=function(path,value)
+            local staging=path..".next"
+            local stream=File.Open(staging,Mode.Create,Access.Write,Share.None)
+            finish(stream,function() return write(stream,value,false) end)
+            File.Replace(staging,path,nil,true)
+            stream=File.Open(path,Mode.Open,Access.ReadWrite,Share.None)
+            return finish(stream,function() stream:Flush(true); return true end)
+        end,
     }
 end
 
@@ -398,6 +406,22 @@ end
 -- <<< durable trade storage <<<
 
 local recovery_json = dofile(ROOT .. "/lua/json_codec.lua")
+do
+    local Outbox=dofile(ROOT.."/lua/gen3/report_outbox.lua")
+    local ok,store=pcall(function()
+        assert(luanet and luanet.import_type,"CLR durability adapter unavailable")
+        return Outbox.file_store({json=recovery_json,fs=trade_file_adapter(luanet.import_type),
+            path=ROOT.."/slink_gen3_reports_"..player.."_"..admitted.rom_hash:lower()})
+    end)
+    if not ok then
+        local why=tostring(store)
+        store={read=function() error(why) end,update=function() error(why) end}
+    end
+    io_.report_outbox=Outbox.new({json=recovery_json,store=store,player=player,
+        rom_sha1=admitted.rom_hash:lower(),new_id=function()
+            return tostring(luanet.import_type("System.Guid").NewGuid():ToString("N"))
+        end})
+end
 if Entry.trade_journal_supported(ROOT, recovery_json, admitted) then
     local Journal = dofile(ROOT .. "/lua/gen3/trade_journal.lua")
     local json = recovery_json

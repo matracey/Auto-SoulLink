@@ -77,6 +77,8 @@ function Deferred:push(cmd)
     for i = #self.items, 1, -1 do
         local q = self.items[i]
         if q.key == cmd.key then
+            if cmd.intent_id and q.intent_id==cmd.intent_id then return end
+            if cmd.intent_revision and q.intent_revision and cmd.intent_revision<q.intent_revision then return end
             if opp and q.cmd == opp then
                 table.remove(self.items, i)
                 log(cmd.cmd .. " cancels the queued " .. opp .. " " .. tostring(cmd.key))
@@ -129,7 +131,16 @@ function Deferred:run(gate, frame, game_over)
 
     local cmd = table.remove(self.items, 1)
     local requeued, settled
-    local function answer(event, fields) settled = true; return send(event, fields) end
+    local durable=self.outbox and cmd.intent_id and OPPOSITE[cmd.cmd]
+    local function answer(event, fields)
+        if durable then
+            self.outbox:complete(cmd,event,fields)
+            settled=true
+            return true
+        end
+        settled = true
+        return send(event, fields)
+    end
     -- A retired alias (a rejected key_change) names the OLD key; the executor gets the key the
     -- cartridge holds and the evidence-validated slot. Evidence failure is TERMINAL for it: the
     -- executor's own key lookup would find whichever record carries the duplicated key.
@@ -141,6 +152,30 @@ function Deferred:run(gate, frame, game_over)
     end
     local before = exec.write_count and exec.write_count()
     local ok, err = pcall(function()
+        if durable then
+            local slot,mon=find(cmd.key)
+            local stats=slot and (exec.stats_of or default_stats)(mon) or nil
+            local phase=self.outbox:command(cmd,stats)
+            if phase=="done" or phase=="stale" then settled=true; return end
+            local applied=exec.command_state and exec.command_state(cmd)
+            if applied==true then
+                if cmd.cmd=="box_mon" then
+                    local saved=self.outbox:command_stats(cmd)
+                    assert(saved,"applied deposit stats unavailable")
+                    answer("stats_cache",{key=cmd.key,stats=saved})
+                else answer("sync_retrieve_done",{key=cmd.key}) end
+                rescan()
+                return
+            end
+            if phase=="prepared" or applied==nil then
+                self.items[#self.items+1]=cmd
+                requeued="uncertain PC command; qualified census required"
+                settled=true
+                show("SLINK PC RECOVERY HELD - SEE LOG",255,160,60,600)
+                log(requeued.." "..tostring(cmd.intent_id))
+                return
+            end
+        end
         exec.arm()
         if refused and (cmd.cmd == "box_mon" or cmd.cmd == "memorialize") then
             log(cmd.cmd .. " refused for the retired key: " .. refused .. " " .. tostring(cmd.key))
@@ -160,20 +195,18 @@ function Deferred:run(gate, frame, game_over)
             local slot, mon = find(cmd.key)
             local stats = slot and (exec.stats_of or default_stats)(mon) or nil  -- BEFORE the move
             local done, reason = exec.deposit(phys, hint)
-            settled = true
             if not done then
-                send("box_mon_failed", { key = cmd.key, reason = reason or "deposit refused" })
+                answer("box_mon_failed", { key = cmd.key, reason = reason or "deposit refused" })
                 show("X Box fail: " .. nick_label(cmd.key, mon and mon.nickname), 255, 80, 80, 240)
             else
-                if stats then send("stats_cache", { key = cmd.key, stats = stats }) end  -- AFTER it
+                if stats then answer("stats_cache", { key = cmd.key, stats = stats }) end
                 rescan()
                 show("↓ " .. nick_label(cmd.key, mon and mon.nickname) .. " boxed", 100, 180, 255, 200)
             end
         elseif cmd.cmd == "party_mon" then
             local done, reason = exec.withdraw(cmd.key, cmd.stats, cmd.nickname)
-            settled = true
             if done then
-                send("sync_retrieve_done", { key = cmd.key })
+                answer("sync_retrieve_done", { key = cmd.key })
                 rescan()
                 show("↑ " .. nick_label(cmd.key, cmd.nickname) .. " unboxed", 100, 255, 160, 200)
             elseif reason == "party full" and (cmd.full_retries or 0) < (cmd.full_budget or (#self.items + 1)) then
@@ -187,7 +220,7 @@ function Deferred:run(gate, frame, game_over)
                 log("party_mon " .. tostring(cmd.key) .. ": party full, retry " .. cmd.full_retries
                     .. "/" .. cmd.full_budget .. " after the queue")
             else
-                send("sync_retrieve_failed", { key = cmd.key, reason = reason or "withdraw refused" })
+                answer("sync_retrieve_failed", { key = cmd.key, reason = reason or "withdraw refused" })
             end
         elseif cmd.cmd == "memorialize" then
             local _, mem_mon = find(cmd.key)
@@ -226,7 +259,7 @@ function Deferred:run(gate, frame, game_over)
             local reason = (wrote and "uncertain: partial write before the error: " or "executor error: ")
                            .. tostring(err)
             log("deferred " .. tostring(cmd.cmd) .. " failed: " .. reason .. " " .. tostring(cmd.key))
-            if FAILED[cmd.cmd] then send(FAILED[cmd.cmd], { key = cmd.key, reason = reason }) end
+            if FAILED[cmd.cmd] then answer(FAILED[cmd.cmd], { key = cmd.key, reason = reason }) end
         end
     elseif not ok then
         log("deferred " .. tostring(cmd.cmd) .. " error after its reply: " .. tostring(err))
