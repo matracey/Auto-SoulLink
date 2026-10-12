@@ -5297,6 +5297,7 @@ class SLinkServer:
         mem_idx = self.adapter.memorial_box_index if self.adapter else -1
         if mem_idx < 0:
             return
+        memorial_boxes = self._memorial_box_indices(player_id)
         s = self.state
 
         # Collect keys that belong in the memorial box (dead/memorial link entries).
@@ -5321,7 +5322,7 @@ class SLinkServer:
                 self.adapter.species_name(bentry.get("species_id", 0)) if self.adapter else key[:8]
             )
 
-            if box == mem_idx:
+            if box in memorial_boxes:
                 # ── Check 1: non-dead mon in memorial box ──────────────────────
                 if key not in expected_in_memorial:
                     # Once per key, like Check 3 twenty lines below. Unguarded, this
@@ -5334,7 +5335,7 @@ class SLinkServer:
                         self._warned_memorial_keys.add((player_id, key))
                         log.warning(
                             f"[{player_id}] ⚠ NON-DEAD mon in memorial box: {nick} "
-                            f"[{key[:8]}] (box {mem_idx} slot {bentry.get('slot', '?')})"
+                            f"[{key[:8]}] (box {box} slot {bentry.get('slot', '?')})"
                         )
                     # Relocate if it is a quarantined pending capture.
                     for _area, players in s.pending_captures.items():
@@ -5356,7 +5357,7 @@ class SLinkServer:
                             self._warned_orphan_keys.add(key)
                             log.warning(
                                 f"[{player_id}] ⚠ Orphan mon in memorial box: {nick} [{key[:8]}] "
-                                f"(box {mem_idx} slot {bentry.get('slot', '?')}) — "
+                                f"(box {box} slot {bentry.get('slot', '?')}) — "
                                 f"not tracked as dead/memorial; investigate manually"
                             )
 

@@ -2921,6 +2921,7 @@ from server.server import SLinkServer  # noqa: E402 (placed near relevant tests)
 class _MockAdapter:
     """Minimal adapter stub for _check_memorial_box_contamination tests."""
     memorial_box_index = 13
+    mons_per_box = 30
 
     def species_name(self, sid):
         return f"species#{sid}"
@@ -2932,6 +2933,9 @@ def _make_mock_server(state) -> object:
         adapter = _MockAdapter()
         _warned_orphan_keys: set = set()
         _warned_memorial_keys: set = set()
+
+        def _memorial_box_indices(self_inner, player_id):
+            return SLinkServer._memorial_box_indices(self_inner, player_id)
 
         def _check_memorial_box_contamination(self_inner, player_id, pc_boxes):
             return SLinkServer._check_memorial_box_contamination(self_inner, player_id, pc_boxes)
