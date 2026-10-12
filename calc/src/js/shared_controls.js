@@ -1485,11 +1485,12 @@ var stickyMoves = (function () {
 
 function isPokeInfoGrounded(pokeInfo) {
 	var teraType = pokeInfo.find(".teraToggle").is(":checked") ? pokeInfo.find(".teraType").val() : undefined;
+	var isFlying = teraType ? teraType === "Flying" :
+		pokeInfo.find(".type1").val() === "Flying" || pokeInfo.find(".type2").val() === "Flying";
 	return $("#gravity").prop("checked") || (
-		  teraType ? teraType !== "Flying" : pokeInfo.find(".type1").val() !== "Flying" &&
-        teraType ? teraType !== "Flying" : pokeInfo.find(".type2").val() !== "Flying" &&
-        pokeInfo.find(".ability").val() !== "Levitate" &&
-        pokeInfo.find(".item").val() !== "Air Balloon"
+		!isFlying &&
+		pokeInfo.find(".ability").val() !== "Levitate" &&
+		pokeInfo.find(".item").val() !== "Air Balloon"
 	);
 }
 

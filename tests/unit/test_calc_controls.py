@@ -65,3 +65,39 @@ def test_toxic_counter_uses_its_panel_status(calc_page, panel_status, code, coun
         return {status: pokemon.status, counter: pokemon.toxicCounter};
     }""", {"panelStatus": panel_status, "counter": counter, "windowStatus": window_status})
     assert result == {"status": code, "counter": counter}
+
+
+@pytest.mark.parametrize("type1,type2,ability,item,gravity,grounded", [
+    ("Flying", "", "Prankster", "", False, False),
+    ("Flying", "Dragon", "Pressure", "", False, False),
+    ("Normal", "Flying", "Pressure", "", False, False),
+    ("Normal", "", "Levitate", "", False, False),
+    ("Normal", "", "Pressure", "Air Balloon", False, False),
+    ("Normal", "", "Pressure", "", False, True),
+    ("Flying", "", "Prankster", "", True, True),
+    ("Normal", "Flying", "Levitate", "Air Balloon", True, True),
+])
+@pytest.mark.parametrize("terrain", ["Electric", "Misty"])
+def test_terrain_respects_both_types_and_airborne_exemptions(
+    calc_page, type1, type2, ability, item, gravity, grounded, terrain,
+):
+    result = calc_page.evaluate("""args => {
+        const panel = $('#p1');
+        panel.find('.type1').val(args.type1);
+        panel.find('.type2').val(args.type2);
+        panel.find('.ability').val(args.ability);
+        panel.find('.item').val(args.item);
+        $('#gravity').prop('checked', args.gravity);
+        $("input[name='terrain']").prop('checked', false);
+        $("input[name='terrain']").filter(function () {
+            return this.value === args.terrain;
+        }).prop('checked', true).change();
+        return {
+            grounded: isPokeInfoGrounded(panel),
+            disabled: args.terrain === 'Electric'
+                ? panel.find("[value='Asleep']").prop('disabled')
+                : panel.find('.status').prop('disabled')
+        };
+    }""", {"type1": type1, "type2": type2, "ability": ability, "item": item,
+           "gravity": gravity, "terrain": terrain})
+    assert result == {"grounded": grounded, "disabled": grounded}
