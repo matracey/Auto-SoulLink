@@ -2,6 +2,9 @@
   "save_failed": "",
   "load_failed": "",
   "dispatch_errors": {"a": 0, "b": 0},
+  "unpaired_mons": {},
+  "limbo": {"a": {}, "b": {}},
+  "recovery_candidates": {"a": [], "b": []},
   "players": {
     "a": {
       "connected": true,

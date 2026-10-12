@@ -24,6 +24,7 @@ from server.adapters.base import companion_required_reason
 _COMPANION_REFUSAL = re.compile(re.escape(companion_required_reason("{title}")).replace(re.escape("{title}"), ".+"))
 
 SECTION_LABELS = {
+    "limbo": "Limbo",
     "party": "In party",
     "pending": "Pending link",
     "unpaired": "Unpaired",
@@ -32,8 +33,8 @@ SECTION_LABELS = {
     "linked": "Linked",        # a stopped run: the bond is known, where each half sits is not
     "fallen": "Fallen",
 }
-# The team first; what is waiting on it second. Then the shelf, then the graveyard.
-SECTION_ORDER = ("party", "pending", "unpaired", "split", "boxed", "linked", "fallen")
+# Unresolved missing mons precede the team, shelf and graveyard.
+SECTION_ORDER = ("limbo", "party", "pending", "unpaired", "split", "boxed", "linked", "fallen")
 
 PIDS = ("a", "b")
 
@@ -212,9 +213,33 @@ def unpaired_rows(status: dict) -> list[dict]:
 def sections(status: dict, rows: list[dict] | None = None) -> list[tuple[str, list[dict]]]:
     if rows is None:
         rows = pending_rows(status) + unpaired_rows(status) + pairs(status)
+    annotated = []
+    represented = set()
+    for row in rows:
+        row = dict(row)
+        for pid in PIDS:
+            half = row.get(pid)
+            incident = ((status.get("limbo") or {}).get(pid) or {}).get((half or {}).get("key"))
+            if half and half.get("key"):
+                represented.add((pid, half["key"]))
+            if half and incident:
+                row[pid] = {**half, "limbo": incident, "where": None, "hp": None, "active": False}
+                row["section"] = "limbo"
+        annotated.append(row)
+    for pid in PIDS:
+        for key, incident in ((status.get("limbo") or {}).get(pid) or {}).items():
+            if (pid, key) in represented:
+                continue
+            annotated.append({
+                "area": incident["area_id"], "area_name": area_name(incident["area_id"]),
+                "status": "unpaired", "section": "limbo", "death": None,
+                "a": None, "b": None,
+                pid: {**incident, "key": key, "limbo": incident, "hp": None,
+                      "where": None, "active": False, "sprite": "", "ability": "", "item": ""},
+            })
     out = []
     for key in SECTION_ORDER:
-        group = [r for r in rows if r["section"] == key]
+        group = [r for r in annotated if r["section"] == key]
         if group:
             out.append((key, group))
     return out

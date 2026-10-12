@@ -249,8 +249,19 @@ if (window._slinkDashInit) {
     };
     // A form the user is filling in (the trade-resolve form): its choices are the user's.
     // It still goes when the server stops sending it, and a new id is a new form.
-    Idiomorph.defaults.callbacks.beforeNodeMorphed = function(oldNode) {
-      if (oldNode && oldNode.hasAttribute && oldNode.hasAttribute('data-morph-keep')) return false;
+    Idiomorph.defaults.callbacks.beforeNodeMorphed = function(oldNode, newNode) {
+      if (oldNode && oldNode.hasAttribute && oldNode.hasAttribute('data-morph-keep')) {
+        if (oldNode.classList.contains('mon-recovery')) {
+          oldNode.querySelectorAll('select').forEach(function(select) {
+            var incoming = newNode.querySelector('select[name="' + select.name + '"]');
+            if (!incoming || incoming.innerHTML === select.innerHTML) return;
+            var value = select.value;
+            select.replaceChildren(...Array.from(incoming.childNodes, function(node) { return node.cloneNode(true); }));
+            select.value = Array.from(select.options).some(function(option) { return option.value === value; }) ? value : '';
+          });
+        }
+        return false;
+      }
     };
     // ...and so is its rendered table: the server's copy is empty, so the morph would remove
     // it every 2 s and the page painted the gap until afterSettle re-rendered it.

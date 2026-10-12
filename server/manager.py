@@ -1375,6 +1375,7 @@ class RunManager:
         if run is None:
             raise web.HTTPNotFound(text="Run not found")
         ctx = self._board_context(run, await self._run_status(request, run))
+        ctx["is_admin"] = request.get("is_admin", True)
         return aiohttp_jinja2.render_template("_board.html", request, ctx)
 
     async def _run_status(self, request: web.Request, run: dict) -> dict:

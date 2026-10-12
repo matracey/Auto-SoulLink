@@ -725,3 +725,7 @@ kbd { padding: 1px 5px; border: 1px solid var(--c-edge); border-bottom-width: 2p
   .mk-btn, .mk-gchip, .mk-tab, .mk-rail-item, .mk-opt, .mk-hp-fill { transition-duration: 0s; }
   .mk-btn:active, .mk-gchip:active, .mk-tab:active { scale: 1; }
 }
+.mon-recovery { display: grid; gap: .6rem; padding-block: .6rem; }
+.mon-recovery label { display: grid; gap: .25rem; }
+.mon-recovery select { max-width: 100%; min-width: 0; }
+.mon-recovery output { overflow-wrap: anywhere; }

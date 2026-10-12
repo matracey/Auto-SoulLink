@@ -50,7 +50,7 @@
     {% if h %}
       <div class="mk-half-in">
         {% if h.sprite %}<span class="mk-spr big">{{ h.sprite | safe }}</span>{% else %}<span class="mk-slot"></span>{% endif %}
-        <span class="mk-half-txt">
+        <div class="mk-half-txt">
           <span class="mk-half-nick">{% if h.active %}<span class="mk-active" title="out in battle"><span aria-hidden="true">⚔</span><span class="sr-only">Out in battle</span></span>{% endif %}{% if h.seeking %}Seeking {{ h.species_name }}{% else %}{{ h.nickname or h.species_name }}{% endif %}{% if h.shiny %} <span class="shiny-star"><span aria-hidden="true">✦</span><span class="sr-only">Shiny</span></span>{% endif %}</span>
           <span class="mk-sub">{% if h.seeking %}First encounter{% else %}{{ h.species_name }}{% endif %}{% if h.level %} · Lv {{ h.level }}{% endif %}</span>
           {% if h.hp is not none and row.section != 'fallen' %}{{ hp(h) }}{% endif %}
@@ -60,7 +60,46 @@
             <span class="mk-sub faint">{% if show_ability %}{{ h.ability }}{% endif %}{% if h.item %}<span class="mk-item" title="{{ h.item }}"> ◆ {{ h.item }}</span>{% endif %}</span>
           {% endif %}
           {% if h.where == 'box' and row.section != 'boxed' %}<span class="mk-sub faint">in box</span>{% endif %}
-        </span>
+          {% if h.limbo %}
+            <span class="mk-warn" role="status">Missing from the latest complete census. This pair's automatic sync is paused.</span>
+            {% if is_admin and live %}
+            <details id="d-limbo:{{ pid }}:{{ h.limbo.revision }}" data-details-key="limbo:{{ pid }}:{{ h.limbo.revision }}">
+              <summary>Resolve missing Pokémon</summary>
+              <form class="mon-recovery" id="recovery-{{ pid }}-{{ h.limbo.revision }}" data-morph-keep
+                    data-player="{{ pid }}" data-key="{{ h.key }}" data-revision="{{ h.limbo.revision }}"
+                    data-name="{{ h.nickname or h.species_name }}">
+                <label>Action
+                  <select name="action">
+                    <option value="">Leave unresolved</option>
+                    {% if row.status not in ('dead', 'memorial') %}
+                    <option value="rebind">Match to a current Pokémon</option>
+                    {% endif %}
+                    <option value="retire">Confirm loss and retire the pair</option>
+                    {% if row.status not in ('dead', 'memorial') %}
+                    <option value="detach">Detach the surviving partner</option>
+                    {% endif %}
+                  </select>
+                </label>
+                <label>Current Pokémon (for matching)
+                  <select name="target_key">
+                    <option value="">Choose from Player {{ pid | upper }}'s latest census</option>
+                    {% for candidate in (status.get('recovery_candidates') or {}).get(pid, []) %}
+                    <option value="{{ candidate.key }}">{{ candidate.nickname or candidate.species_name }} · {{ candidate.key }}</option>
+                    {% endfor %}
+                  </select>
+                </label>
+                <span class="mk-sub">Matching preserves the encounter history. Retirement applies linked-death rules. Detaching keeps the survivor visible and unpaired.</span>
+                <button type="submit" class="mk-btn">Apply resolution…</button>
+                <output role="status"></output>
+              </form>
+            </details>
+            {% elif not live %}
+              <span class="mk-sub">Start the run to resolve this Pokémon.</span>
+            {% else %}
+              <span class="mk-sub">An administrator can resolve this Pokémon.</span>
+            {% endif %}
+          {% endif %}
+        </div>
       </div>
     {% else %}
       <div class="mk-half-in slot">
@@ -303,7 +342,8 @@
                   <span class="mk-bond-area">{{ row.area_name }}</span>
                   <span class="mk-bond-glyph">{{ bond_glyph(row.status) }}</span>
                   <span class="mk-bond-state">
-                    {% if row.status == 'dead_zone' %}<span>dead zone</span>
+                    {% if row.section == 'limbo' %}<span>sync paused</span>
+                    {% elif row.status == 'dead_zone' %}<span>dead zone</span>
                     {% elif row.section == 'fallen' and row.death %}<span>{{ row.death.cause | replace('_', ' ') }}{% if row.death.killer %} · {{ row.death.killer.trainer_name or row.death.killer.species_name }}{% endif %}</span>
                     {% elif row.status == 'retry' %}<span>retrying first species</span>
                     {% elif row.status == 'unpaired' %}<span>partner lost</span>
