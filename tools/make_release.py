@@ -135,6 +135,7 @@ _LUA_GEN3 = [
     "native.lua",   # RR companion mailbox part; Entry builds it for the companion kind (C4-7)
     "trade.lua",
     "trade_journal.lua",
+    "report_outbox.lua",
     "rom_content.lua",
 ]
 

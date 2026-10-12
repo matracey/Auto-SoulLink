@@ -45,8 +45,9 @@ POLISHED = {
 
 
 # The Gen 2 randomizer lane (merged into the same integration) adds each title's overlay beacon beside its binding
-# (lua/gen2/entry.lua Entry.BEACON_FILES, R6): additive too, and the only other new rows.
+# (lua/gen2/entry.lua Entry.BEACON_FILES, R6). Gen 3 recovery also adds its durable journal.
 GEN2_BEACONS = {f"data/games/gen2_{t}/overlay/beacon.json" for t in ("crystal", "gold", "silver")}
+GEN3_RECOVERY = {"lua/gen3/report_outbox.lua"}
 
 
 def _build(module, out: Path) -> dict[str, str]:
@@ -73,8 +74,9 @@ def test_polished_files_ship_and_nothing_else_changes(tmp_path):
     before = _build(_baseline_module(tmp_path), tmp_path / "before")
     after = _build(make_release, tmp_path / "after")
     assert not (POLISHED & set(before)), "baseline already shipped Polished: the baseline is stale"
-    assert POLISHED <= set(after)
-    assert {k: v for k, v in after.items() if k not in POLISHED | GEN2_BEACONS} == before   # additive only, existing bytes identical
+    additions = POLISHED | GEN2_BEACONS | GEN3_RECOVERY
+    assert additions <= set(after)
+    assert {k: v for k, v in after.items() if k not in additions} == before
 
 
 def test_the_polished_manifest_rows_are_not_gated_by_a_gen2_overlay_catalog():
