@@ -6,6 +6,8 @@
 -- negatives), 3 box arrival (full-party catch) + census + native save.
 -- Capture-negative replay uses the same oracle as STAGE2; zero failed throws is not evidence.
 -- capture_contract.json owns the check label shared with the release verifier.
+-- A client bootstrap refusal writes client_writes.json (an explicit array) and
+-- refusal.json before the fatal exit; reason is its verbatim console message or null.
 local Oracle = {}
 function Oracle.evaluate_failed_throws(throws)
     local count, hits, clean = 0, 0, true
@@ -111,9 +113,31 @@ local last_gen, ticks, gen_changes, last_battle_end = nil, 0, {}, nil
 local function append(path, s) local f = io.open(path, "a") if f then f:write(s .. "\n") f:close() end end
 if not PREPARE then
 local t_build = os.clock()
+-- run.lua logs admission/start refusals but exports no reason global. Observe the
+-- current bootstrap, forwarding unchanged through the launcher's console tee.
+local refusal_reason, observing_bootstrap = nil, true
+local log_console = console.log
+console.log = function(text, ...)
+    if observing_bootstrap and type(text) == "string"
+       and (text:match("^%[SLink%-gen2%] .- cartridge refused %(production admission%): ")
+            or text:match("^%[SLink%-gen2%] refused to start: ")) then
+        refusal_reason = text
+    end
+    return log_console(text, ...)
+end
 dofile(L.ROOT .. "/lua/slink.lua")
+observing_bootstrap = false
 L.log(fmt("[live] lua/slink.lua returned after %.1fs cpu; client %s", os.clock() - t_build, tostring(SLINK_GEN2_CLIENT ~= nil)))
-if not SLINK_GEN2_CLIENT then L.die("the Gen 2 route did not start a client (see slink_lua.log)") end
+if not SLINK_GEN2_CLIENT then
+    local wf = assert(io.open(L.RUN .. "/client_writes.json", "w"))
+    wf:write(assert(J.encode(J.array(lua_writes)))) wf:close()
+    local rf = assert(io.open(L.RUN .. "/refusal.json", "w"))
+    rf:write(assert(J.encode({
+        schema = "polished-live-refusal-v1", refused_by = "client",
+        reason = refusal_reason or J.null, frame = emu.framecount(), lua_writes = #lua_writes,
+    }))) rf:close()
+    L.die("the Gen 2 route did not start a client (see slink_lua.log)")
+end
 P = SLINK_GEN2_PARTS
 L.log(fmt("[live] parts: pack %s title %s kind %s qualification %s production_admitted %s rom %s",
           tostring(P.pack), tostring(P.title), tostring(P.artifact_kind), tostring(P.qualification),
