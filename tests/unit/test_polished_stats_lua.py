@@ -9,7 +9,12 @@ import re
 import pytest
 
 from server.adapters import polished_codec as pc
-from tests.unit.test_polished_stats import STATS, make_mon, move_rows, species_rows, variants  # noqa: F401 (fixtures)
+from tests.unit import test_polished_stats as stats
+from tests.unit.test_polished_stats import STATS, make_mon
+
+move_rows = stats.move_rows
+species_rows = stats.species_rows
+variants = stats.variants
 
 lupa = pytest.importorskip("lupa")
 LUA_PATH = pc.ROOT / "lua/gen2/polished_stats.lua"
