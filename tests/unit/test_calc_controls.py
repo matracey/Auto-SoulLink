@@ -101,3 +101,33 @@ def test_terrain_respects_both_types_and_airborne_exemptions(
     }""", {"type1": type1, "type2": type2, "ability": ability, "item": item,
            "gravity": gravity, "terrain": terrain})
     assert result == {"grounded": grounded, "disabled": grounded}
+
+
+@pytest.mark.parametrize("spread", [
+    "EVs: 252 SpA",
+    "IVs: 0 Atk",
+    "EVs: 252 SpA\nIVs: 0 Atk",
+])
+def test_imports_do_not_inherit_previous_spreads(calc_page, spread):
+    result = calc_page.evaluate("""spread => {
+        const before = JSON.stringify(calc.SPECIES[9].Pikachu);
+        localStorage.removeItem('customsets');
+        addSets('Pikachu\\nLevel: 25\\n' + spread + '\\n- Thunderbolt', 'with spread');
+        addSets('Pikachu\\nLevel: 40\\n- Thunderbolt', 'without spread');
+        const stored = JSON.parse(localStorage.customsets).Pikachu;
+        $('#p1 input.set-selector').val('Pikachu (without spread)').change();
+        const pokemon = createPokemon($('#p1'));
+        return {stored, unchanged: before === JSON.stringify(calc.SPECIES[9].Pikachu),
+                attackIV: pokemon.ivs.atk, specialAttackEV: pokemon.evs.spa};
+    }""", spread)
+    assert result["unchanged"]
+    assert result["stored"]["with spread"]["level"] == 25
+    assert result["stored"]["without spread"]["level"] == 40
+    if "EVs:" in spread:
+        assert result["stored"]["with spread"]["evs"] == {"sa": 252}
+    if "IVs:" in spread:
+        assert result["stored"]["with spread"]["ivs"] == {"at": 0}
+    assert "evs" not in result["stored"]["without spread"]
+    assert "ivs" not in result["stored"]["without spread"]
+    assert result["attackIV"] == 31
+    assert result["specialAttackEV"] == 0
