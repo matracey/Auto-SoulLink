@@ -1813,13 +1813,14 @@ class SoulLinkState:
     def load(cls, data_dir: str = None, species_lock: bool = False, gender_lock: bool = False, type_lock: bool = False, explode_mode: bool = False, is_rr: bool = False, adapter: GameRulesAdapter = None, rival_team_swap: bool = False, overworld_presence: bool = False, native_messages: bool = False, native_sounds: bool = False, battle_calc: bool = True, pc_trade_npc: bool = True, phone_calls: bool = True) -> "SoulLinkState":
         """Load persisted state from data/links.json, or return a fresh instance."""
         state = cls(data_dir=data_dir, species_lock=species_lock, gender_lock=gender_lock, type_lock=type_lock, explode_mode=explode_mode, is_rr=is_rr, adapter=adapter, rival_team_swap=rival_team_swap, overworld_presence=overworld_presence, native_messages=native_messages, native_sounds=native_sounds, battle_calc=battle_calc, pc_trade_npc=pc_trade_npc, phone_calls=phone_calls)
-        if not os.path.exists(state._links_path):
-            return state
         try:
             with open(state._links_path) as f:
                 data = json.load(f)
+        except FileNotFoundError:
+            return state
         except (OSError, ValueError) as exc:
-            log.error(f"Failed to read {state._links_path}: {exc}")
+            state.load_failed = f"{type(exc).__name__}: {exc}"
+            log.error(f"Failed to read {state._links_path}: {state.load_failed}")
             return state
         try:
             for ed in data.get("links", []):
@@ -4735,6 +4736,8 @@ class SoulLinkState:
         return json_files.atomic_write_json(path, payload)
 
     def _save(self):
+        if self.load_failed:
+            raise RuntimeError(f"Refusing to overwrite unreadable run state: {self.load_failed}")
         os.makedirs(self._data_dir, exist_ok=True)
         payload = {
             "game_id": self.adapter.game_id,
