@@ -95,6 +95,17 @@ Hosting the Manager on Azure? Follow [Deploy Auto-SoulLink to Azure Container Ap
 
 Each run gets its own board, on port 8081 and up. Port 8080 is only used when you start a single run by hand with `python -m server.server`.
 
+### Offline play and recovery
+
+Upgrade the server and both players' setup folders together. For Gen 3, connect successfully before playing offline, keep the Lua client running while you play, and preserve the `slink_gen3_reports_*` files in your SLink folder. The client records gameplay reports locally and retries them after reconnecting. If it reports a journal error, stop playing until the error is resolved.
+
+A suspected missing Pokémon pauses automatic writes for its pair. Two complete, safe party-and-PC inventories confirm the absence and place it in **Limbo**. Disconnecting alone does not establish absence. If the same Pokémon reappears, the incident clears automatically.
+
+An administrator can open **Resolve missing Pokémon** on that Pokémon's row, then leave it unresolved, match it to a current Pokémon, confirm the loss and retire the pair, or detach the surviving partner. Matching requires a fresh inventory. Retirement applies linked-death rules; detaching keeps the survivor visible and unpaired.
+
+> [!WARNING]
+> Recovery reconciles tracker records. It cannot restore cartridge progress lost by loading an older save.
+
 ## Games
 
 Both players pick from the same family. Red links with Blue, for example, and a Radical Red run is Radical Red on both sides.

@@ -428,6 +428,7 @@ The OBS event names above are a separate set derived on the server, even where a
 | `/api/calc/mons` | GET | Calculator profile plus each player's party, linked Pokémon and foes with Showdown pastes. |
 | `/api/attempts` | POST | `{"count": N}` sets the attempt counter (persisted in `links.json`). |
 | `/api/reset` | POST | Delete `links.json` and start a fresh run with the same rules. |
+| `/api/recovery` | POST | Administrator resolution using `{player,key,revision,action,target_key?}`. Actions are `rebind`, `retire` and `detach`. Returns 400 for malformed input, 409 for conflicts and 503 for persistence failure. Managed runs use `/runs/{id}/api/recovery`. |
 | `/api/inject_link` | POST | `{a_key, b_key, area_id, force?}`: link two Pokémon by key. A Pokémon pending in another area needs `force`. |
 | `/api/inject_link_by_slot` | POST | `{a_slot, b_slot, area_id, force?}`: link by party slot (0-based). |
 | `/api/bot/status` | GET | Bot status, config and activity log. |
