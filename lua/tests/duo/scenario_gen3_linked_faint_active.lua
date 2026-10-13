@@ -216,7 +216,7 @@ local function one_mon_party(ctx, key)
     -- ruling 18: build the one-mon party by normal inputs (PC deposit of the slot-1 mon)
     local bench = (ctx.party() or {})[BENCH + 1]
     if not bench or bench.key == key then return false, "no slot-1 mon to deposit" end
-    ctx.walk_to_pc("linked_faint_active whiteout")
+    ctx.walk_to_pc("linked_faint_active whiteout", {heal_before_deposit = true})
     local gone, why = ctx.pc_deposit("linked_faint_active whiteout deposit")
     if gone ~= bench.key then return false, "the deposit moved " .. tostring(gone or why) end
     if not ctx.observe_boxed(bench.key) then return false, bench.key .. " was never read back boxed" end

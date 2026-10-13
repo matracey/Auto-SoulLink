@@ -152,7 +152,7 @@ def test_rr_family_target_exists_in_both_own_time_tables():
 def test_rr_gender_branch_has_eight_observation_attempts():
     import e2e_duo as h
     assert h.scenario_attempt_limit("gender_clause_gen3", "gen3_rr") == 8
-    assert h.scenario_attempt_limit("gender_clause_gen3", "gen3_frlg") == 3
+    assert h.scenario_attempt_limit("gender_clause_gen3", "gen3_frlg") == 6   # FR/LG/Emerald observation budget (freeze #3)
 
 
 def test_ball_gate_requires_a_separate_post_flip_stock_phase():

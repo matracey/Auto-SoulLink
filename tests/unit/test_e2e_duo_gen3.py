@@ -6128,7 +6128,7 @@ ATTEMPT_LIMITS_AT_D5A26DA9 = {
 RAND_WHITEOUT = "RESULT: FAIL (hunt ended whiteout)"
 
 
-# The snapshot above is d5a26da9's. Three SETS of rows have changed since, each for a named, intended reason; nothing else may drift:
+# The snapshot above is d5a26da9's. Only explicitly named sets may drift:
 #   1. link_gen3_rand: "rng_attempts": 6 (this task's own change; asserted separately as exactly 6 on FR/LG and Emerald).
 #   2. Gen 2 96b65c48 ("a Gen 2 trade scenario retries once ... when its route battle is lost"): every `GEN2_TRADE_SCENARIOS` scenario on a
 #      `scenario_family(game) == "gen2_new"` pairing (gen2_new, gen2_gold_silver, gen2_crystal_gold) may be 2. The set comes from the module's own
@@ -6137,18 +6137,23 @@ RAND_WHITEOUT = "RESULT: FAIL (hunt ended whiteout)"
 #      entry instead of being keyed by name AND game inside scenario_attempt_limit (the old `if name == "explode_new": return 4` is gone). The
 #      entry value applies on every rng-retry family, so the same rows drift on the Gen 3 pairings (e.g. linked_faint_active_new on gen3_frlg,
 #      1 -> 3): those pairs never run (the rows are `games: gen1_new`) and the drift is accepted EXPLICITLY, with the exact values pinned below.
+#   4. GEN2_ROUTE_LOSS_SCENARIOS: the named opening-catch rows retry once on their Gen 2 pairings.
+#   5. gender_clause_gen3: six observation attempts on FR/LG/Emerald only (3 -> 6); RR keeps its prior 8.
+#      Species/type and non-applicable game budgets retain their snapshot values.
 O8_GEN1_SYNTH_LIMITS = {"linked_faint_active_new": 3, "explode_bench_battle_new": 3, "explode_new": 4}
 _GEN2_BALL_GATE_RETRY = "        return 2   # one retry, only when a side ran out of the aide's five natural Balls (GEN2_OUT_OF_BALLS)\n"
 _GEN2_TRADE_RETRY = "        return 2   # one retry, only when the route's own wild battle was lost (GEN2_ROUTE_BATTLE_LOST)\n"
 
 
 def _allowed_attempt_limits(snapshot, name, family, trade_scenarios, rng_family=False, o8_rows=(), route_scenarios=()):
-    """Historical limits plus the explicitly named Gen 2 trade/opening-catch and Gen 1 O-8 budgets."""
+    """Historical limits plus named Gen 2, Gen 1 O-8 and Gen 3 gender observation budgets."""
     allowed = {snapshot}
     if (name in trade_scenarios or name in route_scenarios) and family == "gen2_new":
         allowed.add(2)
     if name in o8_rows and rng_family:
         allowed.add(O8_GEN1_SYNTH_LIMITS[name])
+    if name == "gender_clause_gen3" and family in ("gen3_frlg", "gen3_emerald"):
+        allowed.add(6)
     return allowed
 
 
@@ -6186,6 +6191,14 @@ def test_the_attempt_limit_expectation_builder_in_both_modes():
     assert _allowed_attempt_limits(1, "explode_new", "gen2_new", (), False, {"explode_new"}) == {1}
     assert _allowed_attempt_limits(1, "explode_new", "gen3_frlg", (), True, set()) == {1}
     assert _allowed_attempt_limits(1, "link_gen3", "gen3_frlg", (), True, {"explode_new"}) == {1}
+    # Only gender observation on its applicable Gen 3 families gets the six-attempt exception.
+    assert _allowed_attempt_limits(3, "gender_clause_gen3", "gen3_frlg", ()) == {3, 6}
+    assert _allowed_attempt_limits(3, "gender_clause_gen3", "gen3_emerald", ()) == {3, 6}
+    assert _allowed_attempt_limits(8, "gender_clause_gen3", "gen3_rr", ()) == {8}
+    assert _allowed_attempt_limits(3, "gender_clause_gen3", "gen3_exp", ()) == {3}
+    assert _allowed_attempt_limits(3, "gender_clause_gen3", "gen1_new", ()) == {3}
+    assert _allowed_attempt_limits(8, "species_clause_gen3", "gen3_frlg", ()) == {8}
+    assert _allowed_attempt_limits(3, "type_clause_gen3", "gen3_frlg", ()) == {3}
     assert sorted(g for g in duo.GAMES if duo.scenario_family(g) == "gen2_new") == ["gen2_crystal_gold", "gen2_gold_silver", "gen2_new"]
 
 
@@ -6230,15 +6243,17 @@ def test_the_snapshot_check_works_on_a_module_without_the_symbol():
     assert drifted == set(O8_GEN1_SYNTH_LIMITS)
 
 
-def test_only_link_gen3_rand_changed_its_attempt_budget_and_it_has_six():
+def test_link_gen3_rand_and_gender_clause_gen3_have_six_attempts_without_other_drift():
     assert _attempt_budget_problems(duo) == []
     assert [duo.scenario_attempt_limit("link_gen3_rand", g) for g in ("gen3_frlg", "gen3_emerald")] == [6, 6]    # the Emerald twin too
+    assert [duo.scenario_attempt_limit("gender_clause_gen3", g)
+            for g in ("gen3_frlg", "gen3_lgfr", "gen3_emerald", "gen3_rr")] == [6, 6, 6, 8]
     assert [duo.scenario_attempt_limit("probe_protected_span_flip_gen3", g) for g in ("gen3_frlg", "gen3_emerald")] == [1, 1]
     assert [n for n, row in duo.SCENARIOS.items() if row.get("rng_attempts") == 6] == ["link_gen3_rand"]
     assert not any("rehunt" in k for row in duo.SCENARIOS.values() for k in row)
 
 
-def test_the_gen2_and_gen1_changed_sets_are_exactly_the_named_ones():
+def test_the_gen2_gen1_and_gen3_gender_changed_sets_are_exactly_the_named_ones():
     """Name every drift the snapshot excuses, so a new one cannot hide inside the allowed sets."""
     drifted = {}
     for game in duo.GAMES:
@@ -6264,7 +6279,11 @@ def test_the_gen2_and_gen1_changed_sets_are_exactly_the_named_ones():
     for name, rows in o8.items():
         assert {now for _g, _w, now in rows} == {O8_GEN1_SYNTH_LIMITS[name]}, name
         assert all(duo.rng_retry_family(game) and not duo.scenario_applies(name, game) for game, _w, _n in rows), name    # pairs that never run
-    assert set(drifted) == set(gen2) | set(route) | set(o8), sorted(set(drifted) - set(gen2) - set(route) - set(o8))
+    gender = {n: v for n, v in drifted.items() if n == "gender_clause_gen3"}
+    assert gender == {"gender_clause_gen3": {
+        ("gen3_frlg", 3, 6), ("gen3_lgfr", 3, 6), ("gen3_emerald", 3, 6),
+    }}
+    assert set(drifted) == set(gen2) | set(route) | set(o8) | set(gender), sorted(set(drifted) - set(gen2) - set(route) - set(o8) - set(gender))
     assert {n for n, row in duo.SCENARIOS.items() if row.get("gen1_synth") and row.get("rng_attempts")} >= set(O8_GEN1_SYNTH_LIMITS)
     assert all(duo.SCENARIOS[n]["rng_attempts"] == v for n, v in O8_GEN1_SYNTH_LIMITS.items())
 
@@ -6305,6 +6324,11 @@ def test_the_snapshot_catches_any_other_drift_in_the_real_source(tmp_path):
     assert {n for n, *_ in gen1} == {"explode_new"} and {now for *_x, now in gen1} == {5}            # a gen1 row beyond its new value
     no_entry = variant('"gen1_synth": "explode", "rng_attempts": 4, "no_setup"', '"gen1_synth": "explode", "no_setup"')
     assert {n for n, *_ in no_entry} <= {"explode_new"}                                              # (explode_new is back to the default)
+    gender_budget = '    if entry.get("rule_kind") == "gender" and scenario_family(game) in ("gen3_frlg", "gen3_emerald"):\n'
+    wrong_clause = variant(gender_budget, gender_budget.replace('== "gender"', '== "type"'))
+    assert {n for n, *_ in wrong_clause} == {"type_clause_gen3"}
+    wrong_game = variant(gender_budget, gender_budget.replace('"gen3_emerald")', '"gen3_emerald", "gen3_exp")'))
+    assert wrong_game == [("gender_clause_gen3", "gen3_exp", 3, 6)]
 
 
 @pytest.mark.parametrize("game", ["gen3_frlg", "gen3_emerald"])
