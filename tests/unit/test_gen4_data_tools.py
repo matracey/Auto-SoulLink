@@ -600,7 +600,8 @@ def hge_inputs() -> dict:
         src, commit = names.locate_src("hge", None)
         xmap = acq.locate_xmap(None)
     except (base.PretAbsent, names.Absent) as exc:
-        pytest.skip(f"hge acquisition input not available: {exc}")
+        reason = str(exc)
+        pytest.skip(reason if reason.startswith(gen4_pins.HGE_FORK_ABSENT) else f"hge acquisition input not available: {reason}")
     except (base.PretMismatch, names.Mismatch) as exc:
         pytest.fail(str(exc))
     return {"pret": pret, "hge_rom": hge_rom, "hge_sha": hge_sha, "van_rom": van_rom, "van_sha": van_sha, "src": src, "commit": commit, "xmap": xmap}

@@ -19,10 +19,15 @@ Because SaveData is position independent, the rebase cannot change a single comp
 decides which address the pack's pointer dereferences to. That is the point -- the modelled-RAM test
 can get a pointer wrong; here the pointer is forced to name the bytes that were actually dumped.
 
-    run     game             pack/title              recorded sSaveDataPtr   party
-    hg_p2   HeartGold        gen4_hgss/heartgold     0x0227C204              the card's subject
-    ss_p5   SoulSilver       gen4_hgss/soulsilver    0x0227C204              cur=0 (out.txt:8)
-    hge_p5  HeartGold (hge)  gen4_hge/heartgold_hge  0x0227C220              cur=0 (out.txt:8)
+    run      game             pack/title              recorded sSaveDataPtr   party / box
+    hg_p2r   HeartGold        gen4_hgss/heartgold     0x0227C204              1 / box 0 slot 0
+    hge_p5r  HeartGold (hge)  gen4_hge/heartgold_hge  0x0227C220              1 / box 0 slot 0
+    ss_p5    SoulSilver       gen4_hgss/soulsilver    0x0227C204              title screen only, not used
+
+hg_p2r and hge_p5r (recaptured 2026-10-13) replace hg_p2 (no box mon) and hge_p5 (empty party and box,
+no pointer cell). Each loaded a save whose party mon is the owner's and whose box mon is a SYNTH clone
+(tools/gen4_synth_save.py party2) that the game itself deposited; each run dir's README.txt has the
+lineage and command. The dumps are pinned by sha256 (Dump.sha256): a different capture is a FAIL.
 
 OUT OF SCOPE -- the battle chain and the bag. The dump is the SaveData struct, NOT full main RAM,
 so the battle chain's static sFieldSysPtr cell and its heap OverlayManager/BattleSystem/BattleContext
@@ -49,6 +54,7 @@ because the Lua record carries the raw u16 codes, not a string.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import struct
@@ -88,6 +94,7 @@ class Dump:
     pack: str
     title: str
     codec_profile: str
+    sha256: str
 
     @property
     def dir(self) -> Path:
@@ -101,10 +108,12 @@ class Dump:
 DUMPS = {
     d.run: d
     for d in (
-        Dump("hg_p2", "HeartGold", "gen4_hgss", "heartgold", "hgss"),
+        Dump("hg_p2r", "HeartGold", "gen4_hgss", "heartgold", "hgss",
+             "493105f0c4203e857d227795fd7a74af84ef64d95c68ba54a3f4aa77121b7df7"),
         # ss_p5 is NOT a save image: its out.txt:2 says overworld_frame nil (title screen only),
         # so no save was loaded and the general chunk footer is all zero. SS needs a real dump.
-        Dump("hge_p5", "HeartGold (hg-engine)", "gen4_hge", "heartgold_hge", "hge"),
+        Dump("hge_p5r", "HeartGold (hg-engine)", "gen4_hge", "heartgold_hge", "hge",
+             "fd2f5186c1bb72988a64dd0cc2e64bc0929c17ed86763b2b14b5b69aa5cd97d9"),
     )
 }
 
@@ -184,6 +193,7 @@ def build_world(spec: Dump, lua, reads) -> World:
     if not spec.path.is_file():
         pytest.skip(f"{spec.game} probe dump not found: {spec.path}")
     raw = spec.path.read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == spec.sha256, f"{spec.path} is not the pinned {spec.run} capture"
 
     prof = json.loads((ROOT / f"data/games/{spec.pack}/profile.json").read_text(encoding="utf-8"))
     prof = prof["titles"][spec.title]["profile"]

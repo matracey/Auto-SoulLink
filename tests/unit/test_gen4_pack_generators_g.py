@@ -44,7 +44,7 @@ def _clone(key: str, probe: str) -> Path:
     """The pinned source checkout, or a named skip; a wrong commit or dirty tree is a FAIL."""
     path = gen4_pins.default_locations().sources[key]
     if not (path / probe).exists():
-        pytest.skip(f"pinned source checkout {key} not available: {path}")
+        pytest.skip(gen4_pins.hge_fork_absent(path) if key == "hg_engine_fork" else f"pinned source checkout {key} not available: {path}")
     try:
         head, clean = gen4_pins.git_identity(path)
     except Exception as exc:  # noqa: BLE001 -- any git failure means it is not the pinned checkout
@@ -67,10 +67,7 @@ def hge() -> Path:
 
 @pytest.fixture(scope="module")
 def hge_hooks() -> Path:
-    path = gen4_pins.default_locations().sources["hg_engine_fork"] / "hooks"
-    if not path.is_file():
-        pytest.skip(f"hg-engine hooks table not available: {path}")
-    return path
+    return _clone("hg_engine_fork", "hooks") / "hooks"
 
 
 @pytest.fixture(scope="module")

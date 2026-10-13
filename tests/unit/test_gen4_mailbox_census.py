@@ -227,12 +227,18 @@ def test_real_source_tree_scans_clean_and_a_planted_allocation_is_caught():
     assert c.w2_source(files, SPAN, alias_allow=c.DATA_ALIASES)["status"] == c.PASS
 
 
+def _need_real(titles) -> dict:
+    roms = c.gen4_pins.default_locations().roms
+    if not all(Path(roms[t]).is_file() for t in titles) or not PRET_READY or not all((d / "nm_n.txt").is_file() for d in REAL.values()):
+        pytest.skip("pinned pret checkout, pret build cache or a Gen 4 ROM is absent")
+    return roms
+
+
 @pytest.fixture(scope="module")
 def real_census():
-    from tools import gen4_pins
-    roms = gen4_pins.default_locations().roms
-    if not all(Path(roms[t]).is_file() for t in c.TITLES) or not PRET_READY or not all((d / "nm_n.txt").is_file() for d in REAL.values()):
-        pytest.skip("pinned pret checkout, pret build cache or a Gen 4 ROM is absent")
+    _need_real(c.TITLES)
+    if "heartgold_hge" in c.TITLES and not (c.HGE / "charmap.txt").is_file():
+        pytest.skip(c.gen4_pins.hge_fork_absent(c.HGE))
     return c.census(SPAN)
 
 
@@ -245,10 +251,9 @@ def test_real_census_all_artifacts_pass(real_census):
     json.dumps(real_census)
 
 
-def test_real_census_flags_a_span_that_overlaps_the_itcm_autoload(real_census):
+def test_real_census_flags_a_span_that_overlaps_the_itcm_autoload():
     # same real inputs, span moved onto the autoload: every artifact's W1 must go red.
-    from tools import gen4_pins
-    roms = gen4_pins.default_locations().roms
+    roms = _need_real(("heartgold",))
     report = c.census((0x01FF8000, 0x01FF8100), titles=("heartgold",), roms=roms)
     assert report["artifacts"]["heartgold"]["rows"]["W1"]["status"] == c.FAIL
 

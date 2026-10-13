@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from collections.abc import Callable
@@ -61,20 +62,41 @@ class Locations:
     sources: dict[str, Path]
 
 
+ENV_PREFIX = "SLINK_GEN4_"
+# Stable skip-reason prefix for every check that needs the hg-engine fork source at its pin; the Gen 1
+# release gate allow-lists this exact text. Only an explicitly supplied checkout (SLINK_GEN4_HG_ENGINE_FORK)
+# or the repo cache copy can satisfy it -- a stray clone elsewhere on the host is never picked up.
+HGE_FORK_ABSENT = "GEN4_HGE_FORK_SOURCE_ABSENT"
+
+
+def env_name(key: str) -> str:
+    return ENV_PREFIX + key.upper()
+
+
+def hge_fork_absent(path: Path) -> str:
+    return (f"{HGE_FORK_ABSENT}: hg_engine_fork {SOURCE_COMMITS['hg_engine_fork']} not available at {path} "
+            f"(set {env_name('hg_engine_fork')})")
+
+
+def _env(paths: dict[str, Path]) -> dict[str, Path]:
+    return {key: Path(os.environ.get(env_name(key)) or path) for key, path in paths.items()}
+
+
 def default_locations() -> Locations:
+    """Each path is SLINK_GEN4_<KEY> when set, else the default below. The hg-engine ROM, its exports
+    and the fork source default to the repo's .cache/gen4/hge layout, never a personal checkout."""
     bizhawk = Path("E:/Howard/Bizhawk")
     slink_inputs = Path("E:/Google Drive/SLink")
-    hge = Path("E:/Howard/HGEngine_ROMHack/hg-engine")
     xmap = REPO / ".cache" / "gen4" / "xmap"
     exports = REPO / ".cache" / "gen4" / "hge"
     return Locations(
-        roms={
+        roms=_env({
             "heartgold": bizhawk / "Pokemon - HeartGold Version (USA).nds",
             "soulsilver": slink_inputs / "Pokemon - SoulSilver Version (USA).nds",
-            "heartgold_hge": hge / "build_output" / "test.nds",
+            "heartgold_hge": exports / "build-fc5175764983" / "test.nds",
             "platinum": slink_inputs / "Pokemon - Platinum Version (USA).nds",
-        },
-        assets={
+        }),
+        assets=_env({
             "heartgold_xmap": xmap / "heartgoldus.xMAP",
             "soulsilver_xmap": xmap / "soulsilverus.xMAP",
             "platinum_xmap": xmap / "platinumus.xMAP",
@@ -86,12 +108,12 @@ def default_locations() -> Locations:
             "hge_rom_gen_ld": exports / "rom_gen.ld",
             "hge_nm_all": exports / "nm_all.txt",
             "gen4_pins_tool": Path(__file__).resolve(),
-        },
-        sources={
+        }),
+        sources=_env({
             "pokeheartgold_citation": Path("E:/Howard/hgss_archipelago-master/.tooling/pokeheartgold"),
-            "hg_engine_fork": hge,
+            "hg_engine_fork": exports / "src",
             "pokeplatinum_citation": REPO / ".cache" / "gen4" / "pokeplatinum",
-        },
+        }),
     )
 
 

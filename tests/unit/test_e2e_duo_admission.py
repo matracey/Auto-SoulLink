@@ -764,14 +764,14 @@ def test_gen1_result_reason_table_is_exact(line, classification):
     (None, True),
     ("RESULT: FAIL (force_faint never arrived)\n", False),
 ])
-def test_first_catch_loss_uses_only_the_existing_fresh_attempt_budget(other, retry):
+def test_first_catch_loss_uses_only_the_purergb_acquisition_attempt_budget(other, retry):
     cause = "RESULT: FAIL (link_new prerequisite failed: hunt ended first-catch-battle-lost)\n"
     receipts = {"a": other, "b": cause}
     name = "linked_faint_bench_battle_new"
-    assert duo.scenario_attempt_limit(name, "gen1_pure") == 3
-    assert duo.retryable_gen1_rng("gen1_pure", receipts, 1, 3, scenario=name) is retry
-    assert duo.retryable_gen1_rng("gen1_pure", receipts, 2, 3, scenario=name) is retry
-    assert not duo.retryable_gen1_rng("gen1_pure", receipts, 3, 3, scenario=name)
+    assert duo.scenario_attempt_limit(name, "gen1_pure") == 6
+    for attempt in range(1, 6):
+        assert duo.retryable_gen1_rng("gen1_pure", receipts, attempt, 6, scenario=name) is retry
+    assert not duo.retryable_gen1_rng("gen1_pure", receipts, 6, 6, scenario=name)
 
 
 def test_the_poison_rng_phrases_are_the_bodies_own_return_strings():
@@ -1242,15 +1242,18 @@ end
         assert duo.classify_gen1_result("RESULT: FAIL (" + reason + ")") == "CAUSE_RNG"
     pair = {"a": "RESULT: FAIL (linked capture was not returned)\n",
             "b": "RESULT: FAIL (" + nested + ")\n"}
-    assert duo.retryable_gen1_rng("gen1_pure", pair, 1, 3, scenario="linked_faint_bench_battle_new")
-    assert not duo.retryable_gen1_rng("gen1_pure", pair, 3, 3, scenario="linked_faint_bench_battle_new")
+    limit = duo.scenario_attempt_limit("linked_faint_bench_battle_new", "gen1_pure")
+    assert limit == 6
+    assert duo.retryable_gen1_rng("gen1_pure", pair, 1, limit, scenario="linked_faint_bench_battle_new")
+    assert duo.retryable_gen1_rng("gen1_pure", pair, 4, limit, scenario="linked_faint_bench_battle_new")
+    assert not duo.retryable_gen1_rng("gen1_pure", pair, 6, limit, scenario="linked_faint_bench_battle_new")
 
     changed = wrap_source.group().replace("link_new prerequisite failed: ", "link_new prerequisite changed: ")
     assert changed != wrap_source.group()
     altered = compose(changed)[2](bare)
     assert duo.classify_gen1_result("RESULT: FAIL (" + altered + ")") == "FINAL"
     assert not duo.retryable_gen1_rng("gen1_pure", {**pair, "b": "RESULT: FAIL (" + altered + ")\n"},
-                                      1, 3, scenario="linked_faint_bench_battle_new")
+                                      1, limit, scenario="linked_faint_bench_battle_new")
 
 
 # ── A0-H2: the post-result oracle registry, artifact provenance and the bag baseline ─────

@@ -29,6 +29,14 @@ def _need(*keys: str) -> g.Inputs:
     return inputs
 
 
+def _need_fork(mode: str) -> None:
+    """The hge pack's profile.bag is read from the fork source; without it regeneration cannot match."""
+    if mode == "hge":
+        fork = gen4_pins.default_locations().sources["hg_engine_fork"]
+        if not (fork / g.BAG_SOURCE["hge"][2]["struct"]).is_file():
+            pytest.skip(gen4_pins.hge_fork_absent(fork))
+
+
 def _pack(mode: str) -> dict:
     return json.loads(PACKS[mode].read_text(encoding="utf-8"))
 
@@ -297,6 +305,7 @@ def test_cli_present_wrong_rom_exits_1(tmp_path):
 ])
 def test_regeneration_matches_committed_and_sites_resolve(mode, keys, tmp_path):
     inputs = _need(*keys)
+    _need_fork(mode)
     text = g.generate(mode, inputs)
     assert text == PACKS[mode].read_text(encoding="utf-8"), f"{mode} pack drifted; run tools/gen_gen4_pack.py {mode}"
     # --check: clean copy exits 0; a mutated copy (drift) exits 1
@@ -504,6 +513,7 @@ def test_no_pack_carries_the_stale_pc_fixture_blocker(mode):
 @pytest.mark.parametrize("mode", ["hgss", "hge", "pt"])
 def test_committed_pack_is_current_and_regeneration_is_byte_identical(mode, capsys):
     _need("heartgold", "soulsilver", "heartgold_hge", "platinum")
+    _need_fork(mode)
     code = g.main([mode, "--check"])
     err = capsys.readouterr().err
     if code == g.EXIT_SKIP:
@@ -816,7 +826,10 @@ LOCS = g.gen4_pins.default_locations()
 def _clone(key: str, probe: str) -> Path:
     root = LOCS.sources[key]
     if not (root / probe).is_file():
-        pytest.skip(f"absent input {key} clone: {root}")
+        pytest.skip(gen4_pins.hge_fork_absent(root) if key == "hg_engine_fork" else f"absent input {key} clone: {root}")
+    if key == "hg_engine_fork":
+        head, clean = gen4_pins.git_identity(root)
+        assert head == gen4_pins.SOURCE_COMMITS[key] and clean, f"{key} clone {root} is at {head} (clean={clean})"
     return root
 
 
