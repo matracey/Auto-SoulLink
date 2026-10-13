@@ -23,9 +23,13 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
+if str(REPO) not in sys.path:
+    sys.path.insert(0, str(REPO))
+from tools import gen4_pins  # noqa: E402
+
 LOCK = REPO / "data" / "gen4_sources.lock.json"
 CACHE = REPO / ".cache" / "gen4" / "hge"
-FORK = Path("E:/Howard/HGEngine_ROMHack/hg-engine")
+FORK = gen4_pins.default_locations().sources["hg_engine_fork"]  # SLINK_GEN4_HG_ENGINE_FORK
 HOST, RDIR, JOBS = "hgbox", "git/hg-engine", 8
 SSH = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=15"]
 SCP = ["scp", "-q", "-o", "BatchMode=yes", "-o", "ConnectTimeout=15"]

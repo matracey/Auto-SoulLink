@@ -35,6 +35,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
+from tools import gen4_pins  # noqa: E402
 
 PASS, UNPROVEN, FAIL = "PASS", "UNPROVEN", "FAIL"
 ARENA = (0x01FF8620, 0x02000000)  # SDK_SECTION_ARENA_ITCM_START .. HW_ITCM_ARENA_HI_DEFAULT
@@ -45,7 +46,7 @@ DEFAULT_SPAN = (0x01FFEC00, 0x01FFFC00)  # 4 KiB = the shared NDS ABI arena (abi
 PRET_PIN = "ad7a3afa0cfc144fe6837c410cb95b2727217f54"
 HGE_PIN = "fc517576498305ecb5f5e1de44681c6e3822361b"
 PRET = Path(os.environ.get("SLINK_GEN4_PRET", "E:/Howard/hgss_archipelago-master/.tooling/pokeheartgold"))
-HGE = Path(os.environ.get("SLINK_GEN4_HGE_SRC", "E:/Howard/HGEngine_ROMHack/hg-engine"))
+HGE = Path(os.environ.get("SLINK_GEN4_HGE_SRC") or gen4_pins.default_locations().sources["hg_engine_fork"])
 CACHE = Path(os.environ.get("SLINK_GEN4_PRET_CACHE", "C:/slink-cache/gen4-pret"))
 TITLES = ("heartgold", "soulsilver", "heartgold_hge")
 PRET_BUILD = {"heartgold": "heartgold", "soulsilver": "soulsilver"}
