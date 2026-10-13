@@ -5635,9 +5635,9 @@ class DuoRun:
 
         Freshness is identity here: a rerun (or a crashed attempt re-entered) leaves results,
         phase receipts, attempt archives, witnesses and PYDEC copies from OLDER runs in the same
-        build directory. Gen 2/3 attempt 1 clears those; later retries retain numbered archives
-        from this invocation, while clearing all live paths. The current PYDEC file is opened before
-        launch and retained. Removals are printed so the log records what was discarded.
+        build directory. Gen 1/2/3 attempt 1 clears those; later retries retain numbered archives
+        from this invocation, while clearing all live paths. Gen 1's immutable copies live outside
+        this prefix. The current PYDEC file is opened before launch and retained.
         """
         keep = os.path.basename(getattr(self, "_pydec_path", "") or "")
         removed = []
@@ -5645,7 +5645,7 @@ class DuoRun:
             if keep and os.path.basename(path) == keep:
                 continue
             archive = re.search(r"_attempt(\d+)_(?:result\.txt|witness\.SaveRAM|exit\.SaveRAM|manifest\.json)$", os.path.basename(path))
-            if (scenario_family(getattr(self, "game", "legacy")) in ("gen2_new", "gen3_frlg", "gen3_emerald", "gen3_rr")
+            if (scenario_family(getattr(self, "game", "legacy")) in ("gen1_new", "gen2_new", "gen3_frlg", "gen3_emerald", "gen3_rr")
                     and archive and 0 < int(archive[1]) < getattr(self, "attempt", 1)):
                 continue  # Earlier attempts of THIS invocation remain replayable; attempt 1 clears all.
             os.remove(path)
@@ -11025,24 +11025,30 @@ def exit_code(results) -> int:
     return 3 if blocking else 0
 
 
-def _archive_attempt(name, attempt, receipts):
-    """Keep one attempt's receipts and PYDEC copy; the next run deletes the live ones.
+def _archive_attempt(name, attempt, receipts, *, archive_dir=None):
+    """Keep every attempt's receipts and PYDEC copy before clearing the live files.
 
-    Called on EVERY exit path, and on the give-up path only after the D-4 annotation is written,
-    so the archived third attempt carries the line the summary prints.
+    Gen 1 uses a fresh pairing/invocation directory outside the live cleanup prefix;
+    exclusive writes keep those copies immutable. Live runtime paths stay unchanged.
+    Called on EVERY exit path, after any final D-4 annotation has been written.
     """
+    directory = BUILD if archive_dir is None else archive_dir
     archived = _archive_gen2_witnesses(name, attempt, receipts)
     for inst in ("a", "b"):
         if inst in archived:
             continue
         if receipts[inst] is not None:
-            with open(os.path.join(BUILD, f"e2e_{name}_{inst}_attempt{attempt}_result.txt"),
-                      "w", encoding="utf-8") as handle:
+            with open(os.path.join(directory, f"e2e_{name}_{inst}_attempt{attempt}_result.txt"),
+                      "w" if archive_dir is None else "x", encoding="utf-8") as handle:
                 handle.write(receipts[inst])
     pydec = os.path.join(BUILD, f"e2e_{name}_pydec_result.txt")
     if os.path.exists(pydec):
-        shutil.copyfile(pydec,
-                        os.path.join(BUILD, f"e2e_{name}_pydec_attempt{attempt}_result.txt"))
+        target = os.path.join(directory, f"e2e_{name}_pydec_attempt{attempt}_result.txt")
+        if archive_dir is None:
+            shutil.copyfile(pydec, target)
+        else:
+            with open(pydec, "rb") as source, open(target, "xb") as kept:
+                shutil.copyfileobj(source, kept)
 
 
 def _archive_gen2_witnesses(name, attempt, receipts):
@@ -11124,6 +11130,13 @@ def run_scenario_with_rng_retry(name, args):
     limit = scenario_attempt_limit(name, args.game)
     reroll_retry = name == "species_clause_new" and args.game.startswith("gen1")
     unobserved_pass = None  # the last attempt that PASSED without the reroll branch
+    archive_dir = None
+    if args.game.startswith("gen1"):
+        parent = os.path.join(BUILD, "gen1-attempts")
+        os.makedirs(parent, exist_ok=True)
+        archive_dir = tempfile.mkdtemp(prefix=f"{args.game}_{name}_", dir=parent)
+        print(f"[duo] immutable attempt evidence: {archive_dir}")
+    archive_kwargs = {"archive_dir": archive_dir} if archive_dir is not None else {}
     for attempt in range(1, limit + 1):
         print(f"[duo] {name}: attempt {attempt} of {limit}")
         print(f"[duo] JITTER requested={jitter_for_attempt(args.idle_jitter, attempt)} "
@@ -11138,7 +11151,7 @@ def run_scenario_with_rng_retry(name, args):
             # summary block with the reason rather than a traceback (run() has already written
             # its own PYDEC: FAIL line).
             receipts = {inst: read_result(artifact, inst) for inst in ("a", "b")}
-            _archive_attempt(artifact, attempt, receipts)
+            _archive_attempt(artifact, attempt, receipts, **archive_kwargs)
             reason = f"{type(exc).__name__}: {exc}"
             if SCENARIOS[name].get("rule_kind"):
                 from gen3_clause_rows import ClauseUnobserved
@@ -11156,12 +11169,12 @@ def run_scenario_with_rng_retry(name, args):
         if reroll_retry and ok:
             state = species_reroll_state(receipts)
             if state == "observed":
-                _archive_attempt(name, attempt, receipts)
+                _archive_attempt(name, attempt, receipts, **archive_kwargs)
                 print(f"[duo] species_clause_new: reroll branch observed on attempt {attempt}")
                 return ok, attempt
             if attempt < limit:
                 unobserved_pass = attempt
-                _archive_attempt(name, attempt, receipts)
+                _archive_attempt(name, attempt, receipts, **archive_kwargs)
                 print("[duo] species_clause_new: reroll branch not observed on attempt "
                       f"{attempt}; re-running the whole scenario with fresh state")
                 continue
@@ -11172,9 +11185,9 @@ def run_scenario_with_rng_retry(name, args):
             if os.path.exists(pydec):
                 with open(pydec, "a", encoding="utf-8") as handle:
                     handle.write(line + "\n")
-            _archive_attempt(name, attempt, receipts)  # AFTER the annotation, so it is archived
+            _archive_attempt(name, attempt, receipts, **archive_kwargs)  # AFTER the annotation
             return ok, attempt
-        _archive_attempt(artifact, attempt, receipts)
+        _archive_attempt(artifact, attempt, receipts, **archive_kwargs)
         if (not ok and name == "gen2_species_clause" and scenario_family(args.game) == "gen2_new"
                 and attempt < limit and gen2_species_rng_miss(receipts,
                     early_finish=getattr(run, "_gen2_species_early_finish", None),

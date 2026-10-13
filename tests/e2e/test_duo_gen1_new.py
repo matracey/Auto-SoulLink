@@ -27,6 +27,7 @@ from e2e_duo import (  # noqa: E402
     SCENARIOS as RUNNER_SCENARIOS,
     scenario_attempt_limit,
 )
+from release_lanes import save_failure_output  # noqa: E402
 
 pytestmark = [
     pytest.mark.e2e,
@@ -142,11 +143,22 @@ def test_gen1_new_duo(scenario):
             # Always outlive every attempt the runner may take, plus boot and teardown.
             timeout=deadline_for(scenario))
     except subprocess.TimeoutExpired as exc:
-        # text=True makes exc.stdout a str (None when nothing was captured), not the bytes a
-        # bare subprocess.run would leave; the assert below cannot name the scenario on a kill.
+        output_path = save_failure_output(
+            exc.stdout, exc.stderr, repo=REPO, label=f"{GAME}-{scenario}")
+        stdout = exc.stdout or ""
+        stderr = exc.stderr or ""
+        if isinstance(stdout, bytes):
+            stdout = stdout.decode("utf-8", errors="replace")
+        if isinstance(stderr, bytes):
+            stderr = stderr.decode("utf-8", errors="replace")
         pytest.fail(f"{GAME} duo {scenario} exceeded the wrapper deadline of "
                     f"{deadline_for(scenario)} s (every attempt's budget plus 300 s teardown); "
-                    f"the runner's own _run_deadline should have ended it first -- partial "
-                    f"stdout:\n{(exc.stdout or '')[-4000:]}")
-    assert proc.returncode == 0, (
-        f"{GAME} duo {scenario} failed:\n{proc.stdout[-4000:]}\n{proc.stderr[-1000:]}")
+                    f"the runner's own _run_deadline should have ended it first; "
+                    f"full output: {output_path} -- partial stdout:\n{stdout[-4000:]}"
+                    f"\npartial stderr:\n{stderr[-1000:]}")
+    if proc.returncode != 0:
+        output_path = save_failure_output(
+            proc.stdout, proc.stderr, repo=REPO, label=f"{GAME}-{scenario}")
+        raise AssertionError(
+            f"{GAME} duo {scenario} failed; full output: {output_path}:\n"
+            f"{proc.stdout[-4000:]}\n{proc.stderr[-1000:]}")

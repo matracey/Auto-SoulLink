@@ -56,15 +56,22 @@ function M.extend_point(point, rd, symbols)
     return point
 end
 
--- Poke Ball odds at this HP, ItemUseBall (engine/items/item_effects.asm): Rand1 (0-255) <=
--- catch rate always holds for Pidgey/Rattata (255); W = floor(floor(maxhp*255/12) /
--- max(floor(hp/4), 1)); caught when W > 255 or Rand2 <= W.
-function M.catch_odds(hp, maxhp)
+-- HP/W gate for a Poke Ball, ItemUseBall (engine/items/item_effects.asm):
+-- W = floor(floor(maxhp*255/12) / max(floor(hp/4), 1)); passes when W > 255
+-- or Rand2 <= W. This remains the fight/throw threshold, not the total catch probability.
+local function hp_catch_odds(hp, maxhp)
     local C = F.CATCH
     local w = math.floor(math.floor(maxhp * C.maxhp_factor / C.maxhp_divisor)
                           / math.max(math.floor(hp / C.hp_divisor), 1))
     if w >= C.sure_catch_w then return 1 end
     return (w + 1) / (C.first_rand_max + 1)
+end
+
+-- No-status Poke Ball probability: both Rand1 <= the encounter's actual catch rate
+-- and the HP/W gate must pass. A low-HP foe is not a sure catch unless its rate is 255.
+function M.catch_odds(hp, maxhp, catch_rate)
+    assert(type(catch_rate) == "number", "observed catch rate required")
+    return (catch_rate + 1) / (F.CATCH.first_rand_max + 1) * hp_catch_odds(hp, maxhp)
 end
 
 -- opts.driver   gen1_battle_driver built by the caller with a step that yields the buttons
@@ -182,18 +189,24 @@ function M.new(expected, opts)
             return "stuck"
         end
         local dmax = nil -- largest Tackle damage seen so far (a non-crit roll is 217-255/255 of base)
-        -- Throw only at a sure catch (odds 1.00 = W >= 255, ItemUseBall) or on the last turn.
-        -- Measured over 51 throws (release runs 1-5 + every kept receipt, 2026-09-17/18): all 45
-        -- throws at odds 1.00 caught; the 6 thrown early because the next Tackle MIGHT KO the foe
-        -- (hp <= dmax+1, odds 0.58-0.67) missed 4 times, and every miss ends the hunt
-        -- out-of-balls -- a whole-run retry. A foe KO costs one encounter and keeps the ball
-        -- (the caller's "hunt again" path), so the KO guard was the expensive side of that trade.
-        -- For a 13-19 HP Route 1 foe odds are 1.00 iff hp <= 7 (floor(maxhp*255/12) >= 255 over
-        -- divisor 1) and 0.53-0.79 at hp 8-11; there is no 0.8-0.99 band to aim for.
+        -- Preserve the existing HP/W-only throw threshold (or throw on the last turn).
+        -- Measured over 51 throws against rate-255 Route 1 foes (release runs 1-5 + every kept
+        -- receipt, 2026-09-17/18): all 45 throws at HP/W odds 1.00 caught; the 6 thrown early
+        -- because the next Tackle MIGHT KO the foe (hp <= dmax+1, odds 0.58-0.67) missed 4 times,
+        -- and every miss ends the hunt out-of-balls -- a whole-run retry. A foe KO costs one
+        -- encounter and keeps the ball (the caller's "hunt again" path).
+        -- For a 13-19 HP foe the HP/W gate is certain iff hp <= 7 and is 0.53-0.79 at hp 8-11.
+        -- A lower species rate only changes the logged total, never the input timing.
         for turn = 1, 4 do
             local hp, maxhp = foe()
-            local odds = M.catch_odds(hp, maxhp)
-            local throw = odds >= 0.99 or turn == 4
+            -- LoadEnemyMonData copies wMonHCatchRate into this byte after the base stats
+            -- (engine/battle/core.asm vanilla :6107-6118, pureRGB :6510-6521).
+            -- ItemUseBall reads it for Rand1 (engine/items/item_effects.asm :301 / :346).
+            -- The caller already supplies the title's complete .sym table.
+            local rate_address = assert(S.wEnemyMonActualCatchRate, "wEnemyMonActualCatchRate")
+            local rate = rd(rate_address)
+            local odds = M.catch_odds(hp, maxhp, rate)
+            local throw = hp_catch_odds(hp, maxhp) >= 0.99 or turn == 4
             log(string.format("[hunt] turn %d foe hp %d/%d odds %.2f dmax %s -> %s", turn, hp, maxhp, odds,
                               tostring(dmax), throw and "throw" or "fight"))
             if throw then break end

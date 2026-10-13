@@ -66,7 +66,7 @@ def test_wrong_synth_setup_is_never_retried(monkeypatch, tmp_path, kind):
 
     monkeypatch.setattr(duo, "DuoRun", factory)
     monkeypatch.setattr(duo, "read_result", lambda _name, inst: last.get(inst, ""))
-    monkeypatch.setattr(duo, "_archive_attempt", lambda *_args: None)
+    monkeypatch.setattr(duo, "_archive_attempt", lambda *_args, **_kwargs: None)
     args = SimpleNamespace(game="gen1_new", lane=None, idle_jitter=0, keep_alive=False)
     verdict = duo.run_scenario_with_rng_retry("explode_new", args)
     assert verdict[0] is False and verdict[1] == 1 and "SYNTH" in verdict[2]

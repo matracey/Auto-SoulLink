@@ -28,6 +28,7 @@ from e2e_duo import (  # noqa: E402
     SCENARIOS as RUNNER_SCENARIOS,
     scenario_attempt_limit,
 )
+from release_lanes import save_failure_output  # noqa: E402
 from test_duo_gen1_new import SCENARIOS, companion_problems  # noqa: E402  (the canonical twenty)
 
 pytestmark = [
@@ -79,7 +80,20 @@ def test_gen1_pure_duo(game, scenario):
         proc = subprocess.run(cmd, cwd=REPO, capture_output=True, text=True, encoding="utf-8",
                               errors="replace", timeout=deadline_for(game, scenario))
     except subprocess.TimeoutExpired as exc:
+        output_path = save_failure_output(
+            exc.stdout, exc.stderr, repo=REPO, label=f"{game}-{scenario}")
+        stdout = exc.stdout or ""
+        stderr = exc.stderr or ""
+        if isinstance(stdout, bytes):
+            stdout = stdout.decode("utf-8", errors="replace")
+        if isinstance(stderr, bytes):
+            stderr = stderr.decode("utf-8", errors="replace")
         pytest.fail(f"{game} duo {scenario} exceeded the wrapper deadline of "
-                    f"{deadline_for(game, scenario)} s -- partial stdout:\n{(exc.stdout or '')[-4000:]}")
-    assert proc.returncode == 0, (
-        f"{game} duo {scenario} failed:\n{proc.stdout[-4000:]}\n{proc.stderr[-1000:]}")
+                    f"{deadline_for(game, scenario)} s; full output: {output_path} "
+                    f"-- partial stdout:\n{stdout[-4000:]}\npartial stderr:\n{stderr[-1000:]}")
+    if proc.returncode != 0:
+        output_path = save_failure_output(
+            proc.stdout, proc.stderr, repo=REPO, label=f"{game}-{scenario}")
+        raise AssertionError(
+            f"{game} duo {scenario} failed; full output: {output_path}:\n"
+            f"{proc.stdout[-4000:]}\n{proc.stderr[-1000:]}")
