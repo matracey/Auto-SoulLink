@@ -263,7 +263,9 @@ def test_mailbox_write_watch_on_the_overlay(emuhawk, title):  # noqa: F811
                                       fixture_path=str(source_path), speed_percent=300, env_overrides=env)
         inner_text = (REPO / inner_result).read_text(encoding="utf-8", errors="replace") \
             if (REPO / inner_result).is_file() else ""
-        assert passed, f"{leg}: W6 gate FAILED; {path}: {text[-3000:]}\ninner: {inner_text[-2000:]}"
+        assert passed, (f"{leg}: W6 gate FAILED; {path}: {text[-3000:]}\ninner failures:\n"
+                        + "\n".join(line for line in inner_text.splitlines() if "[FAIL]" in line)
+                        + f"\ninner tail: {inner_text[-2000:]}")
         assert fixture.read_bytes() == staged, "fixture changed while the gate ran"
         check(inner_text, staged)   # the corpus leg really ran and passed its own independent re-check
         record = live.tag_json(text, "W6")

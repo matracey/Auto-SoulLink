@@ -978,7 +978,7 @@ def scenario_attempt_limit(name, game):
         return 3
     if scenario_family(game) == "gen2_new" and name == "gen2_ball_gate":
         return 2   # one retry, only when a side ran out of the aide's five natural Balls (GEN2_OUT_OF_BALLS)
-    if scenario_family(game) == "gen2_new" and name in GEN2_TRADE_SCENARIOS:
+    if scenario_family(game) == "gen2_new" and (name in GEN2_TRADE_SCENARIOS or name in GEN2_ROUTE_LOSS_SCENARIOS):
         return 2   # one retry, only when the route's own wild battle was lost (GEN2_ROUTE_BATTLE_LOST)
     if name in GEN2_C5_REFUSED:
         return 1   # refused at hello: nothing to retry, on any pairing (tools/c5_runner.py owns a cell's one retry)
@@ -3084,11 +3084,14 @@ GEN2_BALL_GATE_FIXTURES = {"gen2_new": {"a": "crystal_town", "b": "crystal_town_
 # F.driver's refusal when the Ball pocket is empty (lua/tests/gen2_frame_align.lua): five natural Balls at ~33% a
 # throw miss about 13% of full-HP catches, so the lane may retry once on exactly this reason.
 GEN2_OUT_OF_BALLS = "no Poke Ball left in the pocket"
-# A Gen 2 trade scenario's link route throws balls at its first wild battle. On the pinned DUO-CLOCK the whole route
+# Trade and link_prelude scenarios throw balls at their opening wild battle. On the pinned DUO-CLOCK the whole route
 # is bit-for-bit deterministic, so a starter that loses that battle loses it on every re-run of the same attempt
 # (gen2_new/gen2_trade_refuse_item, sweep gen2-fsw-1003-0029 and -rerun1: ENGINE_WHITEOUT at the same frame twice).
 # The one retry runs on the next pinned clock minute (_duo_clock_minute), a disclosed second roll like gen2_ball_gate's.
 GEN2_ROUTE_BATTLE_LOST = "link route failed: the battle ended without a catch"
+GEN2_ROUTE_LOSS_SCENARIOS = frozenset({
+    "gen2_faint", "gen2_whiteout", "gen2_pc_ops", "gen2_changebox", "gen2_poison", "gen2_whiteout_rebuild",
+})
 # DUO-WAVE-D O-33 setups (tools/gen2_synth_fixtures.py): scenario -> recipe kind. Each side boots
 # <title>_synth_<kind> (C<->C B: crystal_synth_<kind>_ot2) through its BASE fixture's qualified CONTINUE (case.synth).
 # C-5 refused-at-hello scenarios: each side's expected server admission state (status players[<side>].admission).
@@ -11183,7 +11186,8 @@ def run_scenario_with_rng_retry(name, args):
                         for inst in ("a", "b") for line in (receipts.get(inst) or "").splitlines())):
             print(f"[duo] {name}: a side ran out of the aide's natural Balls; retrying fresh lane")
             continue
-        if (not ok and name in GEN2_TRADE_SCENARIOS and scenario_family(args.game) == "gen2_new"
+        if (not ok and (name in GEN2_TRADE_SCENARIOS or name in GEN2_ROUTE_LOSS_SCENARIOS)
+                and scenario_family(args.game) == "gen2_new"
                 and attempt < limit
                 and any(line.startswith("RESULT: FAIL") and GEN2_ROUTE_BATTLE_LOST in line
                         for inst in ("a", "b") for line in (receipts.get(inst) or "").splitlines())):

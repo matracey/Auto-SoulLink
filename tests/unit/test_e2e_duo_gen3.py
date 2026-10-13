@@ -6142,12 +6142,10 @@ _GEN2_BALL_GATE_RETRY = "        return 2   # one retry, only when a side ran ou
 _GEN2_TRADE_RETRY = "        return 2   # one retry, only when the route's own wild battle was lost (GEN2_ROUTE_BATTLE_LOST)\n"
 
 
-def _allowed_attempt_limits(snapshot, name, family, trade_scenarios, rng_family=False, o8_rows=()):
-    """The limits one scenario/game pair may have: the d5a26da9 `snapshot` value, plus (see the three sets above) exactly 2 for a Gen 2 trade
-    scenario of `trade_scenarios` on a `gen2_new` pairing, plus the pinned O-8 value for a gen1_synth row of `o8_rows` on an rng-retry family
-    (`rng_family`)."""
+def _allowed_attempt_limits(snapshot, name, family, trade_scenarios, rng_family=False, o8_rows=(), route_scenarios=()):
+    """Historical limits plus the explicitly named Gen 2 trade/opening-catch and Gen 1 O-8 budgets."""
     allowed = {snapshot}
-    if name in trade_scenarios and family == "gen2_new":
+    if (name in trade_scenarios or name in route_scenarios) and family == "gen2_new":
         allowed.add(2)
     if name in o8_rows and rng_family:
         allowed.add(O8_GEN1_SYNTH_LIMITS[name])
@@ -6163,6 +6161,7 @@ def _attempt_budget_problems(module):
     """Every scenario/game pair whose scenario_attempt_limit left its allowed set, except link_gen3_rand (6) and the probe row (new, 1).
     [(name, game, snapshot, now)]"""
     trade = getattr(module, "GEN2_TRADE_SCENARIOS", ())
+    route = getattr(module, "GEN2_ROUTE_LOSS_SCENARIOS", ())
     o8 = _o8_rows(module)
     problems = []
     for game in module.GAMES:
@@ -6171,7 +6170,7 @@ def _attempt_budget_problems(module):
                 continue
             was = ATTEMPT_LIMITS_AT_D5A26DA9.get(name, {}).get(game, 1)
             now = module.scenario_attempt_limit(name, game)
-            if now not in _allowed_attempt_limits(was, name, module.scenario_family(game), trade, module.rng_retry_family(game), o8):
+            if now not in _allowed_attempt_limits(was, name, module.scenario_family(game), trade, module.rng_retry_family(game), o8, route):
                 problems.append((name, game, was, now))
     return problems
 
@@ -6254,11 +6253,18 @@ def test_the_gen2_and_gen1_changed_sets_are_exactly_the_named_ones():
     assert set(gen2) <= set(duo.GEN2_TRADE_SCENARIOS)
     for name, rows in gen2.items():
         assert {game for game, _w, now in rows} <= {"gen2_new", "gen2_gold_silver", "gen2_crystal_gold"} and {now for _g, _w, now in rows} == {2}, name
+    route = {n: v for n, v in drifted.items() if n in duo.GEN2_ROUTE_LOSS_SCENARIOS}
+    assert set(route) == {
+        "gen2_faint", "gen2_whiteout", "gen2_pc_ops", "gen2_changebox", "gen2_poison", "gen2_whiteout_rebuild",
+    }
+    for name, rows in route.items():
+        assert {game for game, _w, now in rows} == {"gen2_new", "gen2_gold_silver", "gen2_crystal_gold"}
+        assert {now for _g, _w, now in rows} == {2}, name
     o8 = {n: v for n, v in drifted.items() if n in O8_GEN1_SYNTH_LIMITS}
     for name, rows in o8.items():
         assert {now for _g, _w, now in rows} == {O8_GEN1_SYNTH_LIMITS[name]}, name
         assert all(duo.rng_retry_family(game) and not duo.scenario_applies(name, game) for game, _w, _n in rows), name    # pairs that never run
-    assert set(drifted) == set(gen2) | set(o8), sorted(set(drifted) - set(gen2) - set(o8))
+    assert set(drifted) == set(gen2) | set(route) | set(o8), sorted(set(drifted) - set(gen2) - set(route) - set(o8))
     assert {n for n, row in duo.SCENARIOS.items() if row.get("gen1_synth") and row.get("rng_attempts")} >= set(O8_GEN1_SYNTH_LIMITS)
     assert all(duo.SCENARIOS[n]["rng_attempts"] == v for n, v in O8_GEN1_SYNTH_LIMITS.items())
 
@@ -6289,7 +6295,7 @@ def test_the_snapshot_catches_any_other_drift_in_the_real_source(tmp_path):
         return _attempt_budget_problems(_module_from_source(source.replace(old, new), tmp_path))
     assert source.count(_GEN2_TRADE_RETRY) == 1 and source.count(_GEN2_BALL_GATE_RETRY) == 1
     third = variant(_GEN2_TRADE_RETRY, _GEN2_TRADE_RETRY.replace("return 2", "return 3"))             # a third attempt on a trade row
-    assert {n for n, *_ in third} == set(duo.GEN2_TRADE_SCENARIOS)
+    assert {n for n, *_ in third} == set(duo.GEN2_TRADE_SCENARIOS) | set(duo.GEN2_ROUTE_LOSS_SCENARIOS)
     moved_gate = variant(_GEN2_BALL_GATE_RETRY, _GEN2_BALL_GATE_RETRY.replace("return 2", "return 3"))    # ball_gate moved
     assert {n for n, *_ in moved_gate} == {"gen2_ball_gate"}
     anchor = '    entry = SCENARIOS.get(name, {})\n    if entry.get("rule_kind") == "family"'
