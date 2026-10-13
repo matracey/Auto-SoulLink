@@ -32,6 +32,11 @@ def digest(obj) -> str:
     return hashlib.sha256(json.dumps(obj, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
+def pack_sha256(path: Path) -> str:
+    """The pack's hash with LF line endings, so a CRLF working copy pins the same value."""
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
 def readback(rom: bytes, context: dict, src: Path) -> dict:
     """Validate geometry and every active source declaration against compiled ROM bytes.
 
@@ -196,7 +201,7 @@ def build() -> dict:
             "header_order_sha256": digest([[r["label"], r["map"]] for r in headers]),
             "decoded_slots_sha256": digest(headers),
             "area_projection_sha256": digest(projection),
-            "source_pack_sha256": hashlib.sha256(SOURCE_PACK.read_bytes()).hexdigest(),
+            "source_pack_sha256": pack_sha256(SOURCE_PACK),
             "limits": ["Static compiled ROM/source readback, not live encounter behavior",
                        "Area projection selects first header per map; later Altering Cave sets remain unprojected",
                        "Runtime overrides, scripts, randomized ROMs and time-dependent builds remain outside scope"]}

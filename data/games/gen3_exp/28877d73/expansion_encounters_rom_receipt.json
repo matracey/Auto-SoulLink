@@ -24,7 +24,7 @@
   "rom_sha1": "28877d733492299599f2b8fff50493109d72653c",
   "schema": "gen3-expansion-wild-rom-readback-v1",
   "source_commit": "e8bd1cd7b03fc032ea37e3ecd38b379b5d01a1e7",
-  "source_pack_sha256": "b60b4e01bd6d44046add5bd944d7b00f5bc5b4273d33ea7a3c4e815d660454f3",
+  "source_pack_sha256": "baf84ea151b087d372c88d3e3367c24be37d6689176010a235e42c76a02271de",
   "source_projection_match": true,
   "source_projection_set": 0,
   "symbols_sha256": "ac24a47c0137ab9b2233ccf37bf0cabe8b6eb08b715aa7e87f15787507a1f01e",
