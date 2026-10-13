@@ -24,7 +24,7 @@ def test_retry_cleanup_retains_earlier_attempt_but_discards_live_results(tmp_pat
     assert not live.exists()
 
 
-def _recorded_invocations(tmp_path, monkeypatch, *, retry=False):
+def _recorded_invocations(tmp_path, monkeypatch, *, retry=False, failure=None):
     monkeypatch.setattr(duo, "BUILD", str(tmp_path))
     clear = duo.DuoRun._clear_attempt_artifacts
     observed = []
@@ -42,10 +42,12 @@ def _recorded_invocations(tmp_path, monkeypatch, *, retry=False):
             for side in ("a", "b", "pydec"):
                 token = f"game={self.game} invocation={self.args.invocation} attempt={self.attempt} side={side}\n"
                 result = duo.RNG_OUT_OF_BALLS if retry and self.attempt == 1 and side == "a" else "RESULT: PASS"
+                if failure is not None and side == "a":
+                    result = failure
                 text = token + result + "\n"
                 (tmp_path / f"e2e_link_new_{side}_result.txt").write_text(text, encoding="utf-8")
                 observed.append(text)
-            return not (retry and self.attempt == 1)
+            return failure is None and not (retry and self.attempt == 1)
 
     monkeypatch.setattr(duo, "DuoRun", RecordedRun)
     return observed
@@ -70,4 +72,16 @@ def test_gen1_first_catch_ball_miss_keeps_every_attempt_without_changing_retry(t
     observed = _recorded_invocations(tmp_path, monkeypatch, retry=True)
     args = SimpleNamespace(game="gen1_pure_green", idle_jitter=0, invocation=1, lane="P_gen1_pure_green")
     assert duo.run_scenario_with_rng_retry("link_new", args) == (True, 2)
+    assert Counter(path.read_text(encoding="utf-8") for path in _archives(tmp_path)) == Counter(observed)
+
+
+@pytest.mark.parametrize("failure, attempts", [
+    ("RESULT: FAIL (binding identity refused)", 1),
+    (duo.RNG_OUT_OF_BALLS, 3),
+])
+def test_gen1_terminal_failure_keeps_every_sides_exact_receipt(tmp_path, monkeypatch, failure, attempts):
+    observed = _recorded_invocations(tmp_path, monkeypatch, failure=failure)
+    args = SimpleNamespace(game="gen1_pure_green", idle_jitter=0, invocation=1, lane="P_gen1_pure_green")
+    assert duo.run_scenario_with_rng_retry("link_new", args) == (False, attempts)
+    assert len(observed) == 3 * attempts
     assert Counter(path.read_text(encoding="utf-8") for path in _archives(tmp_path)) == Counter(observed)

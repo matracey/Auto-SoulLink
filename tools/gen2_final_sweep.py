@@ -363,10 +363,19 @@ def run_cell(cell, lane, n, out, stagger):
         with log.open("rb") as handle:
             handle.seek(log_start)
             text = handle.read().decode("utf-8", errors="replace")
-        text += "".join("\n" + path.read_text(encoding="utf-8", errors="replace") for path in gate_results)
-        stall = RNG_STALL.search(text)
+        evidence = [path.read_text(encoding="utf-8", errors="replace") for path in gate_results]
+        if cell["kind"] == "duo":
+            failures = [line for line in text.splitlines() if "RESULT: FAIL" in line]
+        else:
+            # Later checks can cascade from a lost catch. Classify each fresh file's root failure;
+            # use the log only when no fresh gate file exists (pytest may truncate its diagnostics).
+            failures = [next((line for line in source.splitlines()
+                              if "[FAIL]" in line or "RESULT: FAIL" in line), "")
+                        for source in evidence or [text]]
+        stall = RNG_STALL.search(text + "".join("\n" + source for source in evidence))
+        independent_failure = any(line and not RNG_STALL.search(line) for line in failures)
         result["reason"] = "PASS" if result["ok"] else f"exit {codes}"
-        if result["ok"] or attempt == last_attempt or stall is None:
+        if result["ok"] or attempt == last_attempt or stall is None or independent_failure:
             break
         result["retried"] = stall.group(0)
     result["seconds"] = round(time.time() - started)
