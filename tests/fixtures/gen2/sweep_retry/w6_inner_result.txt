@@ -1,0 +1,4 @@
+  [FAIL] walk -> wild encounter -> Poke Ball catch -> native save -> poisoned lead faints on the overworld -> walk -> a mon faints in battle  -- no Poke Ball left in the pocket
+  [FAIL] poison_faint recorded no same-frame snapshot
+  [FAIL] the model binder recorded nothing
+RESULT: FAIL no receipt (39 checks failed)

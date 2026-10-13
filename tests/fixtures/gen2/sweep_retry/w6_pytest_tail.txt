@@ -1,0 +1,6 @@
+E           AssertionError: u1: W6 gate FAILED; F:\slink-work\lanes\gen2\fs1\patch\build\gen2_w6_gate_result.txt: INNER RESULT: FAIL no receipt (39 checks failed)
+E             RESULT: FAIL w6 u1 (0 violations, 85176 allowed writes, native control caught, lua control caught)
+E             inner: 
+E               [FAIL] battle_faint did not fire after the previous expected site
+E               [FAIL] poison_faint recorded no same-frame snapshot
+E             RESULT: FAIL no receipt (39 checks failed)

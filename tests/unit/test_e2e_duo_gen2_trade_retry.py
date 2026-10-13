@@ -1,4 +1,4 @@
-"""A Gen 2 trade scenario gets ONE retry, on the next pinned clock minute, when the link route's own wild battle was lost.
+"""A Gen 2 opening-catch scenario gets ONE retry on the next pinned clock minute when its wild battle was lost.
 
 On the pinned DUO-CLOCK a duo route is bit-for-bit deterministic, so re-running the same attempt reproduces a lost battle
 (gen2_new/gen2_trade_refuse_item lost it at the same frame in two sweeps). Everything else still fails on the first attempt.
@@ -45,7 +45,6 @@ def _driver(monkeypatch, tmp_path, outcomes, name="gen2_trade_refuse_item", game
 def test_the_limit_is_two_for_every_gen2_trade_scenario_and_unchanged_elsewhere():
     for name in duo.GEN2_TRADE_SCENARIOS:
         assert duo.scenario_attempt_limit(name, "gen2_new") == 2, name
-    assert duo.scenario_attempt_limit("gen2_whiteout", "gen2_new") == 1
     assert duo.scenario_attempt_limit("gen2_ball_gate", "gen2_new") == 2
 
 
@@ -72,3 +71,31 @@ def test_any_other_failure_is_final_on_the_first_attempt(tmp_path, monkeypatch, 
 
 def test_the_retry_attempt_is_pinned_to_a_different_clock_minute():
     assert duo._duo_clock_minute(1) == 0 and duo._duo_clock_minute(2) == duo.DUO_CLOCK_RETRY_MINUTE != 0
+
+
+OPENING_CATCH_SCENARIOS = (
+    "gen2_faint", "gen2_whiteout", "gen2_pc_ops", "gen2_changebox", "gen2_poison", "gen2_whiteout_rebuild",
+)
+
+
+@pytest.mark.parametrize("name", OPENING_CATCH_SCENARIOS)
+@pytest.mark.parametrize("game", ["gen2_new", "gen2_gold_silver", "gen2_crystal_gold"])
+def test_opening_catch_loss_retries_once_then_accepts_a_pass(tmp_path, monkeypatch, name, game):
+    built, args = _driver(monkeypatch, tmp_path, [LOST, None], name=name, game=game)
+    assert duo.scenario_attempt_limit(name, game) == 2
+    assert duo.run_scenario_with_rng_retry(name, args) == (True, 2)
+    assert built == [1, 2]
+
+
+@pytest.mark.parametrize("name", OPENING_CATCH_SCENARIOS)
+def test_second_opening_catch_loss_exhausts_the_budget(tmp_path, monkeypatch, name):
+    built, args = _driver(monkeypatch, tmp_path, [LOST, LOST], name=name)
+    assert duo.run_scenario_with_rng_retry(name, args) == (False, 2)
+    assert built == [1, 2]
+
+
+@pytest.mark.parametrize("reason", ["wave-c: the box change was not reported", "link route failed: something else"])
+def test_changebox_non_route_failure_does_not_retry(tmp_path, monkeypatch, reason):
+    built, args = _driver(monkeypatch, tmp_path, [reason, None], name="gen2_changebox")
+    assert duo.run_scenario_with_rng_retry("gen2_changebox", args) == (False, 1)
+    assert built == [1]

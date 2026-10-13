@@ -317,11 +317,14 @@ def test_gen2_pairing_rows_share_link_contract(game, fixtures):
     trade_fixtures["gen2_trade_evolve"] = duo_module.GEN2_TRADE_EVOLVE_FIXTURES[game]   # A boots the O-33 seed
     # every Gen 2 trade scenario has ONE retry, on the next pinned clock minute, and only when the link route's own
     # wild battle was lost (tools/e2e_duo.py GEN2_ROUTE_BATTLE_LOST; tests/unit/test_e2e_duo_gen2_trade_retry.py)
+    route_loss = [
+        "gen2_faint", "gen2_whiteout", "gen2_pc_ops", "gen2_changebox", "gen2_poison", "gen2_whiteout_rebuild",
+    ]
     assert duo_list_lines(game) == [
         f"{scenario}  attempts=2  targets=a:{trade_fixtures[scenario]['a']}, b:{trade_fixtures[scenario]['b']} "
         "artifact=overlay admission=PHYSICAL_RECEIPTED"
         for scenario in trade] + [
-        f"{scenario}  attempts={3 if scenario in duo_module.GEN2_CLAUSE_SCENARIOS else 1}  targets="
+        f"{scenario}  attempts={3 if scenario in duo_module.GEN2_CLAUSE_SCENARIOS else 2 if scenario in route_loss else 1}  targets="
         f"a:{'gold_battle_errand' if scenario == 'gen2_poison' and game == 'gen2_gold_silver' else fixtures['a']}, "
         f"b:{'crystal_battle_ot2' if scenario == 'gen2_admit_wrong_rom' else fixtures['b']}"
         if scenario not in c_g_only_not else

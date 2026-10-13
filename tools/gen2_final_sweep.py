@@ -58,7 +58,8 @@ TITLES = ("crystal", "gold", "silver")
 # The trainer poison leg (Bug Catcher Wade, G-S poison and Gold's U1 chain) is capped near 83% a fight by the
 # 15-HP target (coordinator, re-run pass): a fight that ends unpoisoned retries once like out-of-balls.
 RNG_STALL = re.compile(r"out-of-balls|no Poke Ball left in the pocket|survived \d+ battles|duplicates-only hunt|clause unobserved"
-                       r"|the trainer battle ended without a poisoned party mon|poison_faint did not fire")
+                       r"|the trainer battle ended without a poisoned party mon|poison_faint did not fire"
+                       r"|the battle ended without a catch")
 GATE_TIMEOUT = 3600
 PIN_FILES = ("tests/gen2_release_requirements.json", "tests/gen2_live_gate_requirements.json")
 ATTESTATION = "tests/fixtures/gen2/receipts/live_new_gates.inspect_run.json"   # tests/live/conftest.py
@@ -299,10 +300,12 @@ def is_u1_command(command):
     return any(str(arg).replace("\\", "/").rsplit("/", 1)[-1] == "test_gen2_frame_align.py" for arg in command)
 
 
-def run_commands(commands, lane, timeout, log, *, artifact_kind=None, u1_attempt=None):
-    """Run a cell's commands in order and stop at the first failure. Every gate result file a command wrote
-    (patch/build/*_result.txt) is kept next to the log as <log stem>.cmd<i>.<name>. U1G reuses
-    gen2_frame_align_result.txt, so without this copy a failing frame_align trace is overwritten."""
+def run_commands(commands, lane, timeout, log, *, artifact_kind=None, u1_attempt=None, attempt=None, gate_results=None):
+    """Stop at the first failing command and archive every gate result it wrote.
+
+    Optional gate_results receives only this invocation's new/changed archives for retry classification.
+    Attempts keep distinct archives so later passes cannot erase the original failure.
+    """
     def stamps():   # compared by value: Windows file times tick coarser than time.time()
         return {p: p.stat().st_mtime_ns for p in (lane / "patch/build").glob("*_result.txt")
                 if not p.name.startswith("e2e_")}
@@ -316,8 +319,12 @@ def run_commands(commands, lane, timeout, log, *, artifact_kind=None, u1_attempt
         codes.append(run(cmd, lane, timeout, log, **options))
         for result, stamp in stamps().items():
             if before.get(result) != stamp:
-                attempt_suffix = f".u1-attempt{u1_attempt}" if u1_attempt is not None else ""
-                shutil.copyfile(result, log.with_name(f"{log.stem}{attempt_suffix}.cmd{index}.{result.name}"))
+                attempt_suffix = (f".u1-attempt{u1_attempt}" if u1_attempt is not None
+                                  else f".attempt{attempt}" if attempt is not None else "")
+                archive = log.with_name(f"{log.stem}{attempt_suffix}.cmd{index}.{result.name}")
+                shutil.copyfile(result, archive)
+                if gate_results is not None:
+                    gate_results.append(archive)
         if codes[-1] != 0:
             break
     return codes
@@ -345,17 +352,23 @@ def run_cell(cell, lane, n, out, stagger):
         if u1:
             result["u1_attempts"].append(attempt)
             options["u1_attempt"] = attempt
-        codes = run_commands(commands, lane, cell["timeout"], log, **options)
+        log_start = log.stat().st_size if log.exists() else 0
+        gate_results = []
+        codes = run_commands(commands, lane, cell["timeout"], log, attempt=attempt, gate_results=gate_results, **options)
         result["ok"] = all(code == 0 for code in codes)
         if cell["kind"] == "duo":
             result["receipts"] = collect_duo(cell, f"{lane_id}{attempt}", lane, out)
         else:
             result["receipts"] = collect_gate(lane, out)
-        text = log.read_text(encoding="utf-8", errors="replace")
+        with log.open("rb") as handle:
+            handle.seek(log_start)
+            text = handle.read().decode("utf-8", errors="replace")
+        text += "".join("\n" + path.read_text(encoding="utf-8", errors="replace") for path in gate_results)
+        stall = RNG_STALL.search(text)
         result["reason"] = "PASS" if result["ok"] else f"exit {codes}"
-        if result["ok"] or attempt == last_attempt or not RNG_STALL.search(text.split(f"$ {' '.join(commands[0])}")[-1]):
+        if result["ok"] or attempt == last_attempt or stall is None:
             break
-        result["retried"] = RNG_STALL.search(text).group(0)
+        result["retried"] = stall.group(0)
     result["seconds"] = round(time.time() - started)
     return result
 
