@@ -98,7 +98,8 @@ def test_explode_can_reach_attempt_four_after_an_out_of_balls_miss(game):
     assert not duo.retryable_gen1_rng(game, receipts, 4, limit, scenario="explode_new")
     assert not duo.retryable_gen1_rng(game, {**receipts, "b": "RESULT: FAIL (engine signals stopped)"},
                                      3, limit, scenario="explode_new")
-    assert not duo.retryable_gen1_rng(game, receipts, 3, 8, scenario="species_clause_new")
+    # Owner 2026-10-13: pureRGB species hunts now admit late ball misses; vanilla keeps the old rule.
+    assert not duo.retryable_gen1_rng("gen1_new", receipts, 3, 8, scenario="species_clause_new")
 
 
 def test_setup_snapshot_tampering_is_refused_by_the_oracle(monkeypatch, tmp_path):

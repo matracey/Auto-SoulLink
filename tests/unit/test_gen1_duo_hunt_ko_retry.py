@@ -8,7 +8,6 @@ import pytest
 
 from tools import e2e_duo as duo
 
-
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -144,8 +143,9 @@ def test_attempt_consumption_and_jitter(tmp_path, monkeypatch, cause):
         assert "TimeoutError" in outcome[2] and "SERVER to pair" in outcome[2]
         assert attempts == [(1, 0)]
     elif cause == "always_ko":
-        assert outcome == (False, 3)
-        assert attempts == [(1, 0), (2, 37), (3, 74)]
+        # Owner 2026-10-13: pureRGB opening catches get six attempts (PURERGB_ACQUISITION_*).
+        assert outcome == (False, 6)
+        assert attempts == [(1, 0), (2, 37), (3, 74), (4, 111), (5, 148), (6, 185)]
     else:
         assert outcome == (True, 2)
         assert attempts == [(1, 0), (2, 37)]

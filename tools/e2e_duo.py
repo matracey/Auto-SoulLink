@@ -905,8 +905,24 @@ SPECIES_BUDGET_MISS = "RNG: the species hunt met only duplicates within its batt
 # (the Lua card lands the string; the phrase is pinned here and cross-checked against the body
 # once it exists).
 EXPLODE_KO_MISS = "RNG: the wild foe knocked the linked mon out before EXPLOSION"
-# Only explode_new may retry a third miss; the two SYNTH controls retain three attempts.
+# Outside pureRGB's acquisition scope, only explode_new may retry a third ball miss.
 EXPLODE_BALL_MISS = "hunt ended out-of-balls"
+# Owner 2026-10-13: pureRGB's opening catches have one ball and lower catch odds.
+# GAMES contains these two pureRGB pairings. Gen 1 has no ball_hunt metadata:
+# this explicit scope follows duo_gen1_main.lua's catch bodies and link_new /
+# deadzone_new prerequisite callers (soft_reset, poison and admission do not catch).
+PURERGB_ACQUISITION_GAMES = frozenset({"gen1_pure", "gen1_pure_green"})
+# The gen1_synth explode controls (explode_new, linked_faint_active_new,
+# explode_bench_battle_new) keep their own honest rng_attempts budgets and stay out.
+PURERGB_ACQUISITION_SCENARIOS = frozenset({
+    "link_new", "deadzone_new", "linked_faint_bench_new",
+    "linked_faint_bench_battle_new", "reconnect_new", "trade_new",
+    "trade_decline_new", "pc_ops_new", "changebox_new",
+    "whiteout_new", "type_clause_new", "species_clause_new", "rival_swap_new",
+})
+PURERGB_LATE_ATTEMPT_RNG = (
+    "hunt ended out-of-balls", "hunt ended first-catch-battle-lost",
+)
 LATE_ATTEMPT_RNG = (
     (SPECIES_BUDGET_MISS, frozenset()),  # preserve the existing species-hunt policy
     (EXPLODE_KO_MISS, frozenset({"explode_new"})),
@@ -921,7 +937,9 @@ def retryable_gen1_rng(game, results, attempt, limit=2, *, scenario=None):
     on the other. Attempts 1 and 2 may retry an RNG cause. Later attempts require a
     phrase whose tuple scope admits the named scenario (an empty set is unscoped).
     Species-budget misses retain their existing policy; explode_new admits foe-KO
-    and out-of-balls misses into its fourth attempt. The SYNTH controls stop at three.
+    and out-of-balls misses into its fourth attempt. PureRGB acquisition rows also
+    admit spent balls and first-catch battle losses through their sixth attempt.
+    Outside that scope the SYNTH controls stop at three.
     Omitting the scenario never admits a scoped late phrase.
 
     A half with NO RESULT is NOT "worse than CONSEQUENCE" — it made no claim at all. The RNG
@@ -962,6 +980,11 @@ def retryable_gen1_rng(game, results, attempt, limit=2, *, scenario=None):
         return True
     causes = [text for text in results.values()
               if classify_gen1_result(text) == "CAUSE_RNG"]
+    if (game in PURERGB_ACQUISITION_GAMES
+            and scenario in PURERGB_ACQUISITION_SCENARIOS
+            and causes and all(any(phrase in text for phrase in PURERGB_LATE_ATTEMPT_RNG)
+                              for text in causes)):
+        return True
     if scenario_family(game) == "gen1_new":
         # A first-battle KO dead-zones the duo hunt. Give it the same late-attempt
         # scope as a spent ball (including explode_new), without changing other gens.
@@ -975,10 +998,17 @@ def retryable_gen1_rng(game, results, attempt, limit=2, *, scenario=None):
 def scenario_attempt_limit(name, game):
     """How many whole-run attempts a scenario may take.
 
-    One for everything that is not a `gen1_new` scenario; two for the ball-RNG retry
-    (`retryable_gen1_rng`); three for species_clause_new, whose PASS may still be a
-    coin-flip outcome (see `run_scenario_with_rng_retry`).
+    The named pureRGB opening-catch scope gets AT LEAST six (a larger existing budget,
+    e.g. species_clause_new's eight, is kept); other pairings retain their
+    scenario-specific budgets. Receipts still decide whether a retry is eligible.
     """
+    limit = _base_attempt_limit(name, game)
+    if game in PURERGB_ACQUISITION_GAMES and name in PURERGB_ACQUISITION_SCENARIOS:
+        return max(limit, 6)
+    return limit
+
+
+def _base_attempt_limit(name, game):
     if scenario_family(game) == "gen2_new" and name in GEN2_CLAUSE_SCENARIOS:
         return 3
     if scenario_family(game) == "gen2_new" and name == "gen2_ball_gate":

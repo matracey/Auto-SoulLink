@@ -6140,19 +6140,24 @@ RAND_WHITEOUT = "RESULT: FAIL (hunt ended whiteout)"
 #   4. GEN2_ROUTE_LOSS_SCENARIOS: the named opening-catch rows retry once on their Gen 2 pairings.
 #   5. gender_clause_gen3: six observation attempts on FR/LG/Emerald only (3 -> 6); RR keeps its prior 8.
 #      Species/type and non-applicable game budgets retain their snapshot values.
+#   6. Owner 2026-10-13 PURERGB_ACQUISITION_SCENARIOS: six attempts, only on
+#      PURERGB_ACQUISITION_GAMES (gen1_pure and gen1_pure_green); vanilla stays fixed.
 O8_GEN1_SYNTH_LIMITS = {"linked_faint_active_new": 3, "explode_bench_battle_new": 3, "explode_new": 4}
 _GEN2_BALL_GATE_RETRY = "        return 2   # one retry, only when a side ran out of the aide's five natural Balls (GEN2_OUT_OF_BALLS)\n"
 _GEN2_TRADE_RETRY = "        return 2   # one retry, only when the route's own wild battle was lost (GEN2_ROUTE_BATTLE_LOST)\n"
 
 
-def _allowed_attempt_limits(snapshot, name, family, trade_scenarios, rng_family=False, o8_rows=(), route_scenarios=()):
-    """Historical limits plus named Gen 2, Gen 1 O-8 and Gen 3 gender observation budgets."""
+def _allowed_attempt_limits(snapshot, name, family, trade_scenarios, rng_family=False, o8_rows=(), route_scenarios=(),
+                            game=None, pure_games=(), pure_scenarios=()):
+    """Historical limits plus named Gen 2, O-8, gender and pureRGB acquisition budgets."""
     allowed = {snapshot}
     if (name in trade_scenarios or name in route_scenarios) and family == "gen2_new":
         allowed.add(2)
     if name in o8_rows and rng_family:
         allowed.add(O8_GEN1_SYNTH_LIMITS[name])
     if name == "gender_clause_gen3" and family in ("gen3_frlg", "gen3_emerald"):
+        allowed.add(6)
+    if game in pure_games and name in pure_scenarios:
         allowed.add(6)
     return allowed
 
@@ -6167,6 +6172,8 @@ def _attempt_budget_problems(module):
     [(name, game, snapshot, now)]"""
     trade = getattr(module, "GEN2_TRADE_SCENARIOS", ())
     route = getattr(module, "GEN2_ROUTE_LOSS_SCENARIOS", ())
+    pure_games = getattr(module, "PURERGB_ACQUISITION_GAMES", ())
+    pure_scenarios = getattr(module, "PURERGB_ACQUISITION_SCENARIOS", ())
     o8 = _o8_rows(module)
     problems = []
     for game in module.GAMES:
@@ -6175,7 +6182,9 @@ def _attempt_budget_problems(module):
                 continue
             was = ATTEMPT_LIMITS_AT_D5A26DA9.get(name, {}).get(game, 1)
             now = module.scenario_attempt_limit(name, game)
-            if now not in _allowed_attempt_limits(was, name, module.scenario_family(game), trade, module.rng_retry_family(game), o8, route):
+            if now not in _allowed_attempt_limits(was, name, module.scenario_family(game), trade,
+                                                 module.rng_retry_family(game), o8, route,
+                                                 game, pure_games, pure_scenarios):
                 problems.append((name, game, was, now))
     return problems
 
@@ -6199,6 +6208,12 @@ def test_the_attempt_limit_expectation_builder_in_both_modes():
     assert _allowed_attempt_limits(3, "gender_clause_gen3", "gen1_new", ()) == {3}
     assert _allowed_attempt_limits(8, "species_clause_gen3", "gen3_frlg", ()) == {8}
     assert _allowed_attempt_limits(3, "type_clause_gen3", "gen3_frlg", ()) == {3}
+    # pureRGB is a pairing scope, not the shared gen1_new family.
+    pure = dict(pure_games={"gen1_pure", "gen1_pure_green"}, pure_scenarios={"link_new"})
+    assert _allowed_attempt_limits(3, "link_new", "gen1_new", (), game="gen1_pure", **pure) == {3, 6}
+    assert _allowed_attempt_limits(3, "link_new", "gen1_new", (), game="gen1_new", **pure) == {3}
+    assert _allowed_attempt_limits(3, "soft_reset_new", "gen1_new", (), game="gen1_pure", **pure) == {3}
+    assert _allowed_attempt_limits(3, "link_new", "gen1_new", (), game="gen1_pure") == {3}
     assert sorted(g for g in duo.GAMES if duo.scenario_family(g) == "gen2_new") == ["gen2_crystal_gold", "gen2_gold_silver", "gen2_new"]
 
 
@@ -6275,7 +6290,14 @@ def test_the_gen2_gen1_and_gen3_gender_changed_sets_are_exactly_the_named_ones()
     for name, rows in route.items():
         assert {game for game, _w, now in rows} == {"gen2_new", "gen2_gold_silver", "gen2_crystal_gold"}
         assert {now for _g, _w, now in rows} == {2}, name
-    o8 = {n: v for n, v in drifted.items() if n in O8_GEN1_SYNTH_LIMITS}
+    pure = {n: {(g, w, now) for g, w, now in v if g in duo.PURERGB_ACQUISITION_GAMES}
+            for n, v in drifted.items() if n in duo.PURERGB_ACQUISITION_SCENARIOS}
+    # species_clause_new already had eight; the six-attempt floor leaves it unchanged.
+    assert set(pure) == set(duo.PURERGB_ACQUISITION_SCENARIOS) - {"species_clause_new"}
+    for name, rows in pure.items():
+        assert {g for g, _w, _now in rows} == {"gen1_pure", "gen1_pure_green"}, name
+        assert {now for _g, _w, now in rows} == {6}, name
+    o8 = {n: v - pure.get(n, set()) for n, v in drifted.items() if n in O8_GEN1_SYNTH_LIMITS}
     for name, rows in o8.items():
         assert {now for _g, _w, now in rows} == {O8_GEN1_SYNTH_LIMITS[name]}, name
         assert all(duo.rng_retry_family(game) and not duo.scenario_applies(name, game) for game, _w, _n in rows), name    # pairs that never run
@@ -6283,7 +6305,11 @@ def test_the_gen2_gen1_and_gen3_gender_changed_sets_are_exactly_the_named_ones()
     assert gender == {"gender_clause_gen3": {
         ("gen3_frlg", 3, 6), ("gen3_lgfr", 3, 6), ("gen3_emerald", 3, 6),
     }}
-    assert set(drifted) == set(gen2) | set(route) | set(o8) | set(gender), sorted(set(drifted) - set(gen2) - set(route) - set(o8) - set(gender))
+    assert set(drifted) == set(gen2) | set(route) | set(o8) | set(gender) | set(pure), sorted(set(drifted) - set(gen2) - set(route) - set(o8) - set(gender) - set(pure))
+    # Account for every changed pair, including scenarios shared by O-8 and pureRGB.
+    for name, rows in drifted.items():
+        assert rows == (gen2.get(name, set()) | route.get(name, set()) | o8.get(name, set())
+                        | gender.get(name, set()) | pure.get(name, set())), name
     assert {n for n, row in duo.SCENARIOS.items() if row.get("gen1_synth") and row.get("rng_attempts")} >= set(O8_GEN1_SYNTH_LIMITS)
     assert all(duo.SCENARIOS[n]["rng_attempts"] == v for n, v in O8_GEN1_SYNTH_LIMITS.items())
 
@@ -6329,6 +6355,15 @@ def test_the_snapshot_catches_any_other_drift_in_the_real_source(tmp_path):
     assert {n for n, *_ in wrong_clause} == {"type_clause_gen3"}
     wrong_game = variant(gender_budget, gender_budget.replace('"gen3_emerald")', '"gen3_emerald", "gen3_exp")'))
     assert wrong_game == [("gender_clause_gen3", "gen3_exp", 3, 6)]
+    pure_budget = '    if game in PURERGB_ACQUISITION_GAMES and name in PURERGB_ACQUISITION_SCENARIOS:\n        return max(limit, 6)\n'
+    wrong_pure_limit = variant(pure_budget, pure_budget.replace("max(limit, 6)", "max(limit, 7)"))
+    floored = set(duo.PURERGB_ACQUISITION_SCENARIOS) - {"species_clause_new"}   # eight already exceeds the floor
+    assert {(n, g, now) for n, g, _w, now in wrong_pure_limit} == {
+        (n, g, 7) for n in floored for g in duo.PURERGB_ACQUISITION_GAMES}
+    vanilla_leak = variant(pure_budget, pure_budget.replace("game in PURERGB_ACQUISITION_GAMES",
+                                                           'scenario_family(game) == "gen1_new"'))
+    assert {(n, g, now) for n, g, _w, now in vanilla_leak} == {
+        (n, "gen1_new", 6) for n in floored}
 
 
 @pytest.mark.parametrize("game", ["gen3_frlg", "gen3_emerald"])

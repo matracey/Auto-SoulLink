@@ -77,7 +77,7 @@ def test_gen1_first_catch_ball_miss_keeps_every_attempt_without_changing_retry(t
 
 @pytest.mark.parametrize("failure, attempts", [
     ("RESULT: FAIL (binding identity refused)", 1),
-    (duo.RNG_OUT_OF_BALLS, 3),
+    (duo.RNG_OUT_OF_BALLS, 6),    # owner 2026-10-13: pureRGB opening catches get six attempts
 ])
 def test_gen1_terminal_failure_keeps_every_sides_exact_receipt(tmp_path, monkeypatch, failure, attempts):
     observed = _recorded_invocations(tmp_path, monkeypatch, failure=failure)
