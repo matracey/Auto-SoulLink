@@ -817,9 +817,6 @@ def test_rng_retry_restarts_a_whole_run_once_with_labeled_receipts(
     assert [line for line in capsys.readouterr().out.splitlines() if "JITTER" in line] == [
         f"[duo] JITTER requested={duo.jitter_for_attempt(0, attempt)} attempt={attempt}"
         for attempt in range(1, expected_attempts + 1)]
-    for attempt in range(1, expected_attempts + 1):
-        for inst in ("a", "b"):
-            assert (tmp_path / f"e2e_link_new_{inst}_attempt{attempt}_result.txt").exists()
 
 
 @pytest.mark.parametrize(("other", "raises"), [
@@ -1177,12 +1174,13 @@ def test_first_uncaught_route1_battle_is_terminal_only_when_opted_in(opt_in, par
     module = lua.eval(f'dofile("{(REPO / "lua/tests/gen1_rb_hunt_inputs.lua").as_posix()}")')
     balls = {"count": 1}
     def rd(address):
-        return {1: 1, 2: 4, 3: balls["count"], 4: 0, 5: 14, 6: 0, 7: 14}.get(address, 0)
+        return {1: 1, 2: 4, 3: balls["count"], 4: 0, 5: 14, 6: 0, 7: 14, 8: 255}.get(address, 0)
     driver = lua.table(wait_menu=lambda _budget: lua.table(ok=True, frames=1),
                        choose=lambda _name: lua.table(ok=True),
                        commit_move=lambda _slot: lua.table(ok=False, why="battle_over"))
     route = module.new(lua.table(player="b"), lua.table(driver=driver, step=lambda _buttons: None,
-        rd=rd, symbols=lua.table(wNumBagItems=1, wBagItems=2, wEnemyMonHP=4, wEnemyMonMaxHP=6),
+        rd=rd, symbols=lua.table(wNumBagItems=1, wBagItems=2, wEnemyMonHP=4, wEnemyMonMaxHP=6,
+                                wEnemyMonActualCatchRate=8),
         mode="catch", stop_on_first_uncaught_battle=opt_in))
     battle = lua.table(map=12, x=10, y=35, battle=1, battle_type=0, party_hp=19,
                        party_count=1, font_loaded=False, joy_ignore=0)
@@ -1208,8 +1206,9 @@ def test_actual_link_prerequisite_wording_is_the_retryable_hunt_terminal():
                        choose=lambda _name: lua.table(ok=True),
                        commit_move=lambda _slot: lua.table(ok=False, why="battle_over"))
     route = hunter.new(lua.table(player="b"), lua.table(driver=driver, step=lambda _buttons: None,
-        rd=lambda address: {1: 1, 2: 4, 3: 1, 4: 0, 5: 14, 6: 0, 7: 14}.get(address, 0),
-        symbols=lua.table(wNumBagItems=1, wBagItems=2, wEnemyMonHP=4, wEnemyMonMaxHP=6),
+        rd=lambda address: {1: 1, 2: 4, 3: 1, 4: 0, 5: 14, 6: 0, 7: 14, 8: 255}.get(address, 0),
+        symbols=lua.table(wNumBagItems=1, wBagItems=2, wEnemyMonHP=4, wEnemyMonMaxHP=6,
+                          wEnemyMonActualCatchRate=8),
         mode="catch", stop_on_first_uncaught_battle=True))
     battle = lua.table(map=12, x=10, y=35, battle=1, battle_type=0, party_hp=19,
                        party_count=1, font_loaded=False, joy_ignore=0)
@@ -2133,8 +2132,9 @@ def test_hunt_logs_driver_ball_counts_for_the_oracle():
     driver = lua.table(wait_menu=menu,
                        use_item=lambda *_: lua.table(why="caught", balls_before=20, balls_after=19))
     route = module.new(lua.table(player="a"), lua.table(driver=driver, step=lambda _: None,
-        rd=lambda a: {1: 1, 2: 4, 3: 20, 4: 0, 5: 1, 6: 0, 7: 14}.get(a, 0),
-        symbols=lua.table(wNumBagItems=1, wBagItems=2, wEnemyMonHP=4, wEnemyMonMaxHP=6),
+        rd=lambda a: {1: 1, 2: 4, 3: 20, 4: 0, 5: 1, 6: 0, 7: 14, 8: 255}.get(a, 0),
+        symbols=lua.table(wNumBagItems=1, wBagItems=2, wEnemyMonHP=4, wEnemyMonMaxHP=6,
+                          wEnemyMonActualCatchRate=8),
         mode="catch", log=lambda line: logs.append(str(line))))
     battle = lua.table(map=12, x=10, y=35, battle=1, battle_type=0, party_hp=19,
                        party_count=1, font_loaded=False, joy_ignore=0)

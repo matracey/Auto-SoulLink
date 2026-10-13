@@ -647,8 +647,7 @@ def test_the_give_up_annotation_is_archived_with_its_attempt(capsys, tmp_path, m
     third-attempt PYDEC copy was missing the partial-coverage note."""
     built, args = _retry_driver(monkeypatch, tmp_path, ["reroll_unobserved"] * 8)
     assert duo.run_scenario_with_rng_retry("species_clause_new", args) == (True, 8)
-    archived = (tmp_path / "e2e_species_clause_new_pydec_attempt8_result.txt").read_text(
-        encoding="utf-8")
+    archived = next(tmp_path.rglob("*pydec_attempt8_result.txt")).read_text(encoding="utf-8")
     assert "reroll branch NOT observed after 8 attempts (D-4 stays partial)" in archived
     assert built == list(range(1, 9))
 

@@ -11,6 +11,8 @@ RUN did not PASS. A skip reads exactly like a pass unless its reason is on the m
 `ALLOWED_SKIPS` list; xfail, xpass, deselection and pytest-reported errors each fail a lane too.
 `--quick`/`--lane` runs are explicitly NOT a release verdict -- only "every lane ran and every
 lane passed" is.
+
+Failed child output is retained in unique patch/build logs; display tails name the full log.
 """
 from __future__ import annotations
 
@@ -19,6 +21,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
 
 _REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -68,6 +71,19 @@ def _unexplained_skips(text: str, allowed_skips) -> list[str]:
     return out
 
 
+def save_failure_output(stdout, stderr, *, repo: str, label: str) -> str:
+    """Retain both complete streams, including TimeoutExpired's undecoded bytes."""
+    directory = os.path.join(repo, "patch", "build")
+    os.makedirs(directory, exist_ok=True)
+    prefix = re.sub(r"[^A-Za-z0-9_.-]", "_", label) + "-failure-"
+    fd, path = tempfile.mkstemp(prefix=prefix, suffix=".log", dir=directory)
+    with os.fdopen(fd, "wb") as output:
+        for stream in (stdout, stderr):
+            if stream is not None:
+                output.write(stream if isinstance(stream, bytes) else stream.encode("utf-8"))
+    return os.path.abspath(path)
+
+
 def run_lane(lane: Lane, quiet: bool, allowed_skips) -> tuple[bool, str]:
     env = dict(os.environ)
     env.update(lane.env)
@@ -111,8 +127,12 @@ def run_lane(lane: Lane, quiet: bool, allowed_skips) -> tuple[bool, str]:
             for line in unexplained:
                 print(f"    - {line}")
 
-    if not ok and not quiet:
-        print(text[-4000:])
+    if not ok:
+        output_path = save_failure_output(proc.stdout, proc.stderr, repo=_REPO, label=lane.name)
+        detail += f"  full output: {output_path}"
+        if not quiet:
+            print(f"Full output: {output_path}")
+            print(text[-4000:])
     return ok, detail
 
 
