@@ -426,6 +426,7 @@ local function hunt(mode, options)
                                                    stop_on_first_uncaught_battle = options.stop_on_first_uncaught_battle })
     local last_phase, n = nil, 0
     local terminal = { caught = true, escaped = true, ["out-of-balls"] = true, ["hunt-exhausted"] = true,
+                       ["first-catch-battle-lost"] = true,
                        ["linked-fainted"] = true, ["linked-active-menu"] = true,
                        ["linked-survived-3-battles"] = true,
                        whiteout = true, stuck = true, ["unexpected-battle"] = true }
@@ -618,9 +619,9 @@ end
 -- D-1: both catch on Route 1; the server pairs the two captures by area on its own.
 function scenarios.link_new()
     if not wait_go() then return false, "no go-file" end
-    local bench_prerequisite = D.scenario == "linked_faint_bench_battle_new"
-                               or D.scenario == "explode_bench_battle_new"
-    local phase = hunt("catch", {stop_on_first_uncaught_battle = bench_prerequisite})
+    -- The first uncaught battle sends no_catch and dead-zones Route 1. A later catch
+    -- cannot form this pair: finish with the existing RNG receipt instead of hunting again.
+    local phase = hunt("catch", {stop_on_first_uncaught_battle = true})
     if phase ~= "caught" then return false, "hunt ended " .. phase end
     local key = new_key()
     if not key then return false, "party grew but no new key" end

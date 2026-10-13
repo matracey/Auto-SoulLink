@@ -962,6 +962,11 @@ def retryable_gen1_rng(game, results, attempt, limit=2, *, scenario=None):
         return True
     causes = [text for text in results.values()
               if classify_gen1_result(text) == "CAUSE_RNG"]
+    if scenario_family(game) == "gen1_new":
+        # A first-battle KO dead-zones the duo hunt. Give it the same late-attempt
+        # scope as a spent ball (including explode_new), without changing other gens.
+        causes = [text.replace("hunt ended first-catch-battle-lost", EXPLODE_BALL_MISS)
+                  for text in causes]
     return bool(causes) and all(
         any(phrase in (text or "") and (not scenarios or scenario in scenarios)
             for phrase, scenarios in LATE_ATTEMPT_RNG) for text in causes)
