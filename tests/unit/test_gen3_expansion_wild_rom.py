@@ -36,6 +36,24 @@ def test_compiled_wild_table_matches_source_set_zero_and_keeps_duplicate_headers
     assert receipt["live_verified"] is False
 
 
+def test_source_pack_hash_does_not_depend_on_the_checkout_eol(tmp_path):
+    # The receipt once pinned the CRLF working copy's hash, so it only matched a CRLF checkout.
+    from tools import verify_gen3_exp_wild as wild
+
+    lf = tmp_path / "lf.json"
+    crlf = tmp_path / "crlf.json"
+    lf.write_bytes(b'{"encounters": {}}\n')
+    crlf.write_bytes(b'{"encounters": {}}\r\n')
+    assert wild.pack_sha256(lf) == wild.pack_sha256(crlf)
+
+
+def test_receipt_binds_the_committed_source_pack():
+    from tools import verify_gen3_exp_wild as wild
+
+    receipt = json.loads(OUT.read_text(encoding="utf-8"))
+    assert receipt["source_pack_sha256"] == wild.pack_sha256(wild.SOURCE_PACK)
+
+
 def test_compiled_wild_table_refuses_corrupt_descriptor_pointer(pinned_inputs):
     from tools import verify_gen3_exp_wild as wild
 

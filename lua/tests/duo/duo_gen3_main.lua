@@ -2111,8 +2111,41 @@ local function em_center_walk(path_name, label)
     }).walk(p, label, path_name)
 end
 
+-- Like Gen 1's heal_linked_in_overworld: stop A as soon as the party is full,
+-- then dismiss the remaining nurse dialogue with B so we cannot start it again.
+local function heal_party_at_nurse(label)
+    play.follow(cp, "pokecenter_entrance_to_nurse", label)
+    G.tap("Up", 2, 13)
+    local function party_full()
+        local party = ctx.party()
+        if not party or #party < 2 then return false end
+        for _, mon in ipairs(party) do
+            if not mon.max_hp or mon.max_hp <= 0 or mon.hp ~= mon.max_hp then return false end
+        end
+        return true
+    end
+    if party_full() then
+        log(fmt("HEAL_PARTY %s via=already-full", label))
+        return
+    end
+    log(fmt("HEAL_PARTY_START %s via=nurse", label))
+    local healed = false
+    for _ = 1, 180 do
+        if party_full() then healed = true; break end
+        G.tap("A", 3, 20)
+    end
+    if not healed then error(label .. ": the nurse did not restore the party before deposit") end
+    log(fmt("HEAL_PARTY %s via=nurse", label))
+    for _ = 1, 120 do
+        if play.on_field(cp) and G.pred_ok(cp, "script_context_status")
+           and G.pred_ok(cp, "field_controls_locked") then return end
+        G.tap("B", 3, 13)
+    end
+    error(label .. ": the nurse dialogue did not close")
+end
+
 --- Route 1 grass origin -> facing the Viridian Pokemon Center PC (the viridian_pc leg's walk).
-function ctx.walk_to_pc(label)
+function ctx.walk_to_pc(label, opts)
     if EMERALD_ENGINE then
         -- E4: from the pc fixture's own Oldale tile (6,17) into the Center (emerald_enter_pc's
         -- door, (6,16) -> 2.2 (7,8)), then gen3_scripted_play.lua's em_oldale_center_to_pc path
@@ -2128,7 +2161,15 @@ function ctx.walk_to_pc(label)
     SP.warp_to(cp, "Up", 30, SP.DEST.viridian_south, label .. " Route1->Viridian")
     play.follow(cp, "route1_edge_to_pokecenter_door", label)
     SP.warp_to(cp, "Up", 30, SP.DEST.center, label .. " Center door")
-    play.follow(cp, "pokecenter_entrance_to_pc", label)
+    -- The existing whiteout prelude is the only default opt-in. Keep its scenario
+    -- module/call contract intact; other callers retain their original route.
+    opts = opts or { heal_before_deposit = label == "whiteout a" }
+    if opts.heal_before_deposit then
+        heal_party_at_nurse(label)
+        play.follow(cp, "center_heal_spot_to_pc", label)
+    else
+        play.follow(cp, "pokecenter_entrance_to_pc", label)
+    end
     G.tap("Up", 2, 13)
 end
 
