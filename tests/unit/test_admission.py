@@ -1,6 +1,7 @@
 """Neutral actual-byte admission controls under Lua 5.4; no runtime qualification."""
 
 import hashlib
+import itertools
 from pathlib import Path
 
 import pytest
@@ -10,11 +11,14 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class World:
-    def __init__(self, image=b"known cartridge bytes", *, unknown=False, rows=None):
+    def __init__(self, image=b"known cartridge bytes", *, unknown=False, rows=None, source=None):
         self.lua = LuaRuntime(unpack_returned_tuples=True)
-        self.module = self.lua.eval("dofile")((ROOT / "lua/admission.lua").as_posix())
+        path = (ROOT / "lua/admission.lua").as_posix()
+        self.module = (self.lua.eval("dofile")(path) if source is None
+                       else self.lua.eval("load")(source, "@" + path)())
         self.image = image
         self.reads = 0
+        self.trace = []
         self.after_describe = None
         self.catalog = rows or [{"name": "one", "hashes": [hashlib.sha1(image).hexdigest()],
                                  "eligible": True, "kind": "clean", "anchors": []}]
@@ -36,9 +40,11 @@ class World:
 
     def read(self, offset):
         self.reads += 1
+        self.trace.append(("read", offset))
         return self.image[int(offset)]
 
     def describe(self):
+        self.trace.append(("describe",))
         if self.after_describe:
             self.after_describe()
 
@@ -67,6 +73,85 @@ def test_known_artifact_is_hashed_and_decision_is_deeply_immutable():
         world.lua.eval("function(value) value.nested.source='changed' end")(decision)
     world.rows[1].name = "later catalog mutation"
     assert decision.title == "one"
+
+
+@pytest.mark.parametrize("value", [None, True, -1, 256, 0.5, "0", float("nan"), float("inf")])
+@pytest.mark.parametrize("offset", [0, 511, 512, 1023])
+@pytest.mark.parametrize("reacquire", [False, True])
+def test_invalid_acquired_byte_refuses_at_exact_offset(value, offset, reacquire):
+    world = World(bytes(range(256)) * 4)
+    invalid = list(world.image)
+    invalid[offset] = value
+    if reacquire:
+        world.after_describe = lambda: setattr(world, "image", invalid)
+    else:
+        world.image = invalid
+
+    decision, reason = world.admit()
+
+    assert decision is None
+    assert reason.endswith(f"unavailable or invalid artifact byte at {offset}")
+    assert world.reads == offset + 1 + (len(invalid) if reacquire else 0)
+
+
+def test_lazy_error_edit_preserves_admission_results_and_read_order():
+    from tools import gen2_code_digest as code
+
+    eager = b'assert(byte(value), "unavailable or invalid artifact byte at " .. offset)'
+    lazy = b'if not byte(value) then error("unavailable or invalid artifact byte at " .. offset) end'
+    optimized = (ROOT / "lua/admission.lua").read_bytes().replace(b"\r\n", b"\n")
+    assert optimized.count(lazy) == 1
+    sources = [optimized.replace(lazy, eager, 1), optimized]
+    for blob, source in zip(code.C5_LAZY_ERROR_BLOBS, sources, strict=True):
+        assert hashlib.sha1(f"blob {len(source)}\0".encode() + source).hexdigest() == blob
+
+    values = [None, True, False, -1, 256, 0.5, "0", float("nan"), float("inf"), float("-inf"), {}, []]
+    cases = [("valid", None, None, False), ("changed", None, None, True)]
+    cases += [("invalid", value, offset, reacquire)
+              for value, offset, reacquire in itertools.product(values, (0, 511, 512, 1023), (False, True))]
+    for kind, value, offset, reacquire in cases:
+        outcomes = []
+        for source in sources:
+            world = World(bytes(range(256)) * 4, source=source)
+            if kind != "valid":
+                changed = list(world.image)
+                changed[0 if offset is None else offset] = 255 if kind == "changed" else value
+                if reacquire:
+                    world.after_describe = lambda w=world, image=changed: setattr(w, "image", image)
+                else:
+                    world.image = changed
+            result = world.admit()
+            if isinstance(result, tuple):
+                assert result[0] is None
+                if kind == "invalid":
+                    assert result[1].endswith(f"unavailable or invalid artifact byte at {offset}")
+                else:
+                    assert kind == "changed" and "artifact changed during admission" in result[1]
+                outcome = result
+            else:
+                assert kind == "valid"
+                outcome = (result.title, result.rom_sha1, result.kind, result.admitted_by,
+                           result.rehashed, result.nested.source)
+                assert result.rom_sha1 == hashlib.sha1(world.image).hexdigest()
+            outcomes.append((outcome, world.trace))
+        assert outcomes[0] == outcomes[1], (kind, value, offset, reacquire)
+
+    messages = []
+    for source in sources:
+        world = World(source=source)
+        count = world.lua.execute("""
+            local original, messages = assert, 0
+            assert = function(value, message, ...)
+                if type(message) == 'string' and message:match('^unavailable or invalid artifact byte at ') then
+                    messages = messages + 1
+                end
+                return original(value, message, ...)
+            end
+            return function() return messages end
+        """)
+        assert world.admit().rehashed is True
+        messages.append(count())
+    assert messages == [2 * len(world.image), 0]
 
 
 def test_unknown_hash_never_falls_back_without_explicit_binder_policy():

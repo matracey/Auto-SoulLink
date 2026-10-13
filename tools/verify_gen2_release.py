@@ -2304,7 +2304,8 @@ def _c5_requirement_errors(root: Path) -> list[str]:
     return errors
 
 
-def _c5_manifest_errors(folder: Path, m: dict, cid: str, head: str, jars: set, runner) -> list[str]:
+def _c5_manifest_errors(folder: Path, m: dict, cid: str, head: str, jars: set, runner,
+                        equivalent: str | None = None) -> list[str]:
     errors = []
     if m.get("schema") != C5_SCHEMA:
         errors.append(f"schema {m.get('schema')!r} is not {C5_SCHEMA}")
@@ -2323,7 +2324,7 @@ def _c5_manifest_errors(folder: Path, m: dict, cid: str, head: str, jars: set, r
         values = value if isinstance(value, list) else [value]
         if not value or not all(isinstance(v, str) and v.strip() for v in values):
             errors.append(f"missing {kind} disclosure")
-    if m.get("code_digest") != head:
+    if m.get("code_digest") != head and (equivalent is None or m.get("code_digest") != equivalent):
         errors.append(f"STALE: manifest CODE_DIGEST {m.get('code_digest')} != current code digest {head} "
                       "(evidence earned on other production code; re-run tools/c5_runner.py run)")
     jar = (m.get("provision") or {}).get("jar_sha256")
@@ -2370,7 +2371,7 @@ def _c5_manifest_errors(folder: Path, m: dict, cid: str, head: str, jars: set, r
 
 def c5_errors(receipts_dir, root: Path | None = None, head: str | None = None) -> list[str]:
     """--c5: every required C-5 cell exactly once, each a PHYSICAL PASS on the randomized carts its manifest's contract
-    names, at the CURRENT production code digest (stale evidence is RED), receipts byte-identical to their pins, a pinned
+    names, at the current or exactly equivalent production digest, receipts byte-identical to their pins, a pinned
     jar, and the named limit(s) still recorded. The PASS definition is c5_runner.c5_receipt_errors, never re-derived."""
     import c5_runner
 
@@ -2379,6 +2380,7 @@ def c5_errors(receipts_dir, root: Path | None = None, head: str | None = None) -
     errors = _c5_requirement_errors(root)
     try:
         head = code_digest.head_digest(root) if head is None else head
+        equivalent = code_digest.c5_admission_equivalent(root, head)
     except (OSError, subprocess.CalledProcessError) as exc:
         return errors + [f"cannot compute the current production code digest: {exc}"]
     try:
@@ -2388,6 +2390,7 @@ def c5_errors(receipts_dir, root: Path | None = None, head: str | None = None) -
     if not folder.is_dir():
         return errors + [f"{folder}: no C-5 receipts directory"]
     seen = {}
+    reused = False
     for path in sorted(folder.glob("*.manifest.json")):
         try:
             m = json.loads(path.read_text(encoding="utf-8"))
@@ -2399,19 +2402,23 @@ def c5_errors(receipts_dir, root: Path | None = None, head: str | None = None) -
             errors.append(f"{path.name}: cell {cid!r} is not a required C-5 cell")
             continue
         seen.setdefault(cid, []).append(path.name)
-        errors.extend(f"{cid}: {e}" for e in _c5_manifest_errors(folder, m, cid, head, jars, c5_runner))
+        errors.extend(f"{cid}: {e}" for e in _c5_manifest_errors(folder, m, cid, head, jars, c5_runner, equivalent))
+        reused |= equivalent is not None and m.get("code_digest") == equivalent
     for cid in C5_CELLS:
         if cid not in seen:
             errors.append(f"{cid}: missing (no PASS manifest)")
         elif len(seen[cid]) > 1:
             errors.append(f"{cid}: duplicated ({', '.join(seen[cid])})")
+    if reused and not errors:
+        print(f"C-5: reused PHYSICAL evidence at {equivalent}; SOURCE/MODEL admission-error equivalence "
+              f"to {head}; no new physical run")
     return errors
 
 
 # G2-C5-WIRE: the INSTALLED C-5 packet. c5_errors above judges a folder the caller names; on its own it could
 # never be a gate, because a repository with no C-5 receipts installed would simply not have anything to
 # judge. These two make it one: the packet is expected at a fixed path, pinned by its own install manifest,
-# at the CURRENT production code digest, and its absence is a NAMED RED -- never a skip, never a silent pass.
+# at the current or exactly equivalent digest; absence is a NAMED RED, never a skip.
 C5_RECEIPTS = "tests/fixtures/gen2/receipts/c5"
 C5_INSTALL_MANIFEST = "install.json"
 C5_INSTALL_SCHEMA = "gen2-c5-install-v1"
@@ -2420,7 +2427,7 @@ C5_NOT_INSTALLED = (f"{C5_RECEIPTS}: C-5 receipts are NOT installed; run `tools/
 
 
 def c5_install_errors(root: Path | None = None, head: str | None = None) -> list[str]:
-    """The installed C-5 packet itself: present, at the current code digest, every file byte as installed."""
+    """Present, current or exactly equivalent code, every file byte as installed."""
     import c5_runner
 
     root = ROOT if root is None else root
@@ -2429,6 +2436,7 @@ def c5_install_errors(root: Path | None = None, head: str | None = None) -> list
         return [C5_NOT_INSTALLED]
     try:
         head = code_digest.head_digest(root) if head is None else head
+        equivalent = code_digest.c5_admission_equivalent(root, head)
     except (OSError, subprocess.CalledProcessError) as exc:
         return [f"cannot compute the current production code digest: {exc}"]
     try:
@@ -2438,7 +2446,7 @@ def c5_install_errors(root: Path | None = None, head: str | None = None) -> list
     errors = []
     if install.get("schema") != C5_INSTALL_SCHEMA:
         errors.append(f"install manifest schema {install.get('schema')!r} is not {C5_INSTALL_SCHEMA}")
-    if install.get("code_digest") != head:
+    if install.get("code_digest") != head and (equivalent is None or install.get("code_digest") != equivalent):
         errors.append(f"STALE: the installed C-5 packet is at code digest "
                       f"{str(install.get('code_digest'))[:12]}, the current production digest is {head[:12]} "
                       "(re-run tools/c5_runner.py run -- it needs EmuHawk -- then reinstall)")
@@ -2461,7 +2469,7 @@ def c5_install_errors(root: Path | None = None, head: str | None = None) -> list
 
 def c5_gate_errors(root: Path | None = None, head: str | None = None) -> list[str]:
     """What release-evidence asks of C-5: the installed packet is sound AND every required cell is a
-    PHYSICAL PASS at the current digest. Both halves always report, so a tampered install is never
+    PHYSICAL PASS at the current or exactly equivalent digest. Both halves report, so a tampered install is never
     mistaken for a complete one."""
     root = ROOT if root is None else root
     errors = c5_install_errors(root, head)
@@ -2480,7 +2488,7 @@ def _c5_main(receipts_dir: str) -> int:
     if errors:
         print(f"C-5: {len(errors)} gap(s); a missing, stale, edited or unproven cell is not a pass")
         return 1
-    print(f"C-5: all {len(C5_CELLS)} required cells PHYSICAL PASS at the current code digest")
+    print(f"C-5: all {len(C5_CELLS)} required cells have verified PHYSICAL receipts")
     return 0
 
 

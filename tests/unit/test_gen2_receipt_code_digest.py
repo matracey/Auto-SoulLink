@@ -147,6 +147,35 @@ def test_committed_tree_head_digest_is_reproducible():
     assert code.head_digest(ROOT) == code.head_digest(ROOT, "HEAD")
 
 
+def test_c5_equivalence_changes_only_the_exact_admission_blob(monkeypatch):
+    before, after = code.C5_LAZY_ERROR_BLOBS
+    admission = "lua/admission.lua"
+    rows = [(admission, after), ("lua/gen2/client.lua", "1" * 40),
+            ("lua/core/session.lua", "2" * 40), ("server/state.py", "3" * 40),
+            ("data/games/gen2_crystal/profile.json", "4" * 40)]
+    monkeypatch.setattr(code, "_head_rows", lambda *_: rows)
+    dirty = []
+    monkeypatch.setattr(code, "dirty_paths", lambda *_: dirty)
+    current = code.digest_of(rows)
+    qualified = code.digest_of((path, before if path == admission else blob) for path, blob in rows)
+    assert code.c5_admission_equivalent(ROOT, current) == qualified
+    assert code.head_digest(ROOT) == current
+    assert code.c5_admission_equivalent(ROOT, qualified) is None
+
+    for index, (path, blob) in enumerate(list(rows)):
+        rows[index] = (path, "f" * 40)
+        changed = code.digest_of(rows)
+        assert code.c5_admission_equivalent(ROOT, changed) != qualified, path
+        assert code.c5_admission_equivalent(ROOT, current) is None, path
+        rows[index] = (path, blob)
+    rows.append(("server/new.py", "5" * 40))
+    assert code.c5_admission_equivalent(ROOT, code.digest_of(rows)) != qualified
+    rows.pop()
+    for path, _ in rows:
+        dirty[:] = [path]
+        assert code.c5_admission_equivalent(ROOT, current) is None, path
+
+
 # ---- the overlay row of a pack's admission.json is a build output: promotion and release stamps must not stale receipts ----
 
 def _admission(overlay_status, overlay_sha="a" * 40, clean_status="BUILT"):

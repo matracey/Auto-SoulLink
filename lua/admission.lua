@@ -152,7 +152,7 @@ local function acquire(policy, request)
     local chunks, buffer, used = {}, {}, 0
     for offset = 0, source.size - 1 do
         local value = source.read_u8(offset)
-        assert(byte(value), "unavailable or invalid artifact byte at " .. offset)
+        if not byte(value) then error("unavailable or invalid artifact byte at " .. offset) end
         used = used + 1
         buffer[used] = value
         if used == 512 then chunks[#chunks + 1], used = string.char(unpack_values(buffer, 1, used)), 0 end

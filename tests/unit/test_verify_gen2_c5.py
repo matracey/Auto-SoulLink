@@ -158,7 +158,7 @@ def _reconnect_phase_missing(root, folder):
     path.write_text(json.dumps(doc), encoding="utf-8")
 
 
-@pytest.mark.parametrize("mutate, expected", [
+GAPS = [
     (_missing_cell, "c5/cg/link: missing (no PASS manifest)"),
     (_fail_cell, "c5/gs/gen2_gift: b: RESULT is not PASS"),
     (_stale, f"c5/cc/link: STALE: manifest CODE_DIGEST {'e' * 64} != current code digest {HEAD}"),
@@ -174,12 +174,33 @@ def _reconnect_phase_missing(root, folder):
     (_not_physical, "c5/cc/link: evidence_level 'MODEL' is not PHYSICAL"),
     (_wrong_marker, "c5/cc/link: receipt_marker 'gen2.requirement.C-4' is not gen2.requirement.C-5"),
     (_reconnect_phase_missing, "c5/cc/gen2_reconnect: a_wrong_save: no pinned result receipt"),
-])
+]
+
+
+@pytest.mark.parametrize("mutate, expected", GAPS)
 def test_each_gap_is_red_with_a_specific_message(tmp_path, mutate, expected):
     root, folder = _tree(tmp_path)
     mutate(root, folder)
     errors = _errors(root, folder)
     assert any(error.startswith(expected) for error in errors), errors
+
+
+def test_equivalent_receipts_still_require_every_original_witness(tmp_path, monkeypatch):
+    current = "c" * 64
+    monkeypatch.setattr(gate.code_digest, "c5_admission_equivalent",
+                        lambda _root, head: HEAD if head == current else None)
+    for index, (mutate, expected) in enumerate(GAPS):
+        root, folder = _tree(tmp_path / str(index))
+        assert gate.c5_errors(folder, root=root, head=current) == []
+        mutate(root, folder)
+        errors = gate.c5_errors(folder, root=root, head=current)
+        expected = expected.replace(f"current code digest {HEAD}", f"current code digest {current}")
+        assert any(error.startswith(expected) for error in errors), errors
+
+    root, folder = _tree(tmp_path / "mismatched-stamp")
+    _cell(folder, "c5/cc/link", code_digest=current)
+    errors = gate.c5_errors(folder, root=root, head=current)
+    assert f"c5/cc/link: pydec: CODE_DIGEST is not one clean stamp at {current[:12]}" in errors
 
 
 def test_no_receipts_dir_is_red_not_green(tmp_path):

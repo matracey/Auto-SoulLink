@@ -72,7 +72,7 @@ def admission_id(text: str) -> str:
     return "norm:" + hashlib.sha256(json.dumps(doc, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
-def head_digest(root: Path = ROOT, rev: str = "HEAD") -> str:
+def _head_rows(root: Path, rev: str) -> list[tuple[str, str]]:
     rows = []
     for line in _git(root, "ls-tree", "-r", rev).splitlines():
         meta, _, path = line.partition("\t")
@@ -81,7 +81,37 @@ def head_digest(root: Path = ROOT, rev: str = "HEAD") -> str:
             if ADMISSION_PACK.fullmatch(path):
                 blob = admission_id(_git(root, "show", f"{rev}:{path}"))
             rows.append((path, blob))
-    return digest_of(rows)
+    return rows
+
+
+def head_digest(root: Path = ROOT, rev: str = "HEAD") -> str:
+    return digest_of(_head_rows(root, rev))
+
+
+# Only this exact diagnostic-allocation edit can carry the C-5 evidence forward.
+# test_admission.py proves the source delta and differential Lua behavior.
+C5_LAZY_ERROR_BLOBS = (
+    "ed2ea5ad2291adbe9a2e200c46d8e260941efeea",
+    "002c1c1d51655d15bc0c4506e0cec187f3b75601",
+)
+
+
+def c5_admission_equivalent(root: Path, head: str) -> str | None:
+    """Return the original evidence digest for the pinned SOURCE/MODEL-equivalent edit.
+
+    Raw code digests and physical receipts stay unchanged. Any other production
+    edit, including an uncommitted one, must earn its own evidence.
+    """
+    if not (root / ".git").exists():
+        return None
+    rows = _head_rows(root, "HEAD")
+    path = "lua/admission.lua"
+    before, after = C5_LAZY_ERROR_BLOBS
+    if digest_of(rows) != head or dict(rows).get(path) != after:
+        return None
+    if dirty_paths(root):
+        return None
+    return digest_of((name, before if name == path else blob) for name, blob in rows)
 
 
 def dirty_paths(root: Path = ROOT) -> list[str]:

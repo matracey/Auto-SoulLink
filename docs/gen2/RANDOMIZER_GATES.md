@@ -455,3 +455,7 @@ Open: (1) the evidence is at a digest that moves when the Polished lane merges (
 and is not called from `release_evidence_errors` (`:2090`), and the receipts are not installed under
 `tests/fixtures/gen2/receipts/c5/`. The duo checks also still pin the PUBLISHED overlay sha1 (`:1113`), so these
 receipts still cannot live in `tests/gen2_release_requirements.json`; (3) the receipts are PHYSICAL with SYNTH/HARNESS/NATIVE disclosures per cell.
+
+### Admission optimization equivalence
+
+The C-5 verifier can reuse physical receipts only across the exact `lua/admission.lua` source-blob pair pinned in `tools/gen2_code_digest.py`. All other production rows remain bound, and reuse requires a clean production tree. The differential Lua test supplies SOURCE/MODEL equivalence, not a fresh physical run. Receipts and raw runtime digests remain unchanged.

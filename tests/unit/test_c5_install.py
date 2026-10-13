@@ -338,6 +338,33 @@ def test_the_installer_pins_lf_bytes_the_way_the_verifier_hashes_them(tmp_path):
     assert [e for e in gate.c5_gate_errors(root=root, head=HEAD) if "installed receipt tampered" in e]
 
 
+def test_equivalent_code_keeps_original_evidence_and_all_refusal_checks(tmp_path, monkeypatch, capsys):
+    root, lane = _tree(tmp_path)
+    dest = _install(root, lane)
+    files = {path.name: path.read_bytes() for path in dest.iterdir()}
+    current = "e" * 64
+    monkeypatch.setattr(gate.code_digest, "c5_admission_equivalent",
+                        lambda _root, head: HEAD if head == current else None)
+    assert gate.c5_gate_errors(root=root, head=current) == []
+    output = capsys.readouterr().out
+    assert f"reused PHYSICAL evidence at {HEAD}" in output
+    assert f"SOURCE/MODEL admission-error equivalence to {current}" in output
+    assert "no new physical run" in output
+    assert {path.name: path.read_bytes() for path in dest.iterdir()} == files
+    assert any("STALE" in error for error in gate.c5_gate_errors(root=root, head="f" * 64))
+
+    victim = next(dest.glob("*_result.txt"))
+    victim.write_bytes(files[victim.name] + b"tampered\n")
+    assert any("tampered" in error for error in gate.c5_gate_errors(root=root, head=current))
+    victim.write_bytes(files[victim.name])
+    victim.unlink()
+    assert any("missing" in error for error in gate.c5_gate_errors(root=root, head=current))
+    victim.write_bytes(files[victim.name])
+    _write(dest / "extra.txt", "not evidence\n")
+    assert any("unpinned" in error for error in gate.c5_gate_errors(root=root, head=current))
+
+
 def test_the_committed_tree_has_a_valid_installed_c5_packet():
-    """The installed packet must remain complete, untampered and bound to the current code digest."""
+    """Complete, untampered physical evidence, exact code or pinned SOURCE/MODEL equivalence."""
     assert gate.c5_gate_errors(root=REPO) == []
+    assert gate.c5_gate_errors(root=REPO, head=gate.code_digest.head_digest(REPO)) == []
