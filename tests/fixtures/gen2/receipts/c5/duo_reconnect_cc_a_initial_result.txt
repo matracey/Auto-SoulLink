@@ -1,5 +1,5 @@
-DUO_GEN2 {"artifact_kind":"overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","case":"crystal_battle","fixture_sha256":"f4a9c35db272089ec77e83cfa6772fb245ff29077dedef1cd462fc632d7852f6","player":"a","rom_sha1":"f5a690f22c03cd1b667dde1ccd16c26e7f8196f0","scenario":"gen2_reconnect","title":"crystal"}
-CLIENT {"artifact_kind":"rand_overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"f5a690f22c03cd1b667dde1ccd16c26e7f8196f0","title":"crystal"}
+DUO_GEN2 {"artifact_kind":"overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","case":"crystal_battle","fixture_sha256":"f4a9c35db272089ec77e83cfa6772fb245ff29077dedef1cd462fc632d7852f6","player":"a","rom_sha1":"41d23c2f10a7b69a3c0035c6a84ab31f9facb278","scenario":"gen2_reconnect","title":"crystal"}
+CLIENT {"artifact_kind":"rand_overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"41d23c2f10a7b69a3c0035c6a84ab31f9facb278","title":"crystal"}
 JITTER requested=0 applied=0 attempt=1
   phase title @1
   phase continue @3182
@@ -12,26 +12,25 @@ RX dead_keys
 RX link_panel
 BOOTED {"frame":3335,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12}
 MYKEY 0 F794:B541:9E
-  phase walk @3417 xy=53,12
-  phase battle @3721 xy=53,12
-ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":5059,"key":"12BE:B541:AF","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":175}
-TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":15,"in_box":false,"key":"12BE:B541:AF","level":3,"maxHP":15,"nickname":"TOGEPI","player":"a","seq":33,"species_id":175,"stats":{"level":3,"maxHP"
-CAPTURE_SENT {"frame":5059,"key":"12BE:B541:AF","seq":33}
-CAUGHT 12BE:B541:AF
+  phase walk @3335 xy=53,12
+  phase battle @3722 xy=52,12
 RX hud_show
-RX_TEXT {"cmd":"hud_show","frame":5062,"text":"Partner caught EXEGGUTOR in Route 29"}
+RX_TEXT {"cmd":"hud_show","frame":4982,"text":"Partner caught AZUMARILL in Route 29"}
+ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":5067,"key":"44DE:B541:BB","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":187}
+TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":15,"in_box":false,"key":"44DE:B541:BB","level":3,"maxHP":15,"nickname":"HOPPIP","player":"a","seq":33,"species_id":187,"stats":{"level":3,"maxHP"
+CAPTURE_SENT {"frame":5067,"key":"44DE:B541:BB","seq":33}
+CAUGHT 44DE:B541:BB
 RX play_sound sound=25
 RX msgbox
-RX_TEXT {"cmd":"msgbox","frame":5062,"text":"TOGEPI and EXEGGUTOR linked!"}
-RX party_mon key=12BE:B541:AF
+RX_TEXT {"cmd":"msgbox","frame":5071,"text":"HOPPIP and AZUMARILL linked!"}
+RX party_mon key=44DE:B541:BB
 RX link_panel
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":34}
-TX {"event":"sync_retrieve_done","key":"12BE:B541:AF","player":"a","seq":36}
-  phase save @5126 xy=53,12
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":35}
+TX {"event":"sync_retrieve_done","key":"44DE:B541:BB","player":"a","seq":38}
+  phase save @5134 xy=52,12
 RX link_panel
-RX link_panel
-  phase saved @5465 xy=53,12
+  phase saved @5473 xy=52,12
 MYKEY 0 F794:B541:9E
-MYKEY 1 12BE:B541:AF
-SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"077756539cdafb306febe906ddda56a550d82be3151dfeb9281253861012f9a2","client_saves":1,"flushed_matches":true,"frame":5495,"gate_saves":1,"save_completed_frame":5465,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2-c5-2f2284e47/r1/patch/build/saveram_gen2_reconnect_c5481171_a/g2r a.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2-c5-2f2284e47/r1/patch/build/e2e_gen2_reconnect_c5481171_a_witness.SaveRAM"}
-RECONNECT_READY {"frame":5495,"key":"12BE:B541:AF","phase":"initial","player":"a"}
+MYKEY 1 44DE:B541:BB
+SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"d4a08ec0d7424c36a05848332d25a277fd61635cff43bf1cd1d38879ea05a303","client_saves":1,"flushed_matches":true,"frame":5503,"gate_saves":1,"save_completed_frame":5473,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/f3-ddb586d2/c5/producer/r1/patch/build/saveram_gen2_reconnect_c5603961_a/g2r a.SaveRAM","snapshot_path":"F:/slink-work/lanes/f3-ddb586d2/c5/producer/r1/patch/build/e2e_gen2_reconnect_c5603961_a_witness.SaveRAM"}
+RECONNECT_READY {"frame":5503,"key":"44DE:B541:BB","phase":"initial","player":"a"}

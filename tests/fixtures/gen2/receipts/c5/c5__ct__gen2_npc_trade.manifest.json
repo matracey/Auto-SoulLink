@@ -9,8 +9,8 @@
  "pair": "ct",
  "game": "gen2_new",
  "scenario": "gen2_npc_trade",
- "sha": "2f2284e47c6c2881e0dfd449f40cd92fab17780d",
- "code_digest": "49a338779ea7e0b5a4d9ab2ededb8d0cf3eb5ad5c615b8f539b8334770034338",
+ "sha": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+ "code_digest": "7dd9ac4b8e372689df51339fffa839c4818ec1d33e4964a4b9d7e48e91013dcc",
  "contract": {
   "upr_version": "4.6.1-slink3",
   "settings_sha256": "740b568ca96ab809352b8b0b7bc59a6161e0ae8e668c9e23045ee8c8c1b58218",
@@ -23,13 +23,13 @@
   "players": {
    "a": {
     "fingerprint": "",
-    "rom_sha1": "f624ab89168063432d62c0126b2093bb1eb1bd17",
-    "seed": "195364848009426"
+    "rom_sha1": "533b96a4bb98aaaa1f7c2fde2e0c44a279a61b78",
+    "seed": "213287036273705"
    },
    "b": {
     "fingerprint": "",
-    "rom_sha1": "340ac9611db7b1b37110ce95d4ad648a31eebeea",
-    "seed": "44103735406272"
+    "rom_sha1": "1bb1616b71a5b566b0fcb915528778682c4aecf1",
+    "seed": "380281526890"
    }
   }
  },
@@ -39,7 +39,7 @@
    "a": "crystal",
    "b": "crystal"
   },
-  "jar_sha256": "db4bc65c3a0c1761ffc70db6a5c0f495635ab3e0e3c8a99640f34fbb1fb833ac",
+  "jar_sha256": "2f68d35249a220999d18dcb08f971244611b502a0286c0531d62092137fbccdf",
   "spec": {
    "wild": "random",
    "wild_restriction": "none",
@@ -79,25 +79,25 @@
   "summary": "wild encounters random, minimum catch rate 5, starters random, static encounters random, trainer teams random, in-game trades random pok\u00e9mon given",
   "players": {
    "a": {
-    "rom_sha1": "f624ab89168063432d62c0126b2093bb1eb1bd17",
+    "rom_sha1": "533b96a4bb98aaaa1f7c2fde2e0c44a279a61b78",
     "kind": "rand_companion",
-    "seed": 195364848009426,
+    "seed": 213287036273705,
     "overlay_sha1": "d5f342db9c8745fcb0df97932a83d0205c165a00"
    },
    "b": {
-    "rom_sha1": "340ac9611db7b1b37110ce95d4ad648a31eebeea",
+    "rom_sha1": "1bb1616b71a5b566b0fcb915528778682c4aecf1",
     "kind": "rand_companion",
-    "seed": 44103735406272,
+    "seed": 380281526890,
     "overlay_sha1": "d5f342db9c8745fcb0df97932a83d0205c165a00"
    }
   }
  },
  "receipts": {
-  "receipts/c5/duo_npc_trade_ct_a_result.txt": "f2a1a894034e098ff793dade1cb0663c1101aba802a52557a99173972ccc3146",
-  "receipts/c5/duo_npc_trade_ct_a_witness.SaveRAM": "ffee476bac9a7fe030de7ecda585f98e2bdff94826569db7493d64d257c4d40c",
-  "receipts/c5/duo_npc_trade_ct_b_result.txt": "2a646ffc63c01dfc341343166d9f73cc4d0f5c1292b744cbfd3c3d9cef8885b0",
-  "receipts/c5/duo_npc_trade_ct_b_witness.SaveRAM": "6e6ea4eb6c5a5d3ccf178502713d84a9431218eab2f6c6c5659389a7c3034061",
-  "receipts/c5/duo_npc_trade_ct_pydec_result.txt": "3d2526b93c961dcef309bf6ba639d00cc7786e2c4850f8d79f26bd7d27098987"
+  "receipts/c5/duo_npc_trade_ct_a_result.txt": "6bd898b0ccda909659aeba79f5cfa3f2b3580e5980b883f223049be4cef5622b",
+  "receipts/c5/duo_npc_trade_ct_a_witness.SaveRAM": "e244a1c87412afd67233999760d55d80bafc7d3200fb0e6626f40f3301607834",
+  "receipts/c5/duo_npc_trade_ct_b_result.txt": "65de270e8547a9ad1df098cf36e370a0d5100525197542f268432afe056df706",
+  "receipts/c5/duo_npc_trade_ct_b_witness.SaveRAM": "1b8292f2c859748bc96564cc3237508b441cff73dfd0d3e130623ee693492162",
+  "receipts/c5/duo_npc_trade_ct_pydec_result.txt": "521a159e266777569a96fb8a35c3f2fda3bc61cd0153a7c4b4eb7a6691e30556"
  },
  "disclosures": {
   "SYNTH": [

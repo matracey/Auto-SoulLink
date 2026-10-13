@@ -9,8 +9,8 @@
  "pair": "gs",
  "game": "gen2_gold_silver",
  "scenario": "gen2_reconnect",
- "sha": "2f2284e47c6c2881e0dfd449f40cd92fab17780d",
- "code_digest": "49a338779ea7e0b5a4d9ab2ededb8d0cf3eb5ad5c615b8f539b8334770034338",
+ "sha": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+ "code_digest": "7dd9ac4b8e372689df51339fffa839c4818ec1d33e4964a4b9d7e48e91013dcc",
  "contract": {
   "upr_version": "4.6.1-slink3",
   "settings_sha256": "4fd067816f27c0ab4567c8249ebd70c2875eb0e3d3b9b22b87fdc7baa42e4a2c",
@@ -23,13 +23,13 @@
   "players": {
    "a": {
     "fingerprint": "",
-    "rom_sha1": "672d7f2e27eee6cdde7adefed36688e6a9f78b02",
-    "seed": "173542477228190"
+    "rom_sha1": "a8bfc3413b3a773217618a82cbbbec7ab9785d60",
+    "seed": "83361327216913"
    },
    "b": {
     "fingerprint": "",
-    "rom_sha1": "19ec9d144f4b7a7dc187f39a48a09d1f9c2f9346",
-    "seed": "74999907798633"
+    "rom_sha1": "d3c6d3344c9f41e91740ebfd37ba7309351ad99c",
+    "seed": "278540493918866"
    }
   }
  },
@@ -39,7 +39,7 @@
    "a": "gold",
    "b": "silver"
   },
-  "jar_sha256": "db4bc65c3a0c1761ffc70db6a5c0f495635ab3e0e3c8a99640f34fbb1fb833ac",
+  "jar_sha256": "2f68d35249a220999d18dcb08f971244611b502a0286c0531d62092137fbccdf",
   "spec": {
    "wild": "random",
    "wild_restriction": "none",
@@ -79,30 +79,30 @@
   "summary": "wild encounters random, minimum catch rate 5, starters random, static encounters random, trainer teams random, in-game trades random given and requested",
   "players": {
    "a": {
-    "rom_sha1": "672d7f2e27eee6cdde7adefed36688e6a9f78b02",
+    "rom_sha1": "a8bfc3413b3a773217618a82cbbbec7ab9785d60",
     "kind": "rand_companion",
-    "seed": 173542477228190,
+    "seed": 83361327216913,
     "overlay_sha1": "51b076ac7eba099a273ff7aff5c64ccb790825dd"
    },
    "b": {
-    "rom_sha1": "19ec9d144f4b7a7dc187f39a48a09d1f9c2f9346",
+    "rom_sha1": "d3c6d3344c9f41e91740ebfd37ba7309351ad99c",
     "kind": "rand_companion",
-    "seed": 74999907798633,
+    "seed": 278540493918866,
     "overlay_sha1": "209e0b46340f67221d6e5c24d7b1125ac35c9d1d"
    }
   }
  },
  "receipts": {
-  "receipts/c5/duo_reconnect_gs_a_initial_result.txt": "25d0d72fdd7d5f16f4daec2cb88ebe438541391fb49657715aac35cf5a345789",
-  "receipts/c5/duo_reconnect_gs_a_result.txt": "7e3c693b376b1b77e2a873e4b72c940e8651628dbe484189d5909f8e69dc844f",
-  "receipts/c5/duo_reconnect_gs_a_same_save_result.txt": "fec6f277304266a15c1d5da0ea03a18976eb665a89e356b337618686259828df",
-  "receipts/c5/duo_reconnect_gs_a_same_save_seed.SaveRAM": "182a28ac389c073c64042d0d7dbfd22f8cdc9f4c78931bc952a2bc770633b508",
-  "receipts/c5/duo_reconnect_gs_a_witness.SaveRAM": "182a28ac389c073c64042d0d7dbfd22f8cdc9f4c78931bc952a2bc770633b508",
-  "receipts/c5/duo_reconnect_gs_a_wrong_save_result.txt": "7e3c693b376b1b77e2a873e4b72c940e8651628dbe484189d5909f8e69dc844f",
+  "receipts/c5/duo_reconnect_gs_a_initial_result.txt": "1f80321ff9d3f10aa31360affc6f725328b64a5b7086cab6e87d4d687f6c1ea6",
+  "receipts/c5/duo_reconnect_gs_a_result.txt": "4bbe88b498bf52e23f301bae16c2ef24de6ec9dfebe0a6b0b301548e1ce530b1",
+  "receipts/c5/duo_reconnect_gs_a_same_save_result.txt": "86edc54d837fdae5df3e784d576c30ebcf5d41570685796765ed37b8c513cfa3",
+  "receipts/c5/duo_reconnect_gs_a_same_save_seed.SaveRAM": "f3e234b40f6458c3908637f4d3c586211c6157757035e49bdc0275985e64e9a6",
+  "receipts/c5/duo_reconnect_gs_a_witness.SaveRAM": "f3e234b40f6458c3908637f4d3c586211c6157757035e49bdc0275985e64e9a6",
+  "receipts/c5/duo_reconnect_gs_a_wrong_save_result.txt": "4bbe88b498bf52e23f301bae16c2ef24de6ec9dfebe0a6b0b301548e1ce530b1",
   "receipts/c5/duo_reconnect_gs_a_wrong_save_seed.SaveRAM": "37a469b1ed2e6f1ca72b923aa3ac4ad9628166df567aa68bfbcef7bfb07ad7fa",
-  "receipts/c5/duo_reconnect_gs_b_result.txt": "a39c6423ebb4024c64aca266d0599338b31061b988f153662c3b3008a626dc13",
-  "receipts/c5/duo_reconnect_gs_b_witness.SaveRAM": "ae6ef83abc23e0b15b7e6e77909d30c518b7a49c5f1c5323ef990a8cb1e9d670",
-  "receipts/c5/duo_reconnect_gs_pydec_result.txt": "a8e19102e523075cf343865c7e40972f7271265982f5d3ef649b0d599e94b725"
+  "receipts/c5/duo_reconnect_gs_b_result.txt": "dd69824d92e6b3c28932fb0d9b30dc689435f30256d1350fbff296dc4fed5a15",
+  "receipts/c5/duo_reconnect_gs_b_witness.SaveRAM": "d0490c5024e20305a5d22160267c4c274fbf0ad9637148012773e955674a48a2",
+  "receipts/c5/duo_reconnect_gs_pydec_result.txt": "27596417417460c1265d68064092cf86c6e705734f176ecfc7cfd4ea252d9662"
  },
  "disclosures": {
   "SYNTH": [

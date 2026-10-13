@@ -9,8 +9,8 @@
  "pair": "cc",
  "game": "gen2_new",
  "scenario": "gen2_c5_wrong_rom",
- "sha": "2f2284e47c6c2881e0dfd449f40cd92fab17780d",
- "code_digest": "49a338779ea7e0b5a4d9ab2ededb8d0cf3eb5ad5c615b8f539b8334770034338",
+ "sha": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+ "code_digest": "7dd9ac4b8e372689df51339fffa839c4818ec1d33e4964a4b9d7e48e91013dcc",
  "contract": {
   "upr_version": "4.6.1-slink3",
   "settings_sha256": "4fd067816f27c0ab4567c8249ebd70c2875eb0e3d3b9b22b87fdc7baa42e4a2c",
@@ -23,13 +23,13 @@
   "players": {
    "a": {
     "fingerprint": "",
-    "rom_sha1": "f5a690f22c03cd1b667dde1ccd16c26e7f8196f0",
-    "seed": "49284025970885"
+    "rom_sha1": "41d23c2f10a7b69a3c0035c6a84ab31f9facb278",
+    "seed": "92044554669400"
    },
    "b": {
     "fingerprint": "",
-    "rom_sha1": "99f0dbef0bc3b1a22ad95ba418dc3ffda7e44026",
-    "seed": "192750777378789"
+    "rom_sha1": "337f491e8f4c2d3d1f5ff36087c9aee883282662",
+    "seed": "120255497111368"
    }
   }
  },
@@ -39,7 +39,7 @@
    "a": "crystal",
    "b": "crystal"
   },
-  "jar_sha256": "db4bc65c3a0c1761ffc70db6a5c0f495635ab3e0e3c8a99640f34fbb1fb833ac",
+  "jar_sha256": "2f68d35249a220999d18dcb08f971244611b502a0286c0531d62092137fbccdf",
   "spec": {
    "wild": "random",
    "wild_restriction": "none",
@@ -79,25 +79,25 @@
   "summary": "wild encounters random, minimum catch rate 5, starters random, static encounters random, trainer teams random, in-game trades random given and requested",
   "players": {
    "a": {
-    "rom_sha1": "f5a690f22c03cd1b667dde1ccd16c26e7f8196f0",
+    "rom_sha1": "41d23c2f10a7b69a3c0035c6a84ab31f9facb278",
     "kind": "rand_companion",
-    "seed": 49284025970885,
+    "seed": 92044554669400,
     "overlay_sha1": "d5f342db9c8745fcb0df97932a83d0205c165a00"
    },
    "b": {
-    "rom_sha1": "99f0dbef0bc3b1a22ad95ba418dc3ffda7e44026",
+    "rom_sha1": "337f491e8f4c2d3d1f5ff36087c9aee883282662",
     "kind": "rand_companion",
-    "seed": 192750777378789,
+    "seed": 120255497111368,
     "overlay_sha1": "d5f342db9c8745fcb0df97932a83d0205c165a00"
    }
   }
  },
  "receipts": {
-  "receipts/c5/duo_c5_wrong_rom_cc_a_result.txt": "ecc31782b89cc74dfbadd21a859085f88e313b59aef5a953b7257323cfb22f22",
-  "receipts/c5/duo_c5_wrong_rom_cc_a_witness.SaveRAM": "0d38825d5f3daf25ede5c90204c08ff01c689a32cb35095fa7fddcbe7312dfce",
-  "receipts/c5/duo_c5_wrong_rom_cc_b_result.txt": "4164a8d1c42a77345a5ca3d198d6ef023ad34137eec1a43746e310d5bd1f80f8",
-  "receipts/c5/duo_c5_wrong_rom_cc_b_witness.SaveRAM": "bafe918a616e64449e417e7b99459cbc8fc7d64ce861bf9e380134ef5215e56c",
-  "receipts/c5/duo_c5_wrong_rom_cc_pydec_result.txt": "dcc93c443ad2b834167199fb71a6f714a0d46fff04c89dc434fb6142ab6e24bd"
+  "receipts/c5/duo_c5_wrong_rom_cc_a_result.txt": "b390d7e15da98d1abaae3477a937315dc3d5ef7fddad899d7da868b3abbc93dd",
+  "receipts/c5/duo_c5_wrong_rom_cc_a_witness.SaveRAM": "f748d0d726c2c94d26fa7670705cb6ea8d582f3796c60b284d15b77bf912ce05",
+  "receipts/c5/duo_c5_wrong_rom_cc_b_result.txt": "7faf62b81705499b63cafd1ee2b7b488bd7cc136924744631368a6959770cfd9",
+  "receipts/c5/duo_c5_wrong_rom_cc_b_witness.SaveRAM": "5ebc687b995f95995062e991e371aad3bca20afbfd45f856a78b7dbf47656589",
+  "receipts/c5/duo_c5_wrong_rom_cc_pydec_result.txt": "dc77fd032699109d450db40f76ccf584314ba8ec674f969db93fbecf1e5d0a0e"
  },
  "disclosures": {
   "SYNTH": [

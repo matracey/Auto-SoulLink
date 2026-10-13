@@ -1,5 +1,5 @@
-DUO_GEN2 {"artifact_kind":"overlay","attempt":1,"binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","case":"gold_town","fixture_sha256":"eccb431195e1c9071b7459910727f4430bf174594970a720f0902920b28ae185","player":"a","rom_sha1":"672d7f2e27eee6cdde7adefed36688e6a9f78b02","scenario":"gen2_gift","synth":"gold_synth_bill","title":"gold"}
-CLIENT {"artifact_kind":"rand_overlay","binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","pack":"gen2_gold","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"672d7f2e27eee6cdde7adefed36688e6a9f78b02","title":"gold"}
+DUO_GEN2 {"artifact_kind":"overlay","attempt":1,"binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","case":"gold_town","fixture_sha256":"eccb431195e1c9071b7459910727f4430bf174594970a720f0902920b28ae185","player":"a","rom_sha1":"a8bfc3413b3a773217618a82cbbbec7ab9785d60","scenario":"gen2_gift","synth":"gold_synth_bill","title":"gold"}
+CLIENT {"artifact_kind":"rand_overlay","binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","pack":"gen2_gold","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"a8bfc3413b3a773217618a82cbbbec7ab9785d60","title":"gold"}
 JITTER requested=0 applied=0 attempt=1
   phase title @1
   phase continue @3224
@@ -12,29 +12,29 @@ RX dead_keys
 RX link_panel
 BOOTED {"frame":3375,"map_group":24,"map_number":5,"party_count":1,"x":5,"y":3}
 MYKEY 0 4C29:C4A6:A1
-  phase poison @3376 xy=5,3
-ENGINE_FAINT {"cause":"poison","frame":3404,"key":"4C29:C4A6:A1","site_id":"poison_faint","slot":0}
-TX {"area_id":"new_bark_town","event":"faint","key":"4C29:C4A6:A1","player":"a","seq":4}
-FAINT_SENT {"frame":3404,"key":"4C29:C4A6:A1","seq":4}
-ENGINE_WHITEOUT {"frame":3657,"party":[{"hp":0,"key":"4C29:C4A6:A1"}],"site_id":"whiteout_before_heal"}
-TX {"event":"whiteout","player":"a","seq":13}
-TX {"area_id":"goldenrod_city","event":"area_enter","loc_name":"GOLDENROD CITY","player":"a","seq":14}
-  phase to-house @3682 xy=15,28
-  phase talk @4223 xy=2,7
-ENGINE_CAPTURE {"acquisition":"gift","area_id":"goldenrod_city","destination":"party","frame":4961,"key":"C064:C4A6:49","level":20,"site_id":"gift_party_finalized","slot":1,"species_id":73}
-TX {"area_id":"goldenrod_city","event":"capture","gift":true,"held_item_id":0,"hp":62,"in_box":false,"key":"C064:C4A6:49","level":20,"maxHP":62,"nickname":"TENTACRUEL","player":"a","seq":59,"species_id":73,"stats":{"level":
-CAPTURE_SENT {"frame":4961,"key":"C064:C4A6:49","seq":59}
+  phase poison @3402 xy=5,3
+ENGINE_FAINT {"cause":"poison","frame":3430,"key":"4C29:C4A6:A1","site_id":"poison_faint","slot":0}
+TX {"area_id":"new_bark_town","event":"faint","key":"4C29:C4A6:A1","player":"a","seq":5}
+FAINT_SENT {"frame":3430,"key":"4C29:C4A6:A1","seq":5}
+ENGINE_WHITEOUT {"frame":3683,"party":[{"hp":0,"key":"4C29:C4A6:A1"}],"site_id":"whiteout_before_heal"}
+TX {"event":"whiteout","player":"a","seq":14}
+TX {"area_id":"goldenrod_city","event":"area_enter","loc_name":"GOLDENROD CITY","player":"a","seq":15}
+  phase to-house @3708 xy=15,28
+  phase talk @4248 xy=2,7
+ENGINE_CAPTURE {"acquisition":"gift","area_id":"goldenrod_city","destination":"party","frame":4987,"key":"6F38:C4A6:11","level":20,"site_id":"gift_party_finalized","slot":1,"species_id":17}
+TX {"area_id":"goldenrod_city","event":"capture","gift":true,"held_item_id":0,"hp":57,"in_box":false,"key":"6F38:C4A6:11","level":20,"maxHP":57,"nickname":"PIDGEOTTO","player":"a","seq":60,"species_id":17,"stats":{"level":2
+CAPTURE_SENT {"frame":4987,"key":"6F38:C4A6:11","seq":60}
 RX play_sound sound=25
 RX msgbox
-RX_TEXT {"cmd":"msgbox","frame":4982,"text":"TENTACRUEL and MANKEY linked!"}
-RX party_mon key=C064:C4A6:49
+RX_TEXT {"cmd":"msgbox","frame":5013,"text":"PIDGEOTTO and CHARMANDER linked!"}
+RX party_mon key=6F38:C4A6:11
 RX link_panel
-TX {"event":"sync_retrieve_done","key":"C064:C4A6:49","player":"a","seq":62}
-  phase done @5031 xy=1,3
-  phase save @5061 xy=1,3
-  phase saved @5429 xy=1,3
+TX {"event":"sync_retrieve_done","key":"6F38:C4A6:11","player":"a","seq":63}
+  phase done @5057 xy=1,3
+  phase save @5087 xy=1,3
+  phase saved @5455 xy=1,3
 MYKEY 0 4C29:C4A6:A1
-MYKEY 1 C064:C4A6:49
-SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"8cea4affba6a4e17b38c88eee23eea09ddebeb0cb0080e495f15c85fbbdd9f01","client_saves":1,"flushed_matches":true,"frame":5459,"gate_saves":1,"save_completed_frame":5429,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2-c5-2f2284e47/r1/patch/build/saveram_gen2_gift_c5484381_a/g2r a.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2-c5-2f2284e47/r1/patch/build/e2e_gen2_gift_c5484381_a_witness.SaveRAM"}
-RECEIPT {"artifact_kind":"rand_overlay","attempt":1,"binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","capture":{"acquisition":"gift","area_id":"goldenrod_city","destination":"party","frame":4961,"key":"C064:C4A6:49","level":20,"site_id":"gift_party_finalized","slot":1,"species_id":73},"case":"gold_town","client":{"artifact_kind":"rand_overlay","binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","pack":"gen2_gold","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"672d7f2e27eee6cdde7adefed36688e6a9f78b02","title":"gold"},"fixture_sha256":"eccb431195e1c9071b7459910727f4430bf174594970a720f0902920b28ae185","harness_write_scopes":[],"input_mode":"normal_buttons","key":"C064:C4A6:49","player":"a","rom_sha1":"672d7f2e27eee6cdde7adefed36688e6a9f78b02","save":{"cartram_bytes":32768,"cartram_sha256":"8cea4affba6a4e17b38c88eee23eea09ddebeb0cb0080e495f15c85fbbdd9f01","client_saves":1,"flushed_matches":true,"frame":5459,"gate_saves":1,"save_completed_frame":5429,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2-c5-2f2284e47/r1/patch/build/saveram_gen2_gift_c5484381_a/g2r a.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2-c5-2f2284e47/r1/patch/build/e2e_gen2_gift_c5484381_a_witness.SaveRAM"},"scenario":"gen2_gift","schema":"gen2-duo-gift-v1","synth":"gold_synth_bill","title":"gold"}
-RESULT: PASS (bill linked C064:C4A6:49)
+MYKEY 1 6F38:C4A6:11
+SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"c3f48012dec82ebb5d3efec36917134417e7a948eefad5c788819cc47837c8bf","client_saves":1,"flushed_matches":true,"frame":5485,"gate_saves":1,"save_completed_frame":5455,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/f3-ddb586d2/c5/producer/r1/patch/build/saveram_gen2_gift_c5607041_a/g2r a.SaveRAM","snapshot_path":"F:/slink-work/lanes/f3-ddb586d2/c5/producer/r1/patch/build/e2e_gen2_gift_c5607041_a_witness.SaveRAM"}
+RECEIPT {"artifact_kind":"rand_overlay","attempt":1,"binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","capture":{"acquisition":"gift","area_id":"goldenrod_city","destination":"party","frame":4987,"key":"6F38:C4A6:11","level":20,"site_id":"gift_party_finalized","slot":1,"species_id":17},"case":"gold_town","client":{"artifact_kind":"rand_overlay","binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","pack":"gen2_gold","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"a8bfc3413b3a773217618a82cbbbec7ab9785d60","title":"gold"},"fixture_sha256":"eccb431195e1c9071b7459910727f4430bf174594970a720f0902920b28ae185","harness_write_scopes":[],"input_mode":"normal_buttons","key":"6F38:C4A6:11","player":"a","rom_sha1":"a8bfc3413b3a773217618a82cbbbec7ab9785d60","save":{"cartram_bytes":32768,"cartram_sha256":"c3f48012dec82ebb5d3efec36917134417e7a948eefad5c788819cc47837c8bf","client_saves":1,"flushed_matches":true,"frame":5485,"gate_saves":1,"save_completed_frame":5455,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/f3-ddb586d2/c5/producer/r1/patch/build/saveram_gen2_gift_c5607041_a/g2r a.SaveRAM","snapshot_path":"F:/slink-work/lanes/f3-ddb586d2/c5/producer/r1/patch/build/e2e_gen2_gift_c5607041_a_witness.SaveRAM"},"scenario":"gen2_gift","schema":"gen2-duo-gift-v1","synth":"gold_synth_bill","title":"gold"}
+RESULT: PASS (bill linked 6F38:C4A6:11)

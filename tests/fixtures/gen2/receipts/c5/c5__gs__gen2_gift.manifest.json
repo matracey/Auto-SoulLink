@@ -10,8 +10,8 @@
  "pair": "gs",
  "game": "gen2_gold_silver",
  "scenario": "gen2_gift",
- "sha": "2f2284e47c6c2881e0dfd449f40cd92fab17780d",
- "code_digest": "49a338779ea7e0b5a4d9ab2ededb8d0cf3eb5ad5c615b8f539b8334770034338",
+ "sha": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+ "code_digest": "7dd9ac4b8e372689df51339fffa839c4818ec1d33e4964a4b9d7e48e91013dcc",
  "contract": {
   "upr_version": "4.6.1-slink3",
   "settings_sha256": "4fd067816f27c0ab4567c8249ebd70c2875eb0e3d3b9b22b87fdc7baa42e4a2c",
@@ -24,13 +24,13 @@
   "players": {
    "a": {
     "fingerprint": "",
-    "rom_sha1": "672d7f2e27eee6cdde7adefed36688e6a9f78b02",
-    "seed": "173542477228190"
+    "rom_sha1": "a8bfc3413b3a773217618a82cbbbec7ab9785d60",
+    "seed": "83361327216913"
    },
    "b": {
     "fingerprint": "",
-    "rom_sha1": "19ec9d144f4b7a7dc187f39a48a09d1f9c2f9346",
-    "seed": "74999907798633"
+    "rom_sha1": "d3c6d3344c9f41e91740ebfd37ba7309351ad99c",
+    "seed": "278540493918866"
    }
   }
  },
@@ -40,7 +40,7 @@
    "a": "gold",
    "b": "silver"
   },
-  "jar_sha256": "db4bc65c3a0c1761ffc70db6a5c0f495635ab3e0e3c8a99640f34fbb1fb833ac",
+  "jar_sha256": "2f68d35249a220999d18dcb08f971244611b502a0286c0531d62092137fbccdf",
   "spec": {
    "wild": "random",
    "wild_restriction": "none",
@@ -80,25 +80,25 @@
   "summary": "wild encounters random, minimum catch rate 5, starters random, static encounters random, trainer teams random, in-game trades random given and requested",
   "players": {
    "a": {
-    "rom_sha1": "672d7f2e27eee6cdde7adefed36688e6a9f78b02",
+    "rom_sha1": "a8bfc3413b3a773217618a82cbbbec7ab9785d60",
     "kind": "rand_companion",
-    "seed": 173542477228190,
+    "seed": 83361327216913,
     "overlay_sha1": "51b076ac7eba099a273ff7aff5c64ccb790825dd"
    },
    "b": {
-    "rom_sha1": "19ec9d144f4b7a7dc187f39a48a09d1f9c2f9346",
+    "rom_sha1": "d3c6d3344c9f41e91740ebfd37ba7309351ad99c",
     "kind": "rand_companion",
-    "seed": 74999907798633,
+    "seed": 278540493918866,
     "overlay_sha1": "209e0b46340f67221d6e5c24d7b1125ac35c9d1d"
    }
   }
  },
  "receipts": {
-  "receipts/c5/duo_gift_gs_a_result.txt": "6b77ebcbe9756233b96aed4243e312ba7cd00f4c93611e8cace891b988ccab49",
-  "receipts/c5/duo_gift_gs_a_witness.SaveRAM": "69c664c8793ebd57e1e882e51ae6b4ddee08a40ebea2b50591dfe00deb70807d",
-  "receipts/c5/duo_gift_gs_b_result.txt": "1eb3be5947b437ad3a390dd4bcd84cbaed1b4f0ab426821204eca0cbee4d1811",
-  "receipts/c5/duo_gift_gs_b_witness.SaveRAM": "6ed6a9518d36f16ed3859e7e176e61096c60c9b8240eebe6df0e4357f5af89f8",
-  "receipts/c5/duo_gift_gs_pydec_result.txt": "d9a05437a178d6cc4ca1cf22c611aafa4c622ffe031b5480cb473387fde93d34"
+  "receipts/c5/duo_gift_gs_a_result.txt": "2e9fcca1fce1a68fb1e1dbececf68298e65a9ff26b97a0859615cfeb2db9f3c0",
+  "receipts/c5/duo_gift_gs_a_witness.SaveRAM": "51f07fb7d4579d4d8d6db5273b69138b062cbc4531ef94370c0a91f1e564334f",
+  "receipts/c5/duo_gift_gs_b_result.txt": "df438beee12807fa0e0c470f6445583119c210df2e78d4352bd7e64ec19c669b",
+  "receipts/c5/duo_gift_gs_b_witness.SaveRAM": "9c3ab3794b205fc706f43eb8bd9914bd5cee6925fa563a923101b04969022815",
+  "receipts/c5/duo_gift_gs_pydec_result.txt": "b31125c7ae8e2dbea3df88b8bcc55bf09675f0b79d045be793e0948c97cf05f7"
  },
  "disclosures": {
   "SYNTH": [
