@@ -1,157 +1,517 @@
 {
   "schema": "polished-live-receipt-v1",
   "grade": "DEV",
-  "date": "2026-10-09",
-  "rom_sha1_executed": "fe8c57e1034059331ccf25d232ff757d675363b2",
-  "overlay_provenance_sha256": "dbce96cd5d73fcae9e3f98a6ae467dd44ae7602be0f6df7ea1ca0956e8d6a254",
-  "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9",
   "scenario_id": "duo/play-faint-natural",
-  "lane": "F:\\slink-work\\lanes\\pol-freeze2",
-  "requirement_id": "LIVE-DUO-NATURAL-FAINT",
-  "narrative": "Frozen execution rebound from F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n\\play-faint-natural\\evidence.json; previous run narrative superseded.",
-  "evidence_dir": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n\\play-faint-natural",
-  "evidence_file": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n\\play-faint-natural\\evidence.json",
-  "evidence_sha256": "88599ffd7132bdeb5e35e1506cdb1573699673b329ceda8673b54e8f6bac38e2",
-  "evidence_size": 3151682,
-  "evidence_note": "Mechanical rebind after producer PASS and recorded/scoped run witness validation; DEV only.",
+  "date": "2026-10-12",
+  "lane": "natural-duo/faint-natural",
+  "evidence_file": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\evidence.json",
+  "evidence_sha256": "18d8f5334225f0de6caa8bcf3dbd3191da3aa17dd0f0d371fc96cc0703994aed",
+  "rom_sha1_executed": "ede69bbf399b7a02007cfe563ff61658535de039",
+  "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7",
+  "overlay_provenance_sha256": "22f00e55524434a82fba2a40e9735c24e71905be80f9e638591324a5dc3547c1",
+  "run_witness": {
+    "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+    "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+    "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+    "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+    "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+  },
   "secondary_evidence": [
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n\\play-faint-natural\\server.log",
-      "note": "server log of the duo run (both clients, rules, commands)",
-      "sha256": "ce22cb1df008fe1b402e0a2e894b2e8f0788b207531ce16df54b13ae918ea74f",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\duo-faint-natural.console.txt",
+      "sha256": "6c53d6d9abfaac74dca4f9c14686cd66a6e64d746d260ad859da2785660b46cc",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-        "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo_s2n_console.txt",
-      "note": "driver console: scenario banner with overlay sha1, RESULT line",
-      "sha256": "31c13a14662a14a267aed23c277deb468237391dabe3414fc8eb6c77c6c41713",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\duo-faint-natural.exit.json",
+      "sha256": "fc0e9e8734d7b53f00c853e649b95a94085857626a4e02f30ec898ccc77c3bf6",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-        "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n\\play-faint-natural\\a\\rom\\pol_overlay.gbc",
-      "note": "side a staged ROM",
-      "sha256": "1145e7066617a7bc5f7296093d45e997db63ef3616713d8eb38c3e8bcc44c60f",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\duo-faint-natural.LAUNCH.json",
+      "sha256": "c4b2050bbd9dcc1c61545632c19740cbd7fa78090375855eb4365cf29d3da3bc",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-        "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n\\play-faint-natural\\b\\rom\\pol_overlay.gbc",
-      "note": "side b staged ROM",
-      "sha256": "1145e7066617a7bc5f7296093d45e997db63ef3616713d8eb38c3e8bcc44c60f",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\a\\g1\\beat_a.txt",
+      "sha256": "9e845d0d1a289b88fc47ccba905fa24d66cc8e6a271c9f165d36d3e0620b19f8",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-        "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n-job\\WITNESS.json",
-      "note": "Fresh freeze2 per-job witness; root fallback scopes sibling job artifacts.",
-      "sha256": "e7b9a92e43c83ed71579ce27ef3ba1e2db39ce3abdbac9903a819af2f04511a8",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\a\\g1\\result.txt",
+      "sha256": "c6a1b2858891aae8fd9b05513c3d0ddb905249a88400968965e4fa54811cdb79",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n-job\\WITNESS.json",
-        "sha256": "e7b9a92e43c83ed71579ce27ef3ba1e2db39ce3abdbac9903a819af2f04511a8",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n-job",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\a\\g1\\step_1.json",
+      "sha256": "a2e6d8d167e08c55d944124618ca18f739e4fa45bc39960406a1fd39748c3676",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\a\\g1\\step_2.json",
+      "sha256": "d43ebbd412bcce1d5b6fa7e4c4f198a8bf524dd653626198927a8a8290b46216",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\a\\g1\\step_3.json",
+      "sha256": "1c393386eb1cd4e6a6739c38b32f170f85dfa2522cd1c86082d52b298d6ebacc",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\a\\g1\\step_4.json",
+      "sha256": "c9f666a3407abcea6dabb7228cdc3a8266d952256a65f2c8981c6740542b698a",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\a\\g1\\step_5.json",
+      "sha256": "ca51599b8f098a490021b997f7f7bfd62daf7d253f2abcd35e53ee0e15777a0f",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\a\\g1\\step_6.json",
+      "sha256": "c2102ca424da85b0ad848cf9c198c4b422f6e312823329ed6007791bb84f2475",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\a\\g1\\syms.json",
+      "sha256": "0aa6076f40bdec3d41f5b36509500cc9c4af3dab86f01bf9a12e1a1707b728e6",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\a\\rom\\pol_overlay.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\a\\sram\\pol overlay.SaveRAM",
+      "sha256": "632566fbcac501830633c37584dab7aecd9c6aeb66c5c4e0819050e5bc8561ec",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\a\\sram\\pol overlay.SaveRAM.bak",
+      "sha256": "632566fbcac501830633c37584dab7aecd9c6aeb66c5c4e0819050e5bc8561ec",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\b\\g1\\beat_b.txt",
+      "sha256": "ca53e15eefc94520eca44ab748f09ee70e8a8d3601800442718cfbffd4d343ac",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\b\\g1\\result.txt",
+      "sha256": "ed80506d6174986eae5b0c9627753fe10098562058febea85c8d61fb6ecc3a02",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\b\\g1\\step_1.json",
+      "sha256": "70dd34162877bb2d445548c9ec68e1c5d482d73afa16df27c0054163009c7d22",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\b\\g1\\step_2.json",
+      "sha256": "2e9e1e5893a765c835e0f355188cecb761dfb793c448ab70122658ef65dd3083",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\b\\g1\\step_3.json",
+      "sha256": "794793ec5bacf70c1e2cf2cca1567c431c53aa1a96552bf9fea2776b9b0bbc31",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\b\\g1\\step_4.json",
+      "sha256": "6fe417829d79969a6224aea0581717d59e3bb7307d026d65fe6e4c3aca207665",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\b\\g1\\syms.json",
+      "sha256": "0aa6076f40bdec3d41f5b36509500cc9c4af3dab86f01bf9a12e1a1707b728e6",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\b\\rom\\pol_overlay.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\b\\sram\\pol overlay.SaveRAM",
+      "sha256": "bba9dcf7994e35e35e7c7715f71e4da38f1dbcc4d6145f317c855f7e82ac96e4",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\b\\sram\\pol overlay.SaveRAM.bak",
+      "sha256": "bba9dcf7994e35e35e7c7715f71e4da38f1dbcc4d6145f317c855f7e82ac96e4",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\server.log",
+      "sha256": "7a332cb1de9f9eaf6afedcf60b5f4ab4a4dc651a98566e43962a048bb4ff3d46",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\srv\\events.json",
+      "sha256": "2f0f4eeb5331815f2b12b494c42723552407883919f90df879e1407a0e0806c7",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\srv\\links.json",
+      "sha256": "c2272005061a470871c328e40b913661455c0fab9285ab13d1c3149ab08f12c9",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\srv\\memorial.json",
+      "sha256": "dbf7c9d3eeadf637af1450814236dc39fef2c09c329bc9222fca55a6bb41f8b4",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\srv\\rom_contract.json",
+      "sha256": "0508406f092430d8db34085dfe3a0a7b64cc638ed843e9504a9d86434325b68d",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\srv\\slink.log",
+      "sha256": "9e5036b41bff63e8ec7fa30c4d4317fd15fdb7fe3c557796bbdf1f286cc4e91a",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\wire\\wire_a.jsonl",
+      "sha256": "cb28730f7930c86e746fee71fd4385615a42d1a16c319a9a3724a9d1a113e383",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural\\producer\\play-faint-natural\\wire\\wire_b.jsonl",
+      "sha256": "a527dc2f53d0a71ddbf0c2b0163c0713ba6f0aedb3ca2ec8e0b8189c100dc0dc",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-faint-natural\\WITNESS.json",
+        "sha256": "58418f8fefc33560eda7b78db393eaf2e4c5d64f170ce1e765ab5c3bcca60fd3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\faint-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     }
   ],
   "synth": [
-    "fixture a: O-33 SYNTH warp fixture sha256 75c7a5dc30126f746567202cfb39fe583dfa04eb226063560541f6cbd29f36b8 (Route 29, five SYNTH level-50 mons)",
-    "fixture b: SYNTH identity derivative f5f19f5d2e3e26e343214722b5116e1aac0c71a1200882a4cc6f58259bc6ca8d (O-33, derive_save.py), player_id 53699; a is 53698",
+    {
+      "setup": "retained SYNTH/setup SaveRAM fixtures; not independently played from a new game",
+      "recorded_inputs": [
+        {
+          "job": "duo-faint-natural.LAUNCH.json",
+          "path": "F:\\slink-work\\lanes\\g2int-live\\pol\\fixture\\polished_overlay_warp.SaveRAM",
+          "sha256": "75c7a5dc30126f746567202cfb39fe583dfa04eb226063560541f6cbd29f36b8"
+        },
+        {
+          "job": "duo-faint-natural.LAUNCH.json",
+          "path": "F:\\slink-work\\lanes\\pol-ident\\B.SaveRAM",
+          "sha256": "f5f19f5d2e3e26e343214722b5116e1aac0c71a1200882a4cc6f58259bc6ca8d"
+        }
+      ]
+    },
+    "fixture a: O-33 SYNTH warp fixture (Route 29, five SYNTH level-50 mons)",
+    "fixture b: SYNTH identity derivative f5f19f5d (O-33, derive_save.py)",
     "A: current HP of the ONE linked party record set to 1 (two disclosed WRAM bytes, never HP0)",
-    "A: linked mon moved to lead by a separately disclosed party-record/OT/nickname swap",
-    "Native, not SYNTH: wild catches (walk, Bag -> Ball, throw) firing the capture_party site, the client capture/hello lines, every server rule and command, the receiving client's own write at its overworld hold, and the cartridge read-backs."
+    "A: linked mon moved to lead by a separately disclosed party-record/OT/nickname swap"
   ],
+  "not_proven": [
+    "DEV retained-run evidence only; no physical promotion or new emulator run. Checks record the owner's producer/release-verifier-level qualification, not independent per-check raw-map proof."
+  ],
+  "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+  "evidence_note": "Owner ruling2026-10-13: retained producer/release-verifier-level binding. No rebind3 or per-check raw map; producer_observations records the actual observed scenario facts.",
+  "producer_observations": {
+    "verdict": "PASS",
+    "reasons": [],
+    "facts": {
+      "area_id": "route_29",
+      "a_key": "555126:D1C2:010:00",
+      "b_key": "9DA2C2:D1C3:010:40",
+      "server_path": "faint_event",
+      "linked_faint_count": 1,
+      "native_report_frames": [
+        6193
+      ],
+      "native_hook_frames": [
+        6192,
+        6192,
+        6192,
+        6192,
+        6192,
+        6192,
+        6192,
+        6192,
+        6193,
+        6193,
+        6193,
+        6193
+      ],
+      "expected_partners": [
+        "9DA2C2:D1C3:010:40"
+      ],
+      "b_force_faint_keys": [
+        "9DA2C2:D1C3:010:40"
+      ],
+      "b_force_faint_counts": {
+        "9DA2C2:D1C3:010:40": 1
+      },
+      "b_cartridge_witness": {
+        "9DA2C2:D1C3:010:40": "force_faint_readback"
+      }
+    },
+    "disclosure": {
+      "setup_synth": [
+        "fixture a: O-33 SYNTH warp fixture (Route 29, five SYNTH level-50 mons)",
+        "fixture b: SYNTH identity derivative f5f19f5d (O-33, derive_save.py)",
+        "A: current HP of the ONE linked party record set to 1 (two disclosed WRAM bytes, never HP0)",
+        "A: linked mon moved to lead by a separately disclosed party-record/OT/nickname swap"
+      ],
+      "native": [
+        "wild catches (walk, Bag -> Ball, throw) firing the capture_party site",
+        "the client's capture/hello lines",
+        "every server rule and command",
+        "the receiving client's own write at its overworld hold",
+        "the cartridge read-backs"
+      ]
+    }
+  },
   "checks": [
     {
       "name": "run verdict",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n\\play-faint-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "both sides booted the shipped overlay and were admitted",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n\\play-faint-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "two distinct identities and a native paired link on the same area",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n\\play-faint-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "the loss setup is a disclosed HP 1 on the linked lead only, never HP 0",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n\\play-faint-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "a native battle loss produced exactly one faint event for the linked mon and no whiteout",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n\\play-faint-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "the engine copyback witness shows the linked mon at HP 0 before the client report",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n\\play-faint-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "the server sent exactly one force_faint for the linked partner to B and nothing else lethal",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n\\play-faint-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "B's cartridge shows the partner at HP 0 and no other B mon changed",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n\\play-faint-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "the server marks the link dead after the kill",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n\\play-faint-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "no reconnect or hello re-report after the stage mark",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s2n\\play-faint-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     }
-  ],
-  "not_proven": [
-    "SYNTH-conditioned death: the HP 1 setup and lead swap are disclosed driver writes; the faint itself is the native battle's. Not PHYSICAL qualification (owner act).",
-    "steps.a.battle.run_used is true: the harness marks that the BattleMenu_Run site was reached on the way to losing; the faint oracle does not constrain it (S4n does). The qualifying events are the native faint event and the faint_copyback witness, not the run flag.",
-    "Not checked here: A's own execution of the memorialize command the server returned after the faint (wire a idx 438), or either player's box-20 burial (that is LIVE-WRITES-OVERWORLD legs e/f and post-RC owed-burial).",
-    "Two-player faint of a boxed/benched linked mon, bank 2, and whiteout are other scenarios."
-  ],
-  "run_witness": {
-    "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-    "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-    "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-    "kind": "recorded per-job/root witness",
-    "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-    "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
-  }
+  ]
 }

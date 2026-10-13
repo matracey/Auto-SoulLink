@@ -1,145 +1,352 @@
 {
   "schema": "polished-live-receipt-v1",
   "grade": "DEV",
-  "date": "2026-10-09",
-  "rom_sha1_executed": "fe8c57e1034059331ccf25d232ff757d675363b2",
-  "overlay_provenance_sha256": "dbce96cd5d73fcae9e3f98a6ae467dd44ae7602be0f6df7ea1ca0956e8d6a254",
-  "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9",
   "scenario_id": "panel/real-host-paging",
-  "lane": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host",
-  "requirement_id": "LIVE-PANEL-HOST-PAGING",
-  "narrative": "Frozen execution rebound from F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\run\\oracle.json; previous run narrative superseded.",
-  "evidence_dir": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\run",
-  "evidence_file": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\run\\oracle.json",
-  "evidence_sha256": "7d6fc9d769fb31a70234dad6874a647fa22b5837050a205c81bc45264dd62060",
-  "evidence_size": 15048,
+  "date": "2026-10-12",
+  "lane": "legacy/panel-host",
+  "evidence_file": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\oracle.json",
+  "evidence_sha256": "85a47c4f2ba87cd9c7d2e57320edde328f44c887e5fc73adc506b6b732bb6851",
+  "rom_sha1_executed": "ede69bbf399b7a02007cfe563ff61658535de039",
+  "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7",
+  "overlay_provenance_sha256": "22f00e55524434a82fba2a40e9735c24e71905be80f9e638591324a5dc3547c1",
+  "run_witness": {
+    "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+    "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+    "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+    "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+    "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+  },
   "secondary_evidence": [
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\run\\panel_host.json",
-      "note": "Fresh freeze supporting observation/control",
-      "sha256": "a8e19165f9c9433a9ae86bf75d6a8070facd1933d6e675d8f128dd90d6a10e8f",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\panel-host.console.txt",
+      "sha256": "eb5547607f4177232d438c915132405dfa9c89a289d1d5dbce78cece38473b1f",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\WITNESS.json",
-        "sha256": "d6e0215fd91efa836b0f823d2ea67442b78c4f367c0f756b47b18e06a4c5b7ce",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\run\\result.txt",
-      "note": "Fresh freeze supporting observation/control",
-      "sha256": "65b11f9d8a020c6a6cf0c1955a921ae52d8344dd0bd867784d297cc9774ca39c",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\panel-host.exit.json",
+      "sha256": "498d7de0dc7794e94c02fdcf7eef1a109df5a367eb68014ff1c39324c06d4bd9",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\WITNESS.json",
-        "sha256": "d6e0215fd91efa836b0f823d2ea67442b78c4f367c0f756b47b18e06a4c5b7ce",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\run\\links_final.json",
-      "note": "Fresh freeze supporting observation/control",
-      "sha256": "c349d67885a858664c70e56a133f55f68480a6005a1cf7857f70bc4204326736",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\panel-host.LAUNCH.json",
+      "sha256": "fcd54db9bb5ab3b0ebcfc88718c0ad5613f3c12f1093525ab24fd7256f5b43cc",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\WITNESS.json",
-        "sha256": "d6e0215fd91efa836b0f823d2ea67442b78c4f367c0f756b47b18e06a4c5b7ce",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host.out",
-      "note": "Fresh freeze2 job console: invocation timing/PID/path evidence; included even where the deterministic primary repeats.",
-      "sha256": "a3810efeb98ded744dcd248aa5b76f429995c80ad373691fe677465b37de42af",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\rom\\pol_overlay.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-        "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\WITNESS.json",
-      "note": "Fresh freeze2 full-cut per-job witness; primary execution tied to this immutable code cut.",
-      "sha256": "d6e0215fd91efa836b0f823d2ea67442b78c4f367c0f756b47b18e06a4c5b7ce",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\links_final.json",
+      "sha256": "b479db3fd8cb962b03f426e89048594d62ab91dbba1181ea246358fe4a571863",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\WITNESS.json",
-        "sha256": "d6e0215fd91efa836b0f823d2ea67442b78c4f367c0f756b47b18e06a4c5b7ce",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\panel_host.json",
+      "sha256": "aca99157cd0bf5dfefcff08b0f9b1b52fb2c56c0b792744a5e0326ed62569e62",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\panel_host_back.png",
+      "sha256": "3e7be129cc32bf3527bc20063d990d75e0485a3d93e60dc386d0d282a010afdc",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\panel_host_page1.png",
+      "sha256": "81dfef594f5035bffadf9209116668b15ccdb3cc3ee1d8ea8b268645c720f4bf",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\panel_host_page2.png",
+      "sha256": "3ef4290ff81269215ec4f12b626a6830ff86f0689d7931e53f28a9c8761007aa",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\panel_host_page3.png",
+      "sha256": "62d3d32465defcc5536162a530f6f8c7743442288e6a6144781324e905cb592a",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\panel_host_page4.png",
+      "sha256": "94d218986507fd9b39c0943e302fa4066e9dd85202928d8b7b122a49f139b0f6",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\result.txt",
+      "sha256": "03697c02aaa4d570424a94d31dfa029be961958b15d23e60508ebf381f1164e3",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\server.log",
+      "sha256": "90252517db9d71f91d91b264fc6a71cefe6b5b1e1cc45987ca123ddf2098f4e0",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\slink_lua.log",
+      "sha256": "caa3ed7bdc695c30191bdafabc12dbadda75fda425f0b950dbba2a5e15db7ea8",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\srv\\events.json",
+      "sha256": "0adce9800c7576ee09fc36a63592ac0af9146d1887008388f07c50a468971a85",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\srv\\links.json",
+      "sha256": "b479db3fd8cb962b03f426e89048594d62ab91dbba1181ea246358fe4a571863",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\srv\\rom_contract.json",
+      "sha256": "0508406f092430d8db34085dfe3a0a7b64cc638ed843e9504a9d86434325b68d",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\srv\\slink.log",
+      "sha256": "98f3cee090b4977db3a7c30c529e1e18b8a947af7ae1a4abb3d8ef7599b55825",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\status_final.json",
+      "sha256": "9253aeedffc4e19a8faf45d74d5febc8c6655448c0f43ffbb8a216b35f3740c7",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\syms.json",
+      "sha256": "dea8bdf3151c9b3ef60b12fff4f41a84a3e9b7f77d46e45ff911b627c34bf151",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\wire\\wire_a.jsonl",
+      "sha256": "b49815e7b2c78aa65a93e1b7177c4b485af542a7b22d0cda74a310105a5cb1ad",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\run\\wire\\wire_b.jsonl",
+      "sha256": "5b54f1967c833ee650aa4d8a1e7d059e0c1b4dcece78bdb9919686e69971d226",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\sram_overlay\\pol overlay.SaveRAM",
+      "sha256": "895a6842b1b2ced0422cad98d226ac11bd082743a0b4c4a2015b708785f3c886",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host\\producer\\sram_overlay\\pol overlay.SaveRAM.bak",
+      "sha256": "895a6842b1b2ced0422cad98d226ac11bd082743a0b4c4a2015b708785f3c886",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-host\\WITNESS.json",
+        "sha256": "46227f62cb3d735424817993805de82a8999890509773231d4368985611f6af3",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-host",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     }
   ],
   "synth": [
-    "Retained SYNTH warp/scene fixture; native inputs thereafter. Phone/Pokegear/panel setup flags and scripted host/second identity remain disclosed by the lane."
+    {
+      "setup": "retained SYNTH/setup SaveRAM fixtures; not independently played from a new game",
+      "recorded_inputs": [
+        {
+          "job": "panel-host.LAUNCH.json",
+          "path": "F:\\slink-work\\lanes\\g2int-live\\pol\\fixture\\polished_overlay_warp.SaveRAM",
+          "sha256": "75c7a5dc30126f746567202cfb39fe583dfa04eb226063560541f6cbd29f36b8"
+        }
+      ]
+    }
   ],
+  "not_proven": [
+    "DEV retained-run evidence only; no physical promotion or new emulator run. Checks record the owner's producer/release-verifier-level qualification, not independent per-check raw-map proof."
+  ],
+  "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+  "evidence_note": "Owner ruling2026-10-13: retained producer/release-verifier-level binding. No rebind3 or per-check raw map; producer_observations records the actual observed scenario facts.",
+  "producer_observations": {
+    "verdict": "PASS"
+  },
   "checks": [
     {
       "name": "run verdict",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\run\\oracle.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "ROM booted is the provenance overlay",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\run\\oracle.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "hello advertises panel true, panel_abi 3 on the overlay",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\run\\oracle.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "a native catch formed a linked pair on the real server",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\run\\oracle.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "the real server published link_panel and the wire log carries what the client held",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\run\\oracle.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "the pair, pairs-alive, dead-zone and badge rows match the server's own state",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\run\\oracle.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "all advertised pages rendered, each line equal to the staged row and every server row fits the 16-glyph panel without unsupported separators",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\run\\oracle.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "the client's own permit wrote the mailbox, all writes inside its span",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\run\\oracle.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "B closes to the Phone list with no call placed and PANEL_STATE cleared",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\run\\oracle.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     }
-  ],
-  "not_proven": [
-    "DEV only; no release or PHYSICAL promotion. Scope is the named recording, not exhaustive gameplay."
-  ],
-  "run_witness": {
-    "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host\\WITNESS.json",
-    "sha256": "d6e0215fd91efa836b0f823d2ea67442b78c4f367c0f756b47b18e06a4c5b7ce",
-    "scope": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-host",
-    "kind": "recorded per-job/root witness",
-    "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-    "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
-  },
-  "evidence_note": "Mechanical rebind after producer PASS and recorded/scoped run witness validation; DEV only."
+  ]
 }

@@ -1,101 +1,233 @@
 {
   "schema": "polished-live-receipt-v1",
   "grade": "DEV",
-  "date": "2026-10-09",
-  "rom_sha1_executed": "fe8c57e1034059331ccf25d232ff757d675363b2",
-  "overlay_provenance_sha256": "dbce96cd5d73fcae9e3f98a6ae467dd44ae7602be0f6df7ea1ca0956e8d6a254",
-  "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9",
   "scenario_id": "panel/c0-c5-scripted-host",
-  "lane": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-rom",
-  "requirement_id": "LIVE-PANEL-PAGES-ROM",
-  "narrative": "Frozen execution rebound from F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-rom\\run\\result.txt; previous run narrative superseded.",
-  "evidence_dir": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-rom\\run",
-  "evidence_file": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-rom\\run\\result.txt",
-  "evidence_sha256": "5924640019ccbbfb5bfb2b12402c9fb2f5bdb3b8844542fd089d5bbf940aaa3a",
-  "evidence_size": 3691,
+  "date": "2026-10-12",
+  "lane": "legacy/panel-rom",
+  "evidence_file": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom\\producer\\run\\result.txt",
+  "evidence_sha256": "0cc1fdedd31e3304f033c0429e14dc9d68972bd7437c3567e1b71a3547b2f9ef",
+  "rom_sha1_executed": "ede69bbf399b7a02007cfe563ff61658535de039",
+  "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7",
+  "overlay_provenance_sha256": "22f00e55524434a82fba2a40e9735c24e71905be80f9e638591324a5dc3547c1",
+  "run_witness": {
+    "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-rom\\WITNESS.json",
+    "sha256": "12918135a47d51d7500967f491a4cd395f827832e7d22fefa5154258ecb47c15",
+    "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom",
+    "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+    "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+  },
   "secondary_evidence": [
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-rom.out",
-      "note": "Fresh freeze2 job console: invocation timing/PID/path evidence; included even where the deterministic primary repeats.",
-      "sha256": "81d2657972b68a2b87f32a5ee47033d9fbb530969beddb74be48905dabcb85f3",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom\\panel-rom.console.txt",
+      "sha256": "90ab312d0415cc3208a0ce304afb446d968735a74f26a56e90809b91582364b1",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-        "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-rom\\WITNESS.json",
+        "sha256": "12918135a47d51d7500967f491a4cd395f827832e7d22fefa5154258ecb47c15",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-rom\\WITNESS.json",
-      "note": "Fresh freeze2 full-cut per-job witness; primary execution tied to this immutable code cut.",
-      "sha256": "bbf2d05b8eab0b308de781232528982dd29e4454c1b7d4aa32c5cbdff3ab42a5",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom\\panel-rom.exit.json",
+      "sha256": "ea0ae928434bf45c0a014d6de793e29314b17e89674546e4b397f77d28cce367",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-rom\\WITNESS.json",
-        "sha256": "bbf2d05b8eab0b308de781232528982dd29e4454c1b7d4aa32c5cbdff3ab42a5",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-rom",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-rom\\WITNESS.json",
+        "sha256": "12918135a47d51d7500967f491a4cd395f827832e7d22fefa5154258ecb47c15",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom\\panel-rom.LAUNCH.json",
+      "sha256": "1b88a8f5de9285f9e17a873fddaaa8bbcc278e8a2312a6ecb470e09fa4aba852",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-rom\\WITNESS.json",
+        "sha256": "12918135a47d51d7500967f491a4cd395f827832e7d22fefa5154258ecb47c15",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom\\producer\\rom\\pol_overlay.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-rom\\WITNESS.json",
+        "sha256": "12918135a47d51d7500967f491a4cd395f827832e7d22fefa5154258ecb47c15",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom\\producer\\run\\panel.json",
+      "sha256": "3efa741b3a577b20e3fe3abbe807e1eeb47e73db9dd95bb2a6c9dbd3da6d8e70",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-rom\\WITNESS.json",
+        "sha256": "12918135a47d51d7500967f491a4cd395f827832e7d22fefa5154258ecb47c15",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom\\producer\\run\\panel_2_page1.png",
+      "sha256": "81f6f527b047fa1dc1ed22a94bc91c873a29b013abfbd78ae5f5f691281182e2",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-rom\\WITNESS.json",
+        "sha256": "12918135a47d51d7500967f491a4cd395f827832e7d22fefa5154258ecb47c15",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom\\producer\\run\\panel_3_page2.png",
+      "sha256": "69d1b72413fa36ce7f856c8fb92841fa07a1de2389c5e9b008b423d6b8010c9b",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-rom\\WITNESS.json",
+        "sha256": "12918135a47d51d7500967f491a4cd395f827832e7d22fefa5154258ecb47c15",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom\\producer\\run\\panel_4_back.png",
+      "sha256": "3e7be129cc32bf3527bc20063d990d75e0485a3d93e60dc386d0d282a010afdc",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-rom\\WITNESS.json",
+        "sha256": "12918135a47d51d7500967f491a4cd395f827832e7d22fefa5154258ecb47c15",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom\\producer\\run\\syms.json",
+      "sha256": "dea8bdf3151c9b3ef60b12fff4f41a84a3e9b7f77d46e45ff911b627c34bf151",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-rom\\WITNESS.json",
+        "sha256": "12918135a47d51d7500967f491a4cd395f827832e7d22fefa5154258ecb47c15",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom\\producer\\sram_overlay\\pol overlay.SaveRAM",
+      "sha256": "8383df4cac856cfc3409f754b101c26473672137f29160af6e1fbb58f17aa1be",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-rom\\WITNESS.json",
+        "sha256": "12918135a47d51d7500967f491a4cd395f827832e7d22fefa5154258ecb47c15",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom\\producer\\sram_overlay\\pol overlay.SaveRAM.bak",
+      "sha256": "8383df4cac856cfc3409f754b101c26473672137f29160af6e1fbb58f17aa1be",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\panel-rom\\WITNESS.json",
+        "sha256": "12918135a47d51d7500967f491a4cd395f827832e7d22fefa5154258ecb47c15",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\panel-rom",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     }
   ],
   "synth": [
-    "Retained SYNTH warp/scene fixture; native inputs thereafter. Phone/Pokegear/panel setup flags and scripted host/second identity remain disclosed by the lane."
+    {
+      "setup": "retained SYNTH/setup SaveRAM fixtures; not independently played from a new game",
+      "recorded_inputs": [
+        {
+          "job": "panel-rom.LAUNCH.json",
+          "path": "F:\\slink-work\\lanes\\g2int-live\\pol\\fixture\\polished_overlay_warp.SaveRAM",
+          "sha256": "75c7a5dc30126f746567202cfb39fe583dfa04eb226063560541f6cbd29f36b8"
+        }
+      ]
+    },
+    "[panel] SYNTH wPokegearFlags 00 -> 87, wPhoneList 0000000000 -> 0000000000 (SLink is row 0)"
   ],
+  "not_proven": [
+    "DEV retained-run evidence only; no physical promotion or new emulator run. Checks record the owner's producer/release-verifier-level qualification, not independent per-check raw-map proof."
+  ],
+  "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+  "evidence_note": "Owner ruling2026-10-13: retained producer/release-verifier-level binding. No rebind3 or per-check raw map; producer_observations records the actual observed scenario facts.",
+  "producer_observations": {
+    "result_lines": [
+      "RESULT: PASS pol-panel (0 checks failed) frame 806\r"
+    ],
+    "checks_observed": [
+      "[ok] C1 PANEL cap advertised (integrated overlay: caps=07 = PANEL|SFX|SFX_NOTIFY)  -- 07",
+      "[ok] C1 mailbox span is the overlay's own 69 bytes (symbol addresses, not contents)  -- $C60B..$C650 = 69",
+      "[ok] C0 the SLink row is row 0 and is labelled by the overlay  -- <$16>\u25b6SLink:           <$16>",
+      "[ok] C0 A opened the contact submenu",
+      "[ok] C2 AWAIT was published with NO EXTRA keypress (the fallback no longer prompts)  -- presses when AWAIT was staged: 2; before Call: 1 (Call itself = +1, expected 2)",
+      "[ok] C2 page 1 rendered: SOUL LINK on one row  --  /  / SOUL LINK / PARTNER: RED /  /",
+      "[ok] C2 page 1 rendered: PARTNER: RED on ONE row (row-aware)  --  /  / SOUL LINK / PARTNER: RED /  /",
+      "[ok] C2 both lines present (joined form)  --   SOUL LINK PARTNER: RED",
+      "[ok] C2 the ROM's fallback second line is gone  --   SOUL LINK PARTNER: RED",
+      "[ok] C2 PANEL_PAGE/PAGES published by the host  -- page 0 of 2",
+      "[ok] C3 A advanced to page 2: PAIRS 2/3 on one row  --  /  / PAIRS 2/3 / BADGES 4/8 /  /",
+      "[ok] C3 A advanced to page 2: BADGES 4/8 on one row  --  /  / PAIRS 2/3 / BADGES 4/8 /  /",
+      "[ok] C3 PANEL_PAGE advanced to 1  -- 1",
+      "[ok] C4 back on the Phone list with the cursor/scroll intact  -- 0/0 -> 0/0",
+      "[ok] C4 the SLink row is still row 0  -- <$16>\u25b6SLink:           <$16>",
+      "[ok] C4 no phone call placed (MakePhoneCallFromPokegear never entered)",
+      "[ok] C4 wCurCaller untouched  -- 00",
+      "[ok] C4 wPhoneList untouched by the panel  -- 0000000000",
+      "[ok] C4 the panel cleared PANEL_STATE on close  -- 0",
+      "[ok] C5 every PANEL write is inside the mailbox span  -- 72 panel writes, 614..64E vs mailbox 60B..64F; outside: none",
+      "[ok] C5 the audit actually SAW writes (not a vacuous pass)  -- 72"
+    ],
+    "setup_lines": [
+      "[panel] SYNTH wPokegearFlags 00 -> 87, wPhoneList 0000000000 -> 0000000000 (SLink is row 0)"
+    ]
+  },
   "checks": [
     {
       "name": "run verdict",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-rom\\run\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "ROM booted is the provenance overlay",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-rom\\run\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "C0 the SLink row is row 0 and A opens the submenu",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-rom\\run\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "C1 PANEL cap advertised and the 69-byte mailbox span",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-rom\\run\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "C2 page 1 renders SOUL LINK / PARTNER: RED with no extra keypress",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-rom\\run\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "C3 A advances to page 2 PAIRS 2/3 / BADGES 4/8",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-rom\\run\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "C4 B closes back to the Phone list with no call placed and PANEL_STATE cleared",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-rom\\run\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "C5 every panel write is inside the mailbox span and the audit is non-vacuous",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-rom\\run\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     }
-  ],
-  "not_proven": [
-    "DEV only; no release or PHYSICAL promotion. Scope is the named recording, not exhaustive gameplay."
-  ],
-  "run_witness": {
-    "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-rom\\WITNESS.json",
-    "sha256": "bbf2d05b8eab0b308de781232528982dd29e4454c1b7d4aa32c5cbdff3ab42a5",
-    "scope": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\panel-rom",
-    "kind": "recorded per-job/root witness",
-    "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-    "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
-  },
-  "evidence_note": "Mechanical rebind after producer PASS and recorded/scoped run witness validation; DEV only."
+  ]
 }

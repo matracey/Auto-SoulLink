@@ -1,205 +1,365 @@
 {
   "schema": "polished-live-receipt-v1",
   "grade": "DEV",
-  "date": "2026-10-09",
-  "rom_sha1_executed": "fe8c57e1034059331ccf25d232ff757d675363b2",
-  "overlay_provenance_sha256": "dbce96cd5d73fcae9e3f98a6ae467dd44ae7602be0f6df7ea1ca0956e8d6a254",
-  "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9",
   "scenario_id": "writes/overworld-faint-deposit-withdraw",
-  "lane": "F:\\slink-work\\lanes\\pol-freeze2",
-  "requirement_id": "LIVE-WRITES-OVERWORLD",
-  "narrative": "Frozen execution rebound from F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; previous run narrative superseded.",
-  "evidence_dir": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes",
-  "evidence_file": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt",
-  "evidence_sha256": "4a46921744ff1b4fe7bbd3ce03790a55a3a59671811d3d6261396a1f0c1184f3",
-  "evidence_size": 47402,
-  "evidence_note": "Mechanical rebind after producer PASS and recorded/scoped run witness validation; DEV only.",
+  "date": "2026-10-12",
+  "lane": "mechanics/writes",
+  "evidence_file": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes\\producer\\writes\\result.txt",
+  "evidence_sha256": "a42b40a12476b1fe0336874f87072e8d1769524dcb7133b130da674f93c97b7a",
+  "rom_sha1_executed": "ede69bbf399b7a02007cfe563ff61658535de039",
+  "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7",
+  "overlay_provenance_sha256": "22f00e55524434a82fba2a40e9735c24e71905be80f9e638591324a5dc3547c1",
+  "run_witness": {
+    "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\writes\\WITNESS.json",
+    "sha256": "0e48bb5239f0a20ca3779e95e85337393856bf5462ffa2cb7d8150b7c8c15a8a",
+    "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes",
+    "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+    "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+  },
   "secondary_evidence": [
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\trace.json",
-      "note": "Independently decoded all before/after images at freeze2; driver changed sets match exactly; outside_expected empty for a,b,d,e,f. Changed byte counts a=1,b=110,d=43,e=125,f=2.",
-      "sha256": "d6e2dcc5e5c98e344b421f59b2d9796862a8d89e233be938e10c028377c6d90c",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes\\producer\\rom\\pol_overlay.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-        "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\writes\\WITNESS.json",
+        "sha256": "0e48bb5239f0a20ca3779e95e85337393856bf5462ffa2cb7d8150b7c8c15a8a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\server.log",
-      "note": "server log of the writes run",
-      "sha256": "f83157adf7e646dd723abdd11d48d79ea7e9af72dc3a55c67ad70ff66c12eeb2",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes\\producer\\sram_overlay\\pol overlay.SaveRAM",
+      "sha256": "633725c7862a418feaafd9bc26eb49044c74250a9d142af72714040d7353d055",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-        "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\writes\\WITNESS.json",
+        "sha256": "0e48bb5239f0a20ca3779e95e85337393856bf5462ffa2cb7d8150b7c8c15a8a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\wire\\wire_a.jsonl",
-      "note": "the client's wire stream during the writes run (memorialize_done events)",
-      "sha256": "dc9ca8679cc98745dbe04ce52f8867012e585b93878f568fb6b0d85644a32066",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes\\producer\\sram_overlay\\pol overlay.SaveRAM.bak",
+      "sha256": "633725c7862a418feaafd9bc26eb49044c74250a9d142af72714040d7353d055",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-        "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\writes\\WITNESS.json",
+        "sha256": "0e48bb5239f0a20ca3779e95e85337393856bf5462ffa2cb7d8150b7c8c15a8a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes_run_console.txt",
-      "note": "driver console: staged ROM sha1, fixture sha256, RESULT",
-      "sha256": "0c151c7f7150007d45f6d714828d8bb027f65ecf2ab8fb41be8b601ec30d5437",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes\\producer\\writes\\server.log",
+      "sha256": "448c76f7ec40c4215f2431493ee3efbe7f46cc03dcf4c95bd9c3d2fbdbcb2f7c",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-        "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\writes\\WITNESS.json",
+        "sha256": "0e48bb5239f0a20ca3779e95e85337393856bf5462ffa2cb7d8150b7c8c15a8a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes_job\\WITNESS.json",
-      "note": "Fresh freeze2 job HEAD/digest/overlay witness (root fallback scopes sibling job artifacts).",
-      "sha256": "e7b9a92e43c83ed71579ce27ef3ba1e2db39ce3abdbac9903a819af2f04511a8",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes\\producer\\writes\\srv\\events.json",
+      "sha256": "ad23814b3e3e4e026763e485e3acab874855b6c319686970b2015aa93365a6db",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes_job\\WITNESS.json",
-        "sha256": "e7b9a92e43c83ed71579ce27ef3ba1e2db39ce3abdbac9903a819af2f04511a8",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes_job",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\writes\\WITNESS.json",
+        "sha256": "0e48bb5239f0a20ca3779e95e85337393856bf5462ffa2cb7d8150b7c8c15a8a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes\\producer\\writes\\srv\\links.json",
+      "sha256": "b888a37f1787216ce5b6fd3417c21a285e903276c4bad81b69a014988682ffaa",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\writes\\WITNESS.json",
+        "sha256": "0e48bb5239f0a20ca3779e95e85337393856bf5462ffa2cb7d8150b7c8c15a8a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes\\producer\\writes\\srv\\rom_contract.json",
+      "sha256": "ecbacf81ead3f522f7d9fb60f8751dc7b682a50bf90ed563d8bb777af3fa86dc",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\writes\\WITNESS.json",
+        "sha256": "0e48bb5239f0a20ca3779e95e85337393856bf5462ffa2cb7d8150b7c8c15a8a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes\\producer\\writes\\srv\\slink.log",
+      "sha256": "5d353f1879a6a5d76793b1e3c32c3d0ea19a7e1ad220a4b74e3b25a3f9f6e839",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\writes\\WITNESS.json",
+        "sha256": "0e48bb5239f0a20ca3779e95e85337393856bf5462ffa2cb7d8150b7c8c15a8a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes\\producer\\writes\\syms.json",
+      "sha256": "0aa6076f40bdec3d41f5b36509500cc9c4af3dab86f01bf9a12e1a1707b728e6",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\writes\\WITNESS.json",
+        "sha256": "0e48bb5239f0a20ca3779e95e85337393856bf5462ffa2cb7d8150b7c8c15a8a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes\\producer\\writes\\trace.json",
+      "sha256": "bd726824dc1aa3cbcdb1432cf654459773d2ffbf891002b13f8b1c12e0fc2585",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\writes\\WITNESS.json",
+        "sha256": "0e48bb5239f0a20ca3779e95e85337393856bf5462ffa2cb7d8150b7c8c15a8a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes\\producer\\writes\\wire\\wire_a.jsonl",
+      "sha256": "16d41596647d8b59ac75f888078d0fe41b37364f248ecfd6d5a0512c898b0df5",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\writes\\WITNESS.json",
+        "sha256": "0e48bb5239f0a20ca3779e95e85337393856bf5462ffa2cb7d8150b7c8c15a8a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes\\writes.console.txt",
+      "sha256": "1355509eadc9650f110a2fdd0bb913328faecf754b578d19bc53e67d9e160479",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\writes\\WITNESS.json",
+        "sha256": "0e48bb5239f0a20ca3779e95e85337393856bf5462ffa2cb7d8150b7c8c15a8a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes\\writes.exit.json",
+      "sha256": "84a093b618494ef40759f7127afb5029338fae411ce45cb52fab0db70fceea19",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\writes\\WITNESS.json",
+        "sha256": "0e48bb5239f0a20ca3779e95e85337393856bf5462ffa2cb7d8150b7c8c15a8a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes\\writes.LAUNCH.json",
+      "sha256": "135e2789d37b20049505906bfb8133f7d9099ebbfcf962ed4420f717b146e178",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\writes\\WITNESS.json",
+        "sha256": "0e48bb5239f0a20ca3779e95e85337393856bf5462ffa2cb7d8150b7c8c15a8a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\writes",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     }
   ],
-  "check_count": {
-    "ok": 66,
-    "failed": 0,
-    "source": "grep -c '^  \\[ok\\]' result.txt = 66, grep -c '\\[fail\\]' = 0, result.txt:95 'RESULT: PASS pol-live-writes (0 checks failed) frame 1386'"
-  },
   "synth": [
-    "SYNTH fixture: the qualified warp save polished_overlay_warp.SaveRAM sha256 75c7a5dc30126f746567202cfb39fe583dfa04eb226063560541f6cbd29f36b8 (party of 5 on Route 29), identical to the fixture of the earlier writes receipts.",
-    "Commands are queued through Client:handle_command (the client's own public entry), not delivered by a partner's event; one cartridge, no pairing.",
-    "Leg e buries the leg (a) target (a party mon) and leg f buries the (b)/(d) key after a fresh deposit; both go through the TEST HOST command path, so this does not establish either player's server obligation."
+    {
+      "setup": "retained SYNTH/setup SaveRAM fixtures; not independently played from a new game",
+      "recorded_inputs": [
+        {
+          "job": "writes.LAUNCH.json",
+          "path": "F:\\slink-work\\lanes\\g2int-live\\pol\\fixture\\polished_overlay_warp.SaveRAM",
+          "sha256": "75c7a5dc30126f746567202cfb39fe583dfa04eb226063560541f6cbd29f36b8"
+        }
+      ]
+    }
   ],
+  "not_proven": [
+    "DEV retained-run evidence only; no physical promotion or new emulator run. Checks record the owner's producer/release-verifier-level qualification, not independent per-check raw-map proof.",
+    "[writes] (c) negatives: NOT RUN (synth gate pokes wedge the frame loop; a real battle is needed)"
+  ],
+  "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+  "evidence_note": "Owner ruling2026-10-13: retained producer/release-verifier-level binding. No rebind3 or per-check raw map; producer_observations records the actual observed scenario facts. checks[18] rests on a post-run offline analysis of the bound bytes (F:/slink-work/lanes/freeze3-plan/analysis/writes_recompute.json, sha256 e768c4ae70dfe98a0801ba033d0f05f80b4b85d8fcadf35a849cd497625396b5), performed 2026-10-13 by the receipt writer, not by the run's producer.",
+  "producer_observations": {
+    "result_lines": [
+      "RESULT: PASS pol-live-writes (0 checks failed) frame 1386\r"
+    ],
+    "checks_observed": [
+      "[ok] the composition has the overworld write path",
+      "[ok] the composition has the box executor",
+      "[ok] read_party() SUCCEEDED (a refusal is a FAIL, never an empty list)  -- 5",
+      "[ok] the save has a party of >= 2 (the card's precondition)  -- 5",
+      "[ok] a party key is available to queue for the bench slot  -- CFFFFF:D1C2:037:40",
+      "[ok] the target slot is alive before the faint (HP > 0)  -- HP 152/152 status $00",
+      "[ok] the overworld predicate is satisfied at queue time (no battle, no script)  -- gate {\"battle\":0,\"link\":0,\"map\":2,\"paused\":0,\"script\":0}",
+      "[ok] force_faint was queued into the client's command path  -- handle_command accepted it",
+      "[ok] (a1) the bench mon's HP bytes are 0/0 (big-endian pair)  -- 0/0 (before 152/152)",
+      "[ok] (a2) the mon's status byte is 0  -- $00 (before $00)",
+      "[ok] (a3) the party count is unchanged  -- 5 -> 5",
+      "[ok] (a5) EXACT diff: nothing outside the faint record's status +32 / HP +34..35 changed  -- unexpected:",
+      "[ok] (a5b) every OTHER party mon and every box slot is byte-identical (party-block 1 changed, CartRAM 0, pokedb flags 0)",
+      "[ok] (a5d) at least one byte actually changed (the diff is not empty)  -- 1",
+      "[ok] (a5c) CONTROL: the same diff against a deliberately wrong expected set FAILS  -- subset reported false against a one-slot-shifted set",
+      "[ok] (a4) every write landed in ONLY the target slot's +32/+34/+35 bytes  -- 3 write(s), all in the target's three bytes",
+      "[ok] (a4b) the client wrote something at all  -- 3",
+      "[ok] (b0) a distinct party key is available to deposit  -- BFFFFF:D1C2:022:00",
+      "[ok] (b0a) box_mon was queued into the client's command path  -- BFFFFF:D1C2:022:00",
+      "[ok] (b1c) read_party() succeeded after the deposit  -- nil",
+      "[ok] (b1a) wPartyCount went 5 -> 4  -- 5 -> 4",
+      "[ok] (b1b) the deposited key is no longer in read_party()  -- BFFFFF:D1C2:022:00",
+      "[ok] the composed census read is complete (P.census fails closed on incomplete/Bad Egg/unflagged, polished.lua:767-771)  -- 1",
+      "[ok] (b2b) the deposited mon is present in a gameplay box  -- BFFFFF:D1C2:022:00",
+      "[ok] (b3) the pokedb entry checksum verifies (B.verify)  -- true",
+      "[ok] (b0b) the deposit's Entries byte is non-zero (a wrong address fails here)  -- Entries $01 Banks $00 (bank bit 0)",
+      "[ok] (b6a) destination was empty and allocation flag changed only for the chosen entry  -- bank 1 entry 1 entry@16384 flag@10423",
+      "[ok] (b6) EXACT diff subset: one Entries byte, Banks byte, allocation byte, 49-byte entry and party shift only  -- exact; every other record byte-identical",
+      "[ok] (b6c) CONTROL: deposit diff against a count-only expected set FAILS",
+      "[ok] (b5) the deposit wrote the pokedb entry (49 B; N changed) and moved its allocation flag  -- 47 of 49 pokedb byte(s) changed, 1 alloc byte(s)",
+      "[ok] (b4) every (b) write is inside a declared range  -- write_u8@16384[CartRAM]=pokedb | write_u8@16385[CartRAM]=pokedb | write_u8@16386[CartRAM]=pokedb | write_u8@16387[CartRAM]=pokedb | write_u8@16388[CartRAM]=pokedb | write_u8@16389[CartRAM]=pokedb | write_u8@16390[CartRAM]=pokedb | write_u8@16391[CartRAM]=pokedb | write_u8@16392[CartRAM]=pokedb | write_u8@16393[CartRAM]=pokedb | write_u8@16394[CartRAM]=pokedb | write_u8@16395[CartRAM]=pokedb | write_u8@16396[CartRAM]=pokedb | write_u8@16397[CartRAM]=pokedb | write_u8@16398[CartRAM]=pokedb | write_u8@16399[CartRAM]=pokedb | write_u8@16400[CartRAM]=pokedb | write_u8@16401[CartRAM]=pokedb | write_u8@16402[CartRAM]=pokedb | write_u8@16403[CartRAM]=pokedb | write_u8@16404[CartRAM]=pokedb | write_u8@16405[CartRAM]=pokedb | write_u8@16406[CartRAM]=pokedb | write_u8@16407[CartRAM]=pokedb | write_u8@16408[CartRAM]=pokedb | write_u8@16409[CartRAM]=pokedb | write_u8@16410[CartRAM]=pokedb | write_u8@16411[CartRAM]=pokedb | write_u8@16412[CartRAM]=pokedb | write_u8@16413[CartRAM]=pokedb | write_u8@16414[CartRAM]=pokedb | write_u8@16415[CartRAM]=pokedb | write_u8@16416[CartRAM]=pokedb | write_u8@16417[CartRAM]=pokedb | write_u8@16418[CartRAM]=pokedb | write_u8@16419[CartRAM]=pokedb | write_u8@16420[CartRAM]=pokedb | write_u8@16421[CartRAM]=pokedb | write_u8@16422[CartRAM]=pokedb | write_u8@16423[CartRAM]=pokedb | write_u8@16424[CartRAM]=pokedb | write_u8@16425[CartRAM]=pokedb | write_u8@16426[CartRAM]=pokedb | write_u8@16427[CartRAM]=pokedb | write_u8@16428[CartRAM]=pokedb | write_u8@16429[CartRAM]=pokedb | write_u8@16430[CartRAM]=pokedb | write_u8@16431[CartRAM]=pokedb | write_u8@16432[CartRAM]=pokedb | write_u8@10423[WRAM]=allocation-flag | write_u8@12536[CartRAM]=box-record | write_u8@12516[CartRAM]=box-record | write_u8@56527[System Bus]=party-block | write_u8@56528[System Bus]=party-block | write_u8@56529[System Bus]=party-block | write_u8@56530[System Bus]=party-block | write_u8@56531[System Bus]=party-block | write_u8@56532[System Bus]=party-block | write_u8@56533[System Bus]=party-block | write_u8@56534[System Bus]=party-block | write_u8@56535[System Bus]=party-block | write_u8@56536[System Bus]=party-block | write_u8@56537[System Bus]=party-block | write_u8@56538[System Bus]=party-block | write_u8@56539[System Bus]=party-block | write_u8@56540[System Bus]=party-block | write_u8@56541[System Bus]=party-block | write_u8@56542[System Bus]=party-block | write_u8@56543[System Bus]=party-block | write_u8@56544[System Bus]=party-block | write_u8@56545[System Bus]=party-block | write_u8@56546[System Bus]=party-block | write_u8@56547[System Bus]=party-block | write_u8@56548[System Bus]=party-block | write_u8@56549[System Bus]=party-block | write_u8@56550[System Bus]=party-block | write_u8@56551[System Bus]=party-block | write_u8@56552[System Bus]=party-block | write_u8@56553[System Bus]=party-block | write_u8@56554[System Bus]=party-block | write_u8@56555[System Bus]=party-block | write_u8@56556[System Bus]=party-block | write_u8@56557[System Bus]=party-block | write_u8@56558[System Bus]=party-block | write_u8@56559[System Bus]=party-block | write_u8@56560[System Bus]=party-block | write_u8@56561[System Bus]=party-block | write_u8@56562[System Bus]=party-block | write_u8@56563[System Bus]=party-block | write_u8@56564[System Bus]=party-block | write_u8@56565[System Bus]=party-block | write_u8@56566[System Bus]=party-block | write_u8@56567[System Bus]=party-block | write_u8@56568[System Bus]=party-block | write_u8@56569[System Bus]=party-block | write_u8@56570[System Bus]=party-block | write_u8@56571[System Bus]=party-block | write_u8@56572[System Bus]=party-block | write_u8@56573[System Bus]=party-block | write_u8@56574[System Bus]=party-block | write_u8@56575[System Bus]=party-block | write_u8@56576[System Bus]=party-block | write_u8@56577[System Bus]=party-block | write_u8@56578[System Bus]=party-block | write_u8@56579[System Bus]=party-block | write_u8@56580[System Bus]=party-block | write_u8@56581[System Bus]=party-block | write_u8@56582[System Bus]=party-block | write_u8@56583[System Bus]=party-block | write_u8@56584[System Bus]=party-block | write_u8@56585[System Bus]=party-block | write_u8@56586[System Bus]=party-block | write_u8@56587[System Bus]=party-block | write_u8@56588[System Bus]=party-block | write_u8@56589[System Bus]=party-block | write_u8@56590[System Bus]=party-block | write_u8@56591[System Bus]=party-block | write_u8@56592[System Bus]=party-block | write_u8@56593[System Bus]=party-block | write_u8@56594[System Bus]=party-block | write_u8@56595[System Bus]=party-block | write_u8@56596[System Bus]=party-block | write_u8@56597[System Bus]=party-block | write_u8@56598[System Bus]=party-block | write_u8@56599[System Bus]=party-block | write_u8@56600[System Bus]=party-block | write_u8@56601[System Bus]=party-block | write_u8@56602[System Bus]=party-block | write_u8@56603[System Bus]=party-block | write_u8@56604[System Bus]=party-block | write_u8@56605[System Bus]=party-block | write_u8@56606[System Bus]=party-block | write_u8@56607[System Bus]=party-block | write_u8@56608[System Bus]=party-block | write_u8@56609[System Bus]=party-block | write_u8@56610[System Bus]=party-block | write_u8@56611[System Bus]=party-block | write_u8@56612[System Bus]=party-block | write_u8@56613[System Bus]=party-block | write_u8@56614[System Bus]=party-block | write_u8@56615[System Bus]=party-block | write_u8@56616[System Bus]=party-block | write_u8@56617[System Bus]=party-block | write_u8@56618[System Bus]=party-block | write_u8@56619[System Bus]=party-block | write_u8@56620[System Bus]=party-block | write_u8@56621[System Bus]=party-block | write_u8@56622[System Bus]=party-block | write_u8@56623[System Bus]=party-block | write_u8@56624[System Bus]=party-block | write_u8@56625[System Bus]=party-block | write_u8@56626[System Bus]=party-block | write_u8@56627[System Bus]=party-block | write_u8@56628[System Bus]=party-block | write_u8@56629[System Bus]=party-block | write_u8@56630[System Bus]=party-block | write_u8@56631[System Bus]=party-block | write_u8@56632[System Bus]=party-block | write_u8@56633[System Bus]=party-block | write_u8@56634[System Bus]=party-block | write_u8@56635[System Bus]=party-block | write_u8@56636[System Bus]=party-block | write_u8@56637[System Bus]=party-block | write_u8@56638[System Bus]=party-block | write_u8@56639[System Bus]=party-block | write_u8@56640[System Bus]=party-block | write_u8@56641[System Bus]=party-block | write_u8@56642[System Bus]=party-block | write_u8@56643[System Bus]=party-block | write_u8@56644[System Bus]=party-block | write_u8@56645[System Bus]=party-block | write_u8@56646[System Bus]=party-block | write_u8@56647[System Bus]=party-block | write_u8@56648[System Bus]=party-block | write_u8@56649[System Bus]=party-block | write_u8@56650[System Bus]=party-block | write_u8@56651[System Bus]=party-block | write_u8@56652[System Bus]=party-block | write_u8@56653[System Bus]=party-block | write_u8@56654[System Bus]=party-block | write_u8@56655[System Bus]=party-block | write_u8@56656[System Bus]=party-block | write_u8@56657[System Bus]=party-block | write_u8@56658[System Bus]=party-block | write_u8@56659[System Bus]=party-block | write_u8@56660[System Bus]=party-block | write_u8@56661[System Bus]=party-block | write_u8@56662[System Bus]=party-block | write_u8@56663[System Bus]=party-block | write_u8@56664[System Bus]=party-block | write_u8@56665[System Bus]=party-block | write_u8@56666[System Bus]=party-block | write_u8@56667[System Bus]=party-block | write_u8@56668[System Bus]=party-block | write_u8@56669[System Bus]=party-block | write_u8@56670[System Bus]=party-block | write_u8@56671[System Bus]=party-block | write_u8@56672[System Bus]=party-block | write_u8@56673[System Bus]=party-block | write_u8@56674[System Bus]=party-block | write_u8@56675[System Bus]=party-block | write_u8@56676[System Bus]=party-block | write_u8@56677[System Bus]=party-block | write_u8@56678[System Bus]=party-block | write_u8@56679[System Bus]=party-block | write_u8@56680[System Bus]=party-block | write_u8@56681[System Bus]=party-block | write_u8@56682[System Bus]=party-block | write_u8@56683[System Bus]=party-block | write_u8@56684[System Bus]=party-block | write_u8@56685[System Bus]=party-block | write_u8@56686[System Bus]=party-block | write_u8@56687[System Bus]=party-block | write_u8@56688[System Bus]=party-block | write_u8@56689[System Bus]=party-block | write_u8@56690[System Bus]=party-block | write_u8@56691[System Bus]=party-block | write_u8@56692[System Bus]=party-block | write_u8@56693[System Bus]=party-block | write_u8@56694[System Bus]=party-block | write_u8@56695[System Bus]=party-block | write_u8@56696[System Bus]=party-block | write_u8@56697[System Bus]=party-block | write_u8@56698[System Bus]=party-block | write_u8@56699[System Bus]=party-block | write_u8@56700[System Bus]=party-block | write_u8@56701[System Bus]=party-block | write_u8@56702[System Bus]=party-block | write_u8@56703[System Bus]=party-block | write_u8@56704[System Bus]=party-block | write_u8@56705[System Bus]=party-block | write_u8@56706[System Bus]=party-block | write_u8@56707[System Bus]=party-block | write_u8@56708[System Bus]=party-block | write_u8@56709[System Bus]=party-block | write_u8@56710[System Bus]=party-block | write_u8@56711[System Bus]=party-block | write_u8@56712[System Bus]=party-block | write_u8@56713[System Bus]=party-block | write_u8@56714[System Bus]=party-block | write_u8@56715[System Bus]=party-block | write_u8@56716[System Bus]=party-block | write_u8@56717[System Bus]=party-block | write_u8@56718[System Bus]=party-block | write_u8@56719[System Bus]=party-block | write_u8@56720[System Bus]=party-block | write_u8@56721[System Bus]=party-block | write_u8@56722[System Bus]=party-block | write_u8@56723[System Bus]=party-block | write_u8@56724[System Bus]=party-block | write_u8@56725[System Bus]=party-block | write_u8@56726[System Bus]=party-block | write_u8@56727[System Bus]=party-block | write_u8@56728[System Bus]=party-block | write_u8@56729[System Bus]=party-block | write_u8@56730[System Bus]=party-block | write_u8@56731[System Bus]=party-block | write_u8@56732[System Bus]=party-block | write_u8@56733[System Bus]=party-block | write_u8@56734[System Bus]=party-block | write_u8@56735[System Bus]=party-block | write_u8@56736[System Bus]=party-block | write_u8@56737[System Bus]=party-block | write_u8@56738[System Bus]=party-block | write_u8@56739[System Bus]=party-block | write_u8@56740[System Bus]=party-block | write_u8@56741[System Bus]=party-block | write_u8@56742[System Bus]=party-block | write_u8@56743[System Bus]=party-block | write_u8@56744[System Bus]=party-block | write_u8@56745[System Bus]=party-block | write_u8@56746[System Bus]=party-block | write_u8@56747[System Bus]=party-block | write_u8@56748[System Bus]=party-block | write_u8@56749[System Bus]=party-block | write_u8@56750[System Bus]=party-block | write_u8@56751[System Bus]=party-block | write_u8@56752[System Bus]=party-block | write_u8@56753[System Bus]=party-block | write_u8@56754[System Bus]=party-block | write_u8@56755[System Bus]=party-block | write_u8@56756[System Bus]=party-block | write_u8@56757[System Bus]=party-block | write_u8@56758[System Bus]=party-block | write_u8@56759[System Bus]=party-block | write_u8@56760[System Bus]=party-block | write_u8@56761[System Bus]=party-block | write_u8@56762[System Bus]=party-block | write_u8@56763[System Bus]=party-block | write_u8@56764[System Bus]=party-block | write_u8@56765[System Bus]=party-block | write_u8@56766[System Bus]=party-block | write_u8@56767[System Bus]=party-block | write_u8@56768[System Bus]=party-block | write_u8@56769[System Bus]=party-block | write_u8@56770[System Bus]=party-block | write_u8@56771[System Bus]=party-block | write_u8@56772[System Bus]=party-block | write_u8@56773[System Bus]=party-block | write_u8@56774[System Bus]=party-block | write_u8@56775[System Bus]=party-block | write_u8@56776[System Bus]=party-block | write_u8@56777[System Bus]=party-block | write_u8@56778[System Bus]=party-block | write_u8@56779[System Bus]=party-block | write_u8@56780[System Bus]=party-block | write_u8@56781[System Bus]=party-block | write_u8@56782[System Bus]=party-block | write_u8@56783[System Bus]=party-block | write_u8@56784[System Bus]=party-block | write_u8@56785[System Bus]=party-block | write_u8@56786[System Bus]=party-block | write_u8@56787[System Bus]=party-block | write_u8@56788[System Bus]=party-block | write_u8@56789[System Bus]=party-block | write_u8@56790[System Bus]=party-block | write_u8@56791[System Bus]=party-block | write_u8@56792[System Bus]=party-block | write_u8@56793[System Bus]=party-block | write_u8@56794[System Bus]=party-block | write_u8@56795[System Bus]=party-block | write_u8@56796[System Bus]=party-block | write_u8@56797[System Bus]=party-block | write_u8@56798[System Bus]=party-block | write_u8@56799[System Bus]=party-block | write_u8@56800[System Bus]=party-block | write_u8@56801[System Bus]=party-block | write_u8@56802[System Bus]=party-block | write_u8@56803[System Bus]=party-block | write_u8@56804[System Bus]=party-block | write_u8@56805[System Bus]=party-block | write_u8@56806[System Bus]=party-block | write_u8@56807[System Bus]=party-block | write_u8@56808[System Bus]=party-block | write_u8@56809[System Bus]=party-block | write_u8@56810[System Bus]=party-block | write_u8@56811[System Bus]=party-block | write_u8@56812[System Bus]=party-block | write_u8@56813[System Bus]=party-block | write_u8@56814[System Bus]=party-block | write_u8@56815[System Bus]=party-block | write_u8@56816[System Bus]=party-block | write_u8@56817[System Bus]=party-block | write_u8@56818[System Bus]=party-block | write_u8@56819[System Bus]=party-block | write_u8@56820[System Bus]=party-block | write_u8@56821[System Bus]=party-block | write_u8@56822[System Bus]=party-block | write_u8@56823[System Bus]=party-block | write_u8@56824[System Bus]=party-block | write_u8@56825[System Bus]=party-block | write_u8@56826[System Bus]=party-block | write_u8@56827[System Bus]=party-block | write_u8@56828[System Bus]=party-block | write_u8@56829[System Bus]=party-block | write_u8@56830[System Bus]=party-block | write_u8@56831[System Bus]=party-block | write_u8@56832[System Bus]=party-block | write_u8@56833[System Bus]=party-block | write_u8@56834[System Bus]=party-block | write_u8@56835[System Bus]=party-block | write_u8@56836[System Bus]=party-block | write_u8@56837[System Bus]=party-block | write_u8@56838[System Bus]=party-block | write_u8@56839[System Bus]=party-block | write_u8@56840[System Bus]=party-block | write_u8@56841[System Bus]=party-block | write_u8@56842[System Bus]=party-block | write_u8@56843[System Bus]=party-block | write_u8@56844[System Bus]=party-block | write_u8@56845[System Bus]=party-block | write_u8@56846[System Bus]=party-block | write_u8@56847[System Bus]=party-block | write_u8@56848[System Bus]=party-block | write_u8@56849[System Bus]=party-block | write_u8@56850[System Bus]=party-block | write_u8@56851[System Bus]=party-block | write_u8@56852[System Bus]=party-block | write_u8@56853[System Bus]=party-block | write_u8@56854[System Bus]=party-block | write_u8@56855[System Bus]=party-block | write_u8@56856[System Bus]=party-block | write_u8@56857[System Bus]=party-block | write_u8@56858[System Bus]=party-block | write_u8@56859[System Bus]=party-block | write_u8@56860[System Bus]=party-block | write_u8@56861[System Bus]=party-block | write_u8@56862[System Bus]=party-block | write_u8@56863[System Bus]=party-block | write_u8@56864[System Bus]=party-block | write_u8@56865[System Bus]=party-block | write_u8@56866[System Bus]=party-block | write_u8@56867[System Bus]=party-block | write_u8@56868[System Bus]=party-block | write_u8@56869[System Bus]=party-block | write_u8@56870[System Bus]=party-block | write_u8@56871[System Bus]=party-block | write_u8@56872[System Bus]=party-block | write_u8@56873[System Bus]=party-block | write_u8@56874[System Bus]=party-block | write_u8@56875[System Bus]=party-block | write_u8@56876[System Bus]=party-block | write_u8@56877[System Bus]=party-block | write_u8@56878[System Bus]=party-block | write_u8@56879[System Bus]=party-block | write_u8@56880[System Bus]=party-block | write_u8@56881[System Bus]=party-block | write_u8@56882[System Bus]=party-block | write_u8@56883[System Bus]=party-block | write_u8@56884[System Bus]=party-block | write_u8@56885[System Bus]=party-block | write_u8@56886[System Bus]=party-block | write_u8@56887[System Bus]=party-block | write_u8@56888[System Bus]=party-block | write_u8@56889[System Bus]=party-block | write_u8@56890[System Bus]=party-block | write_u8@56891[System Bus]=party-block | write_u8@56892[System Bus]=party-block | write_u8@56893[System Bus]=party-block | write_u8@56894[System Bus]=party-block | write_u8@56895[System Bus]=party-block | write_u8@56896[System Bus]=party-block | write_u8@56897[System Bus]=party-block | write_u8@56898[System Bus]=party-block | write_u8@56899[System Bus]=party-block | write_u8@56900[System Bus]=party-block | write_u8@56901[System Bus]=party-block | write_u8@56902[System Bus]=party-block | write_u8@56903[System Bus]=party-block | write_u8@56904[System Bus]=party-block | write_u8@56905[System Bus]=party-block | write_u8@56906[System Bus]=party-block | write_u8@56907[System Bus]=party-block | write_u8@56908[System Bus]=party-block | write_u8@56909[System Bus]=party-block | write_u8@56910[System Bus]=party-block | write_u8@56911[System Bus]=party-block | write_u8@56912[System Bus]=party-block | write_u8@56913[System Bus]=party-block | write_u8@56914[System Bus]=party-block | write_u8@56915[System Bus]=party-block | write_u8@56916[System Bus]=party-block | write_u8@56917[System Bus]=party-block | write_u8@56918[System Bus]=party-block | write_u8@56919[System Bus]=party-block | write_u8@56920[System Bus]=party-block | write_u8@56921[System Bus]=party-block | write_u8@56922[System Bus]=party-block | write_u8@56923[System Bus]=party-block | write_u8@56924[System Bus]=party-block | write_u8@56925[System Bus]=party-block | write_u8@56926[System Bus]=party-block | write_u8@56927[System Bus]=party-block | write_u8@56928[System Bus]=party-block | write_u8@56929[System Bus]=party-block | write_u8@56930[System Bus]=party-block | write_u8@56931[System Bus]=party-block | write_u8@56932[System Bus]=party-block | write_u8@56933[System Bus]=party-block | write_u8@56934[System Bus]=party-block | write_u8@56935[System Bus]=party-block | write_u8@56936[System Bus]=party-block | write_u8@56937[System Bus]=party-block | write_u8@56938[System Bus]=party-block | write_u8@56939[System Bus]=party-block | write_u8@56940[System Bus]=party-block | write_u8@56941[System Bus]=party-block | write_u8@56942[System Bus]=party-block | write_u8@56943[System Bus]=party-block | write_u8@56944[System Bus]=party-block | write_u8@56945[System Bus]=party-block | write_u8@56946[System Bus]=party-block | write_u8@56947[System Bus]=party-block | write_u8@56948[System Bus]=party-block | write_u8@56949[System Bus]=party-block | write_u8@56950[System Bus]=party-block | write_u8@56951[System Bus]=party-block | write_u8@56952[System Bus]=party-block | write_u8@56953[System Bus]=party-block | write_u8@56526[System Bus]=party-block",
+      "[ok] (d0) the deposited key is boxed and the deposit's Entries/Banks bytes were captured  -- box 1 slot 1 Entries@12516=$01 Banks@12536=$00",
+      "[ok] (d0a) party_mon was queued into the client's command path  -- BFFFFF:D1C2:022:00",
+      "[ok] (d1a) wPartyCount went 4 -> 5  -- 4 -> 5",
+      "[ok] (d1b) read_party() succeeded after the withdraw  -- 5",
+      "[ok] (d1c) the withdrawn key is back at the LAST party slot  -- last=BFFFFF:D1C2:022:00 want=BFFFFF:D1C2:022:00",
+      "[ok] (d2) slot 4: HP 152 == MaxHP 152 and status $00  -- HP 152 MaxHP 152 status $00",
+      "[ok] (d3d) all twenty box reads succeeded after the withdraw",
+      "[ok] (d3a) the withdrawn key is in NO box  -- BFFFFF:D1C2:022:00",
+      "[ok] (d3b) the box slot's Entries byte went $01 -> $00 (the deposit's value, not 0-vs-0)  -- $01 -> $00",
+      "[ok] (d3c) the box slot's Banks byte $00 -> $00: slot bit clear, no other bit moved (bit was 0 = bank 1)  -- $00 -> $00, bit mask $01",
+      "[ok] (d4) the pokedb entry's 47 bytes and its allocation flag are UNCHANGED  -- 0 entry byte(s), 0 flag byte(s) moved",
+      "[ok] (d5) EXACT diff: only the new party slot's record+OT+nickname, wPartyCount, the Entries and Banks bytes changed  -- exact",
+      "[ok] (d6) every OTHER party mon is byte-identical (party-block 42 changed, CartRAM 1)",
+      "[ok] (d5c) CONTROL: the same diff against a one-slot-shifted expected set FAILS  -- subset reported false",
+      "[ok] (e0) the (a) target is still in the party  -- CFFFFF:D1C2:037:40 slot 2",
+      "[ok] (e0b) box 20 has an empty slot before the burial  -- 1",
+      "[ok] (e0a) memorialize was queued into the client's command path  -- CFFFFF:D1C2:037:40",
+      "[ok] (e1) the client sent memorialize_done exactly once and no memorialize_failed  -- done 1 failed 0",
+      "[ok] (e2) wPartyCount went down by one and the key left the party  -- 5 -> 4",
+      "[ok] (e3) the census is complete and reads the key ONLY in box 20, at the first empty slot  -- [{\"bank\":1,\"box\":20,\"entry\":2,\"slot\":1}]",
+      "[ok] (e4) a FRESH entry: its allocation flag was clear before and set after; the box-20 slot was empty  -- bank 1 entry 2 flag@10423",
+      "[ok] (e5) the stored entry is byte-for-byte the party mon's own encoding (entry_from_party: no status/HP) and verifies  -- 16433",
+      "[ok] (e6) EXACT diff subset: the box-20 Entries/Banks bytes, the fresh 49-byte entry, its flag byte, party compaction only  -- 125 byte(s), all expected",
+      "[ok] (e6c) CONTROL: the same diff against a party-only expected set FAILS (the box-20 bytes are real)",
+      "[ok] (e7) every (e) write is inside a declared range  -- 480 write(s)",
+      "[ok] (f0) the (b)/(d) key is in the party to deposit  -- BFFFFF:D1C2:022:00",
+      "[ok] (f0a) the deposit put it in exactly one ordinary box  -- [{\"bank\":1,\"box\":1,\"entry\":3,\"slot\":1}]",
+      "[ok] (f0b) memorialize was queued into the client's command path  -- BFFFFF:D1C2:022:00",
+      "[ok] (f1) the client sent memorialize_done exactly once and no memorialize_failed  -- done 1 failed 0",
+      "[ok] (f2) the census reads the key ONLY in box 20, at the first empty slot, at the SAME (bank, entry)  -- [{\"bank\":1,\"box\":20,\"entry\":3,\"slot\":2}] (source {\"bank\":1,\"box\":1,\"entry\":3,\"slot\":1})",
+      "[ok] (f3) the source Entries byte went $03 -> $00 and the box-20 Entries byte $00 -> $03  -- source $03 -> $00, box 20 $00 -> $03",
+      "[ok] (f3b) the box-20 slot's Banks bit selects the source's pokedb bank  -- Banks $00 -> $00 bank 1",
+      "[ok] (f4) EXACT diff subset: the box-20 Entries/Banks bytes and the source Entries byte ONLY (no allocation, no pokedb byte, no party byte)  -- 2 byte(s), all expected",
+      "[ok] (f4c) CONTROL: the same diff against the destination-only set FAILS (the source byte really moved)",
+      "[ok] (f5) every (f) write is inside a declared range  -- 2 write(s)"
+    ],
+    "setup_lines": []
+  },
   "checks": [
     {
       "name": "run verdict",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "ROM booted is the provenance overlay with the overworld writer and box executor composed",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "force_faint: the bench mon's HP is 0, status 0, party count unchanged",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "force_faint: every write is inside the target's +32/+34/+35 bytes",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "force_faint: exact diff subset, and its control fails",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "box_mon: party 5 -> 4 and the key leaves the party",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "box_mon: the mon is in a gameplay box and its pokedb entry checksum verifies",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "box_mon: exact diff subset over declared ranges, and its control fails",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "party_mon: party 4 -> 5, the key at the last slot, healed",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "party_mon: the box slot is cleared and the pokedb entry is never freed",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "party_mon: exact diff subset, and its control fails",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "memorialize (party origin): memorialize_done exactly once, no memorialize_failed, and the key leaves the party",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "memorialize (party origin): the census reads the key only in box 20 at the first empty slot",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "memorialize (party origin): a fresh pokedb entry equal to the party mon's own encoding, and it verifies",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "memorialize (party origin): exact diff subset, and its control fails",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "memorialize (box origin): memorialize_done exactly once, no memorialize_failed, from a boxed key",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "memorialize (box origin): the census reads the key only in box 20 at the same (bank, entry), and the source membership is removed",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "memorialize (box origin): exact diff subset, and its control fails",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "independent recompute of the force_faint, box_mon, party_mon and both memorialize diffs equals the driver's",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\writes\\writes\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "Post-run offline analysis F:/slink-work/lanes/freeze3-plan/analysis/writes_recompute.json, sha256 e768c4ae70dfe98a0801ba033d0f05f80b4b85d8fcadf35a849cd497625396b5: PASS, all five independently recomputed raw-image diffs equal trace.json and result.txt.",
+      "observed": "5/5 equal; changed bytes: force_faint=1, box_mon=110, party_mon=43, memorialize_party=125, memorialize_box=2 (281 total)."
     }
-  ],
-  "not_proven": [
-    "(c) negatives NOT RUN (result.txt:94): synthetic gate pokes wedge the frame loop; they need a real battle. Owner-accepted as unit/model-covered.",
-    "Bench force_faint in the overworld only here: the natural in-battle faint is the separate LIVE-DUO-NATURAL-FAINT receipt.",
-    "Memorialize here is a local command-path recording: no save/reset durability, no owed-burial or three-outcome contract (post-RC per owner ruling #7), no bank-2 entry, no full box 20, no full party.",
-    "Single cartridge; no partner event drove the commands."
-  ],
-  "run_witness": {
-    "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-    "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-    "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-    "kind": "recorded per-job/root witness",
-    "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-    "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
-  }
+  ]
 }

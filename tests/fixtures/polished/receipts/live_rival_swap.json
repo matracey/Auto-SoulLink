@@ -1,95 +1,285 @@
 {
   "schema": "polished-live-receipt-v1",
   "grade": "DEV",
-  "date": "2026-10-09",
-  "rom_sha1_executed": "fe8c57e1034059331ccf25d232ff757d675363b2",
-  "overlay_provenance_sha256": "dbce96cd5d73fcae9e3f98a6ae467dd44ae7602be0f6df7ea1ca0956e8d6a254",
-  "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9",
   "scenario_id": "rival/client-server-native-gate",
-  "lane": "F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival",
-  "requirement_id": "LIVE-RIVAL-SWAP",
-  "narrative": "Frozen execution rebound from F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival\\synth-5ilkp0rt\\receipt.json; previous run narrative superseded.",
-  "evidence_dir": "F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival\\synth-5ilkp0rt",
-  "evidence_file": "F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival\\synth-5ilkp0rt\\receipt.json",
-  "evidence_sha256": "d0879f177f23699c5274fe271239e2a45bbfd1e0e30c506bfc47a627a6c54026",
-  "evidence_size": 64438,
-  "evidence_note": "Mechanical rebind after producer PASS and recorded/scoped run witness validation; DEV only.",
+  "date": "2026-10-12",
+  "lane": "mechanics/rival",
+  "evidence_file": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\producer\\synth-qjm9hofd\\receipt.json",
+  "evidence_sha256": "be638c9fb545bbc8bf9e11922d75d17ca4ffbefc404902efd3307d385d213e69",
+  "rom_sha1_executed": "ede69bbf399b7a02007cfe563ff61658535de039",
+  "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7",
+  "overlay_provenance_sha256": "22f00e55524434a82fba2a40e9735c24e71905be80f9e638591324a5dc3547c1",
+  "run_witness": {
+    "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+    "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+    "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+    "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+    "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+  },
   "secondary_evidence": [
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival\\synth-5ilkp0rt\\trace.json",
-      "note": "native callback/write/continuation trace",
-      "sha256": "fd250c3aa9d3c3092eedf1b31841e7a8c0eb7fa3681205f8d0b398faf99d5320",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\producer\\synth-qjm9hofd\\input.json",
+      "sha256": "9069f7f00e85116838517827f946a1ed7119fec5fefad53898edd472ad905300",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival\\WITNESS.json",
-        "sha256": "ccc391ae62100bf5f81b2089b6f7937789918fce7576ebf62005affcb9ec55cb",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival\\synth-5ilkp0rt\\wire\\wire_a.jsonl",
-      "note": "real client/server wire",
-      "sha256": "12ff5c6d4e889e39135d0d1c546fbede2f0f0e6a4c6f409a25ee34105caf6bd7",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\producer\\synth-qjm9hofd\\partner.json",
+      "sha256": "8238c29794be733a0cf7423d68c09492229f948bbe620923ac4de28a9e689b87",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival\\WITNESS.json",
-        "sha256": "ccc391ae62100bf5f81b2089b6f7937789918fce7576ebf62005affcb9ec55cb",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival\\synth-5ilkp0rt\\input.json",
-      "note": "source/input pins",
-      "sha256": "e45992ce3ed232d1d618e36ac3372d1e399d8495c8bfe937d3897193209d1220",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\producer\\synth-qjm9hofd\\positions.json",
+      "sha256": "90096a1ca17597a677a5765796d5482d727b54cbc718bd2996839d271136e8b2",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival\\WITNESS.json",
-        "sha256": "ccc391ae62100bf5f81b2089b6f7937789918fce7576ebf62005affcb9ec55cb",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\producer\\synth-qjm9hofd\\result.txt",
+      "sha256": "f75774642b2b75395ec7d19f7591853b505a56dec2ced58dcb613c3c798409eb",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\producer\\synth-qjm9hofd\\rom\\pol_overlay.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\producer\\synth-qjm9hofd\\server\\events.json",
+      "sha256": "ba44bf367c92263503d290a0c11d480d1f50935a07a6d0b43237156ca56fcf1f",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\producer\\synth-qjm9hofd\\server\\links.json",
+      "sha256": "ec5758f0fd2a75716107d92470ccbe87fc1f1954005c44750f366d366f08d12b",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\producer\\synth-qjm9hofd\\server\\rom_contract.json",
+      "sha256": "0508406f092430d8db34085dfe3a0a7b64cc638ed843e9504a9d86434325b68d",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\producer\\synth-qjm9hofd\\server\\slink.log",
+      "sha256": "36d5f71f2141b3137760d382d1e19c2ce6b63384c5e03cb1786417300d21a856",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\producer\\synth-qjm9hofd\\server.log",
+      "sha256": "b7f77189e2c3c93bf01bc19d344ca830473ca95843a7d70c2f9ed10adb4f028c",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\producer\\synth-qjm9hofd\\sram\\pol overlay.SaveRAM",
+      "sha256": "96daa0764212b9407d23cc8750cea4fa8000795dc12b653f6f86a9e327277396",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\producer\\synth-qjm9hofd\\sram\\pol overlay.SaveRAM.bak",
+      "sha256": "96daa0764212b9407d23cc8750cea4fa8000795dc12b653f6f86a9e327277396",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\producer\\synth-qjm9hofd\\syms.json",
+      "sha256": "facd8e7f47ad7f2432676809ddf4e058f81946da10cf21e1d6d43a4e965b78d7",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\producer\\synth-qjm9hofd\\trace.json",
+      "sha256": "073fb83d743d3b606dda81b79edbe904eb604118241e61564dd1b54eae2d4705",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\producer\\synth-qjm9hofd\\wire\\wire_a.jsonl",
+      "sha256": "4c9a0df2d227785ae20b0443107a315a9ec65bb2441358d6f43d8fcc6bfb4262",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\producer\\synth-qjm9hofd\\wire\\wire_b.jsonl",
+      "sha256": "4477911d8b6d8f90c0166ee87e529d24e199f31cdab3efd6ff5cd5555b3cf75b",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\rival-swap.console.txt",
+      "sha256": "2379b642aa4e1e523d9a5101be14c6f23281510fde734aed194010a657a0ff42",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\rival-swap.exit.json",
+      "sha256": "b0f08ba395e86e0dd7b94559a695fe60a65ea577e5ffd353cb5463c0c81b10ef",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival\\rival-swap.LAUNCH.json",
+      "sha256": "e6b2ec80e30ca0db72da37aa0466486e4445a73ef586b32c9814f9b9729a3017",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\rival-swap\\WITNESS.json",
+        "sha256": "f36863ab0b9b00e8707ddce3d5789c35b599b2cd975abe57d8de08d0edfa0a7e",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\mechanics\\rival",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     }
   ],
   "synth": [
-    "SYNTH scene fixture and second-save identity; scripted TCP partner, one emulator."
+    {
+      "setup": "retained SYNTH/setup SaveRAM fixtures; not independently played from a new game",
+      "recorded_inputs": [
+        {
+          "job": "rival-swap.LAUNCH.json",
+          "path": "F:\\slink-work\\lanes\\pol-rival-live\\fixture\\rival.SaveRAM",
+          "sha256": "030c62ff898050d81d80dea19677e8520e2f707dae0c35f873d87e79cf7ac1ae"
+        }
+      ]
+    },
+    {
+      "setup": "SYNTH rival fixture and scripted partner",
+      "fixture_sha256": "030c62ff898050d81d80dea19677e8520e2f707dae0c35f873d87e79cf7ac1ae",
+      "partner": "SYNTH second save identity; scripted TCP hello/tick, no second emulator",
+      "partner_statement": "SYNTH identity derivative of an existing SYNTH setup fixture (O-33); not independently played; native Continue/save/reload evaluated separately"
+    }
   ],
+  "not_proven": [
+    "DEV retained-run evidence only; no physical promotion or new emulator run. Checks record the owner's producer/release-verifier-level qualification, not independent per-check raw-map proof."
+  ],
+  "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+  "evidence_note": "Owner ruling2026-10-13: retained producer/release-verifier-level binding. No rebind3 or per-check raw map; producer_observations records the actual observed scenario facts.",
+  "producer_observations": {
+    "verdict": "PASS",
+    "reasons": [],
+    "manifest": {
+      "setup": "SYNTH",
+      "native": "buttons, trainer battle, real client/server, writer, send-in",
+      "partner": "SYNTH second save identity; scripted TCP hello/tick, no second emulator",
+      "rom_sha1": "ede69bbf399b7a02007cfe563ff61658535de039"
+    }
+  },
   "checks": [
     {
       "name": "run verdict",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival\\synth-5ilkp0rt\\receipt.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "native rival gate and bound trainer identity",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival\\synth-5ilkp0rt\\receipt.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "one reply and exact confined partner party write",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival\\synth-5ilkp0rt\\receipt.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "native battle continues with swapped enemy",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival\\synth-5ilkp0rt\\receipt.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     }
-  ],
-  "not_proven": [
-    "Only RIVAL0 id3 physically exercised; not all 21 configured rivals.",
-    "Not a two-emulator partner campaign."
-  ],
-  "run_witness": {
-    "path": "F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival\\WITNESS.json",
-    "sha256": "ccc391ae62100bf5f81b2089b6f7937789918fce7576ebf62005affcb9ec55cb",
-    "scope": "F:\\slink-work\\lanes\\pol-freeze2\\trade\\rival",
-    "kind": "recorded per-job/root witness",
-    "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-    "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
-  }
+  ]
 }

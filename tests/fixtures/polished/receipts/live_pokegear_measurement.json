@@ -1,104 +1,214 @@
 {
   "schema": "polished-live-receipt-v1",
   "grade": "DEV",
-  "date": "2026-10-09",
-  "rom_sha1_executed": "fe8c57e1034059331ccf25d232ff757d675363b2",
-  "overlay_provenance_sha256": "dbce96cd5d73fcae9e3f98a6ae467dd44ae7602be0f6df7ea1ca0956e8d6a254",
-  "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9",
   "scenario_id": "explore/C-pokegear-icon-strip",
-  "lane": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c",
-  "requirement_id": "LIVE-POKEGEAR-MEASUREMENT",
-  "narrative": "Frozen execution rebound from F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c\\explore_C\\result.txt; previous run narrative superseded.",
-  "evidence_dir": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c\\explore_C",
-  "evidence_file": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c\\explore_C\\result.txt",
-  "evidence_sha256": "21bafb3fa5bd13cb86f7edea128a9648aac8775b92a13f08dca917cb318e0614",
-  "evidence_size": 1889,
+  "date": "2026-10-12",
+  "lane": "legacy/explore-C",
+  "evidence_file": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C\\producer\\explore_C\\result.txt",
+  "evidence_sha256": "6e5e9e0942dc5c421d92008ae701e09db75d8c1bef550e102e89169d5e1418a2",
+  "rom_sha1_executed": "ede69bbf399b7a02007cfe563ff61658535de039",
+  "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7",
+  "overlay_provenance_sha256": "22f00e55524434a82fba2a40e9735c24e71905be80f9e638591324a5dc3547c1",
+  "run_witness": {
+    "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\explore-C\\WITNESS.json",
+    "sha256": "b14c89ace4e2db8bd113c4246ec26ab9613d9fb72a3ca990e0cbfabe019f72cc",
+    "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C",
+    "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+    "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+  },
   "secondary_evidence": [
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c\\explore_C\\pokegear.json",
-      "note": "Fresh freeze supporting observation/control",
-      "sha256": "6c4684077d451239414e7edd831d1554923dc90ea0fbe61cb4832cdbf504500c",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C\\explore-C.console.txt",
+      "sha256": "ec5491df53a29dbe766d7d17f1b093fdcb806e2005e87098fe9f682056112c1c",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c\\WITNESS.json",
-        "sha256": "2eb098c4d2a3cd8b94caf99447cfe6746d52097b28010f683b190507518c1477",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\explore-C\\WITNESS.json",
+        "sha256": "b14c89ace4e2db8bd113c4246ec26ab9613d9fb72a3ca990e0cbfabe019f72cc",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c.out",
-      "note": "Fresh freeze2 job console: invocation timing/PID/path evidence; included even where the deterministic primary repeats.",
-      "sha256": "c08acd53e993b46ba1449578ac7782ef2f2d522c3a5fc6bc615372e96663ed14",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C\\explore-C.exit.json",
+      "sha256": "d6f8abc15f56bbb715e026357bc4220072009eaa82e4e9b3115189099127c088",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-        "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\explore-C\\WITNESS.json",
+        "sha256": "b14c89ace4e2db8bd113c4246ec26ab9613d9fb72a3ca990e0cbfabe019f72cc",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c\\WITNESS.json",
-      "note": "Fresh freeze2 full-cut per-job witness; primary execution tied to this immutable code cut.",
-      "sha256": "2eb098c4d2a3cd8b94caf99447cfe6746d52097b28010f683b190507518c1477",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C\\explore-C.LAUNCH.json",
+      "sha256": "bfc16e10d137823ae381506990df58a8e7dfdac3424deaa80d81aeba035e3ca4",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c\\WITNESS.json",
-        "sha256": "2eb098c4d2a3cd8b94caf99447cfe6746d52097b28010f683b190507518c1477",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\explore-C\\WITNESS.json",
+        "sha256": "b14c89ace4e2db8bd113c4246ec26ab9613d9fb72a3ca990e0cbfabe019f72cc",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C\\producer\\explore_C\\pokegear.json",
+      "sha256": "e90f9026609a30b294c4627c611875759f9b57c996f228ab6b35912b43d7f6d0",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\explore-C\\WITNESS.json",
+        "sha256": "b14c89ace4e2db8bd113c4246ec26ab9613d9fb72a3ca990e0cbfabe019f72cc",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C\\producer\\explore_C\\pokegear_card0.png",
+      "sha256": "423f3a1edebbe471b455b60c5adcc757e41e0d2e89f297cb708ef5f2d69a821c",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\explore-C\\WITNESS.json",
+        "sha256": "b14c89ace4e2db8bd113c4246ec26ab9613d9fb72a3ca990e0cbfabe019f72cc",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C\\producer\\explore_C\\pokegear_card1.png",
+      "sha256": "cd1ecb7076a7746901b36e9720ca8fffa49b0f163e1b9519f6a18cbfb787fe64",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\explore-C\\WITNESS.json",
+        "sha256": "b14c89ace4e2db8bd113c4246ec26ab9613d9fb72a3ca990e0cbfabe019f72cc",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C\\producer\\explore_C\\pokegear_card2.png",
+      "sha256": "3e7be129cc32bf3527bc20063d990d75e0485a3d93e60dc386d0d282a010afdc",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\explore-C\\WITNESS.json",
+        "sha256": "b14c89ace4e2db8bd113c4246ec26ab9613d9fb72a3ca990e0cbfabe019f72cc",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C\\producer\\explore_C\\pokegear_card3.png",
+      "sha256": "74226414c601cf99aff67579625832228dc843a52926339106da693d3a621fe5",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\explore-C\\WITNESS.json",
+        "sha256": "b14c89ace4e2db8bd113c4246ec26ab9613d9fb72a3ca990e0cbfabe019f72cc",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C\\producer\\explore_C\\syms.json",
+      "sha256": "0aa6076f40bdec3d41f5b36509500cc9c4af3dab86f01bf9a12e1a1707b728e6",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\explore-C\\WITNESS.json",
+        "sha256": "b14c89ace4e2db8bd113c4246ec26ab9613d9fb72a3ca990e0cbfabe019f72cc",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C\\producer\\rom\\pol_overlay.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\explore-C\\WITNESS.json",
+        "sha256": "b14c89ace4e2db8bd113c4246ec26ab9613d9fb72a3ca990e0cbfabe019f72cc",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C\\producer\\sram_overlay\\pol overlay.SaveRAM",
+      "sha256": "c3f3c27380fb4f26e4e3cafff68cdcdf0e54afad25dd9105277bf004ed663137",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\explore-C\\WITNESS.json",
+        "sha256": "b14c89ace4e2db8bd113c4246ec26ab9613d9fb72a3ca990e0cbfabe019f72cc",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C\\producer\\sram_overlay\\pol overlay.SaveRAM.bak",
+      "sha256": "a0fea4f97688ece084dd68e395073d682c1255242241335a60e6a16a7718f072",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\explore-C\\WITNESS.json",
+        "sha256": "b14c89ace4e2db8bd113c4246ec26ab9613d9fb72a3ca990e0cbfabe019f72cc",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\explore-C",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     }
   ],
   "synth": [
-    "Retained SYNTH warp/scene fixture; native inputs thereafter. Phone/Pokegear/panel setup flags and scripted host/second identity remain disclosed by the lane."
+    {
+      "setup": "retained SYNTH/setup SaveRAM fixtures; not independently played from a new game",
+      "recorded_inputs": [
+        {
+          "job": "explore-C.LAUNCH.json",
+          "path": "F:\\slink-work\\lanes\\g2int-live\\pol\\fixture\\polished_overlay_warp.SaveRAM",
+          "sha256": "75c7a5dc30126f746567202cfb39fe583dfa04eb226063560541f6cbd29f36b8"
+        }
+      ]
+    },
+    "[explore] SYNTH wPokegearFlags 00 -> 87"
   ],
+  "not_proven": [
+    "DEV retained-run evidence only; no physical promotion or new emulator run. Checks record the owner's producer/release-verifier-level qualification, not independent per-check raw-map proof."
+  ],
+  "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+  "evidence_note": "Owner ruling2026-10-13: retained producer/release-verifier-level binding. No rebind3 or per-check raw map; producer_observations records the actual observed scenario facts.",
+  "producer_observations": {
+    "result_lines": [
+      "RESULT: PASS explore-C (0 checks failed) frame 945\r"
+    ],
+    "checks_observed": [
+      "[ok] all four native cards visited"
+    ],
+    "setup_lines": [
+      "[explore] SYNTH wPokegearFlags 00 -> 87"
+    ]
+  },
   "checks": [
     {
       "name": "run verdict",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c\\explore_C\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "all four native cards visited",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c\\explore_C\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "per-card state",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c\\explore_C\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "columns 0-7 identical in all four cards",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c\\explore_C\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "arrow XOFFSET is card << 4",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c\\explore_C\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "columns 8-9 of rows 0-1 are drawn by every native card",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c\\explore_C\\result.txt; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     }
-  ],
-  "not_proven": [
-    "DEV only; no release or PHYSICAL promotion. Scope is the named recording, not exhaustive gameplay."
-  ],
-  "run_witness": {
-    "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c\\WITNESS.json",
-    "sha256": "2eb098c4d2a3cd8b94caf99447cfe6746d52097b28010f683b190507518c1477",
-    "scope": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\explore-c",
-    "kind": "recorded per-job/root witness",
-    "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-    "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
-  },
-  "evidence_note": "Mechanical rebind after producer PASS and recorded/scoped run witness validation; DEV only."
+  ]
 }

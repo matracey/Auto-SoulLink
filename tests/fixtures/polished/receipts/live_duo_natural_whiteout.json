@@ -1,156 +1,498 @@
 {
   "schema": "polished-live-receipt-v1",
   "grade": "DEV",
-  "date": "2026-10-09",
-  "rom_sha1_executed": "fe8c57e1034059331ccf25d232ff757d675363b2",
-  "overlay_provenance_sha256": "dbce96cd5d73fcae9e3f98a6ae467dd44ae7602be0f6df7ea1ca0956e8d6a254",
-  "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9",
   "scenario_id": "duo/play-whiteout-natural",
-  "lane": "F:\\slink-work\\lanes\\pol-freeze2",
-  "requirement_id": "LIVE-DUO-NATURAL-WHITEOUT",
-  "narrative": "Frozen execution rebound from F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n\\play-whiteout-natural\\evidence.json; previous run narrative superseded.",
-  "evidence_dir": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n\\play-whiteout-natural",
-  "evidence_file": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n\\play-whiteout-natural\\evidence.json",
-  "evidence_sha256": "bad6351cfb74a15f08a6cbca6df832c4165a02c3c6cf2a32f2e65f44ea8353be",
-  "evidence_size": 6987147,
-  "evidence_note": "Mechanical rebind after producer PASS and recorded/scoped run witness validation; DEV only.",
+  "date": "2026-10-12",
+  "lane": "natural-duo/whiteout-natural",
+  "evidence_file": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\evidence.json",
+  "evidence_sha256": "19eed2a15903b66af8f4abdcd141733f4716ea13e5c0716bd727572bed8d2dd8",
+  "rom_sha1_executed": "ede69bbf399b7a02007cfe563ff61658535de039",
+  "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7",
+  "overlay_provenance_sha256": "22f00e55524434a82fba2a40e9735c24e71905be80f9e638591324a5dc3547c1",
+  "run_witness": {
+    "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+    "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+    "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+    "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+    "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+  },
   "secondary_evidence": [
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n\\play-whiteout-natural\\server.log",
-      "note": "server log of the duo run (both clients, rules, commands)",
-      "sha256": "389a9cf20a9c8584ae8f1f8996131a15e6532f17bdde2a66d4d18bfd6fc797fc",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\duo-whiteout-natural.console.txt",
+      "sha256": "0b99a706cdb686657a86eab95855f44685682b06baea8caef8ef0cc28cd165af",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-        "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo_s4n_console.txt",
-      "note": "driver console: scenario banner with overlay sha1, RESULT line",
-      "sha256": "77b0df73a33fcb857339293a46f5ef66c58bf5303f8607227717aae2d2289ca1",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\duo-whiteout-natural.exit.json",
+      "sha256": "10a55c8b744843f0df448947abfa690ecb4dff3900f75f5a14f41238c51121bc",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-        "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n\\play-whiteout-natural\\a\\rom\\pol_overlay.gbc",
-      "note": "side a staged ROM",
-      "sha256": "1145e7066617a7bc5f7296093d45e997db63ef3616713d8eb38c3e8bcc44c60f",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\duo-whiteout-natural.LAUNCH.json",
+      "sha256": "bd0b4ee14b35827132799a586a274ea67544bf79ca95f6f81e4ff7cb8bcae7e7",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-        "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n\\play-whiteout-natural\\b\\rom\\pol_overlay.gbc",
-      "note": "side b staged ROM",
-      "sha256": "1145e7066617a7bc5f7296093d45e997db63ef3616713d8eb38c3e8bcc44c60f",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\a\\g1\\beat_a.txt",
+      "sha256": "8b20b443bd635046c43d15b4a195759656785a471a1eed0bff084a494bb675a9",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-        "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n-job\\WITNESS.json",
-      "note": "Fresh freeze2 per-job witness; root fallback scopes sibling job artifacts.",
-      "sha256": "e7b9a92e43c83ed71579ce27ef3ba1e2db39ce3abdbac9903a819af2f04511a8",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\a\\g1\\result.txt",
+      "sha256": "2c05f0933953dc2a178a36059c7f12b341d6f3cbb3e9dd43435bc45ff5c8374b",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n-job\\WITNESS.json",
-        "sha256": "e7b9a92e43c83ed71579ce27ef3ba1e2db39ce3abdbac9903a819af2f04511a8",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n-job",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\a\\g1\\step_1.json",
+      "sha256": "a2e6d8d167e08c55d944124618ca18f739e4fa45bc39960406a1fd39748c3676",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\a\\g1\\step_2.json",
+      "sha256": "5dd8ab4fd7da1a0ef3cf03700de1da3b0f8ee2a2e0af54a05ea7b7c8de58fb70",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\a\\g1\\step_3.json",
+      "sha256": "1d3b59f7a843e578dcc5853a77a67cdbf192f5b7e8806746e01b0ccedc2c30fc",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\a\\g1\\step_4.json",
+      "sha256": "a6b46d0a4ebb5461076cd0db2ada027b623c9c1d9a11e274c40d2b681a90c12b",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\a\\g1\\step_5.json",
+      "sha256": "397e57cb6136fbfa884966ac0955bcd4c586aa6c3f5d4689e0b5c82cb9086af3",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\a\\g1\\step_6.json",
+      "sha256": "c2102ca424da85b0ad848cf9c198c4b422f6e312823329ed6007791bb84f2475",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\a\\g1\\syms.json",
+      "sha256": "0aa6076f40bdec3d41f5b36509500cc9c4af3dab86f01bf9a12e1a1707b728e6",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\a\\rom\\pol_overlay.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\a\\sram\\pol overlay.SaveRAM",
+      "sha256": "440fe69001b15daf69c2fa19dc34673380612648db632f547a22e6bbb8ddbbd8",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\a\\sram\\pol overlay.SaveRAM.bak",
+      "sha256": "440fe69001b15daf69c2fa19dc34673380612648db632f547a22e6bbb8ddbbd8",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\b\\g1\\beat_b.txt",
+      "sha256": "5ad3dd98b33a896dc1bfb0e07fa30a9ee5c416f883c81ea4f07dbc6bbd2ba321",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\b\\g1\\result.txt",
+      "sha256": "d9a82551d1a6a03492e5452fbfca4ed0b4a9658e861a35f62e0db38f690bfab2",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\b\\g1\\step_1.json",
+      "sha256": "70dd34162877bb2d445548c9ec68e1c5d482d73afa16df27c0054163009c7d22",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\b\\g1\\step_2.json",
+      "sha256": "2e9e1e5893a765c835e0f355188cecb761dfb793c448ab70122658ef65dd3083",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\b\\g1\\step_3.json",
+      "sha256": "8a376460f798cfab611d0e21dda2ca19ce70e1a176cae1f36f02ecf3e46b80b2",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\b\\g1\\step_4.json",
+      "sha256": "6fe417829d79969a6224aea0581717d59e3bb7307d026d65fe6e4c3aca207665",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\b\\g1\\syms.json",
+      "sha256": "0aa6076f40bdec3d41f5b36509500cc9c4af3dab86f01bf9a12e1a1707b728e6",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\b\\rom\\pol_overlay.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\b\\sram\\pol overlay.SaveRAM",
+      "sha256": "b1f0f3ede441312d3e849eb0d4b23dce229d0e348b88718772acc8fe5fe85e2e",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\b\\sram\\pol overlay.SaveRAM.bak",
+      "sha256": "b1f0f3ede441312d3e849eb0d4b23dce229d0e348b88718772acc8fe5fe85e2e",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\server.log",
+      "sha256": "45fe360300b8a6aaeb17d4cf24d64f450e964110568a8399738fa02caae00969",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\srv\\events.json",
+      "sha256": "ecc3c81e4fc1cbc34df749c591cebc00202b2075b16fd1f236d8aa4c13598bd5",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\srv\\links.json",
+      "sha256": "851dcceb290e28bb24bdb3c3439cb0d94f30ba2359a73a7f533b7dbc6bfce008",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\srv\\rom_contract.json",
+      "sha256": "0508406f092430d8db34085dfe3a0a7b64cc638ed843e9504a9d86434325b68d",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\srv\\slink.log",
+      "sha256": "c7e0bb6ac6b1f61f3ff2c236275c2d340a46b1eb8e80a034e44bf750f98026cf",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\wire\\wire_a.jsonl",
+      "sha256": "c2108d0a18699ddde63c5e86da8c01ecc581cbb515998959fb720d833bc571f7",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural\\producer\\play-whiteout-natural\\wire\\wire_b.jsonl",
+      "sha256": "37ea989c32461e1c87af3f3a3076e120ad0ac0784469aa334c54990404ba2086",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\duo-whiteout-natural\\WITNESS.json",
+        "sha256": "e5b19ed74d4db23424520bc20387c0b6b0cc9431c420ed778b3a0985dc708d96",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\natural-duo\\whiteout-natural",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     }
   ],
   "synth": [
-    "fixture a: O-33 SYNTH warp fixture sha256 75c7a5dc30126f746567202cfb39fe583dfa04eb226063560541f6cbd29f36b8 (Route 29, five SYNTH level-50 mons)",
-    "fixture b: SYNTH identity derivative f5f19f5d2e3e26e343214722b5116e1aac0c71a1200882a4cc6f58259bc6ca8d (O-33, derive_save.py), player_id 53699; a is 53698",
+    {
+      "setup": "retained SYNTH/setup SaveRAM fixtures; not independently played from a new game",
+      "recorded_inputs": [
+        {
+          "job": "duo-whiteout-natural.LAUNCH.json",
+          "path": "F:\\slink-work\\lanes\\g2int-live\\pol\\fixture\\polished_overlay_warp.SaveRAM",
+          "sha256": "75c7a5dc30126f746567202cfb39fe583dfa04eb226063560541f6cbd29f36b8"
+        },
+        {
+          "job": "duo-whiteout-natural.LAUNCH.json",
+          "path": "F:\\slink-work\\lanes\\pol-ident\\B.SaveRAM",
+          "sha256": "f5f19f5d2e3e26e343214722b5116e1aac0c71a1200882a4cc6f58259bc6ca8d"
+        }
+      ]
+    },
+    "fixture a: O-33 SYNTH warp fixture (Route 29, five SYNTH level-50 mons)",
+    "fixture b: SYNTH identity derivative f5f19f5d (O-33, derive_save.py)",
     "A: current HP of EVERY non-egg party record set to 1 (two disclosed WRAM bytes each, never HP0)",
-    "A: linked mon moved to lead by a separately disclosed party-record/OT/nickname swap",
-    "Native, not SYNTH: wild catches (walk, Bag -> Ball, throw) firing the capture_party site, the client capture/hello lines, every server rule and command, the receiving client's own write at its overworld hold, and the cartridge read-backs."
+    "A: linked mon moved to lead by a separately disclosed party-record/OT/nickname swap"
   ],
+  "not_proven": [
+    "DEV retained-run evidence only; no physical promotion or new emulator run. Checks record the owner's producer/release-verifier-level qualification, not independent per-check raw-map proof.",
+    "Whiteout handler causality is unproven, by design. The observed partner kill is via the linked mon's per-mon faint; this does not prove a distinct whiteout-handler causal path."
+  ],
+  "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+  "evidence_note": "Owner ruling2026-10-13: retained producer/release-verifier-level binding. No rebind3 or per-check raw map; producer_observations records the actual observed scenario facts.",
+  "producer_observations": {
+    "verdict": "PASS",
+    "reasons": [],
+    "facts": {
+      "area_id": "route_29",
+      "a_key": "5CB4EA:D1C2:010:00",
+      "b_key": "3817CB:D1C3:010:40",
+      "server_path": "whiteout_event_and_faint_propagation",
+      "linked_faint_count": 1,
+      "native_report_frames": [
+        19732
+      ],
+      "whiteout_handler_proved": false,
+      "proof_claim": "native whiteout event sent + faint propagation; whiteout handler UNPROVEN",
+      "native_hook_frames": [
+        19731
+      ],
+      "expected_partners": [
+        "3817CB:D1C3:010:40"
+      ],
+      "b_force_faint_keys": [
+        "3817CB:D1C3:010:40"
+      ],
+      "b_force_faint_counts": {
+        "3817CB:D1C3:010:40": 1
+      },
+      "b_cartridge_witness": {
+        "3817CB:D1C3:010:40": "force_faint_readback"
+      }
+    },
+    "disclosure": {
+      "setup_synth": [
+        "fixture a: O-33 SYNTH warp fixture (Route 29, five SYNTH level-50 mons)",
+        "fixture b: SYNTH identity derivative f5f19f5d (O-33, derive_save.py)",
+        "A: current HP of EVERY non-egg party record set to 1 (two disclosed WRAM bytes each, never HP0)",
+        "A: linked mon moved to lead by a separately disclosed party-record/OT/nickname swap"
+      ],
+      "native": [
+        "wild catches (walk, Bag -> Ball, throw) firing the capture_party site",
+        "the client's capture/hello lines",
+        "every server rule and command",
+        "the receiving client's own write at its overworld hold",
+        "the cartridge read-backs"
+      ]
+    }
+  },
   "checks": [
     {
       "name": "run verdict",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n\\play-whiteout-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "both sides booted the shipped overlay and were admitted",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n\\play-whiteout-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "two distinct identities and a native paired link on the same area",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n\\play-whiteout-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "the loss setup is a disclosed HP 1 on every non-egg record, never HP 0",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n\\play-whiteout-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "a native battle loss without Run produced a whiteout event after every party mon fainted",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n\\play-whiteout-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "the whiteout is reported with the entire party at HP 0 and before any heal",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n\\play-whiteout-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "the server sent exactly one force_faint for the linked partner to B via the per-mon faint of the linked mon",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n\\play-whiteout-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "B's cartridge shows the partner at HP 0 and no other B mon changed",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n\\play-whiteout-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "the server marks the link dead after the kill",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n\\play-whiteout-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "no reconnect or hello re-report after the stage mark",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\duo\\duo-s4n\\play-whiteout-natural\\evidence.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     }
-  ],
-  "not_proven": [
-    "WHITEOUT HANDLER UNPROVEN (facts.whiteout_handler_proved = false, proof_claim 'native whiteout event sent + faint propagation; whiteout handler UNPROVEN'): the owner bar is whiteout event sent plus the linked partner dying through per-mon faint; the server's _handle_whiteout is unit-covered and is not shown to have caused B's death here (the linked mon's own faint event, idx 593, preceded the whiteout event, idx 595).",
-    "Only one linked pair exists in this run, so 'all partners' means that one partner; the five SYNTH-fixture mons are unlinked.",
-    "SYNTH-conditioned: the HP 1 on every record and the lead swap are disclosed driver writes; not PHYSICAL qualification (owner act)."
-  ],
-  "run_witness": {
-    "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-    "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-    "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-    "kind": "recorded per-job/root witness",
-    "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-    "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
-  }
+  ]
 }

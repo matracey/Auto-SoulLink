@@ -1,178 +1,937 @@
 {
   "schema": "polished-live-receipt-v1",
   "grade": "DEV",
-  "date": "2026-10-09",
-  "rom_sha1_executed": "fe8c57e1034059331ccf25d232ff757d675363b2",
-  "overlay_provenance_sha256": "dbce96cd5d73fcae9e3f98a6ae467dd44ae7602be0f6df7ea1ca0956e8d6a254",
-  "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9",
   "scenario_id": "r1/manager-randomized-pair",
-  "lane": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar",
-  "requirement_id": "LIVE-R1-MANAGER-PAIR",
-  "narrative": "Frozen execution rebound from F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\summary.json; previous run narrative superseded.",
-  "evidence_dir": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar",
-  "evidence_file": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\summary.json",
-  "evidence_sha256": "094d3de23a1402baf5556ce71458663d1e962ccc7660ecde04285b13bf7d5644",
-  "evidence_size": 18933,
+  "date": "2026-10-12",
+  "lane": "legacy/random/r1-jar",
+  "evidence_file": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\summary.json",
+  "evidence_sha256": "896f8be85cc4abfbe7ab04359439c4c03c606acca704e6a0c147434b443a0e0a",
+  "rom_sha1_executed": "2aa6e36e364cd405eb8f2d55c74b60c7f7c7e275",
+  "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7",
+  "overlay_provenance_sha256": "22f00e55524434a82fba2a40e9735c24e71905be80f9e638591324a5dc3547c1",
+  "run_witness": {
+    "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+    "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+    "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+    "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+    "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+  },
   "secondary_evidence": [
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_nojar\\summary.json",
-      "note": "Fresh freeze supporting observation/control",
-      "sha256": "69495816db38b5a0014172fc0baf709e9600d9f74caf861d85ed944fd0c83feb",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\calls.jsonl",
+      "sha256": "93bd0289ce01d62e5b4a05a740dfbfa2e0a9288f9a8d45ef5c079093b4d17886",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_nojar\\WITNESS.json",
-        "sha256": "a2a213cea8a8ec24b61c816cb15f17d486ab40c61c7be42462727cd6a1132610",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_nojar",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_oldjar\\summary.json",
-      "note": "Fresh freeze supporting observation/control",
-      "sha256": "f72502d982d57fc6e4a030e76ab650c4b31e8297d8aee5389aa4da203076e521",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\jar_input.json",
+      "sha256": "2a8d97bd34b1314a0abb6c318c04ed4cd6fdc66de004b3f6fd8cde8841ea645a",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_oldjar\\WITNESS.json",
-        "sha256": "2c5b1a23acc24103b1c09807f3355f583af42da8392ff28e4667a5d1a52a734a",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_oldjar",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\manager_r1_jar.out",
-      "note": "Fresh freeze supporting observation/control",
-      "sha256": "eb1632dfa053e432ff42bcfd0c30e597112dc3547f9e15d86668354b896692b1",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\manager.log",
+      "sha256": "eef2e4d28873cf0ed135e33549ac4461e4aa42c988ed7bd61aa35a87213e8458",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\WITNESS.json",
-        "sha256": "17d9612a7901bcb4066ad836ea909a0427365192dc82dcbabca20627695e8222",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\rom_a.gbc",
-      "note": "Fresh R1 downloaded cartridge a; SHA19f588981837d6d28ad12f86a5f493a0eca3c1a44 matches this run's contract. R2 is a separately retained-cartridge run, not this R1 pair.",
-      "sha256": "cb24ee3ed2f1733309775376ad153f51206dba1c7ebb12635f084ebc77cfd540",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\mgr\\registry.json",
+      "sha256": "c4282052364bd0d05b266ccfb60c5aeed80343f32c103463952050306a92d0cf",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\WITNESS.json",
-        "sha256": "f02cb64c1afa6f5de172e71edf0b3c23ec2c1f09e74cf41f7833734e7a78064f",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\rom_b.gbc",
-      "note": "Fresh R1 downloaded cartridge b; SHA1c04b50aa85ab1365620a17660a335bd68a93a677 matches this run's contract. R2 is a separately retained-cartridge run, not this R1 pair.",
-      "sha256": "d46115a224d9843c9f53928664cc77551a05dd5ea99b04816cce549321bb58a9",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\mgr\\run_20261012_215904\\rom_contract.json",
+      "sha256": "e43a9c63e9bbbfcdcc438849baf6f5d0ffbfd03120ea715603c38e83e458219e",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\WITNESS.json",
-        "sha256": "f02cb64c1afa6f5de172e71edf0b3c23ec2c1f09e74cf41f7833734e7a78064f",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\rom_contract.json",
-      "note": "Fresh Manager own-cartridge contract and per-player hashes.",
-      "sha256": "995587e3573e67ab51d62fb606a8f5bb01e996577c600c1883cd2e6e04615b9d",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\mgr\\run_20261012_215904\\roms\\a.gbc",
+      "sha256": "c4099fa8e283b788df306fb81c25779e7ee310d556c03c41fb58cf35dd3bb738",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\WITNESS.json",
-        "sha256": "f02cb64c1afa6f5de172e71edf0b3c23ec2c1f09e74cf41f7833734e7a78064f",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     },
     {
-      "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\WITNESS.json",
-      "note": "Fresh freeze2 Manager provisioning witness.",
-      "sha256": "f02cb64c1afa6f5de172e71edf0b3c23ec2c1f09e74cf41f7833734e7a78064f",
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\mgr\\run_20261012_215904\\roms\\a_companion.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
       "run_witness": {
-        "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\WITNESS.json",
-        "sha256": "f02cb64c1afa6f5de172e71edf0b3c23ec2c1f09e74cf41f7833734e7a78064f",
-        "scope": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar",
-        "kind": "recorded per-job/root witness",
-        "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-        "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\mgr\\run_20261012_215904\\roms\\a_randomized.gbc",
+      "sha256": "c4099fa8e283b788df306fb81c25779e7ee310d556c03c41fb58cf35dd3bb738",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\mgr\\run_20261012_215904\\roms\\a_randomized.gbc.log",
+      "sha256": "348ded1ad421fc1f442e28f87c06d1225676c3d5a04a712504d500a8c9f0e65b",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\mgr\\run_20261012_215904\\roms\\b.gbc",
+      "sha256": "77c633e06ed0d18bf7b70cb643806c58d0adde2bff0ec7a5c2d6ae2b61a2b0cd",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\mgr\\run_20261012_215904\\roms\\b_companion.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\mgr\\run_20261012_215904\\roms\\b_randomized.gbc",
+      "sha256": "77c633e06ed0d18bf7b70cb643806c58d0adde2bff0ec7a5c2d6ae2b61a2b0cd",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\mgr\\run_20261012_215904\\roms\\b_randomized.gbc.log",
+      "sha256": "252da55a37fdca71cac4a13373ff00843c5af571e7fbe69aa44e2560132cd729",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\mgr\\run_20261012_215904\\run_meta.json",
+      "sha256": "3915422772a9bd3f7442bc7d0541dcf47cb17f15ec2e9f525fe9f7e92d82f1af",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\mgr\\run_20261012_215904\\slink.log",
+      "sha256": "569d878cf83442176839f58b12927c9772e00def3dcee173fd835ccd4691e531",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\mgr\\run_20261012_215904\\spawn.log",
+      "sha256": "8fea2f6d4d8b9abb2e637c5fda398a76595fa3c296111f354d2725ff62879c7c",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\rom_a.gbc",
+      "sha256": "c4099fa8e283b788df306fb81c25779e7ee310d556c03c41fb58cf35dd3bb738",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\rom_b.gbc",
+      "sha256": "77c633e06ed0d18bf7b70cb643806c58d0adde2bff0ec7a5c2d6ae2b61a2b0cd",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\rom_contract.json",
+      "sha256": "e43a9c63e9bbbfcdcc438849baf6f5d0ffbfd03120ea715603c38e83e458219e",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\write_domain\\a\\post-upr.gbc",
+      "sha256": "c4099fa8e283b788df306fb81c25779e7ee310d556c03c41fb58cf35dd3bb738",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\write_domain\\a\\pre-upr.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\write_domain\\b\\post-upr.gbc",
+      "sha256": "77c633e06ed0d18bf7b70cb643806c58d0adde2bff0ec7a5c2d6ae2b61a2b0cd",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\write_domain\\b\\pre-upr.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\write_domain\\domain_table.json",
+      "sha256": "9a1702e25576544c9523ec2d8bb75186d2b94dd2ff55bafc4c6c2d167509b091",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\write_domain\\resources\\overlay_provenance.json",
+      "sha256": "22f00e55524434a82fba2a40e9735c24e71905be80f9e638591324a5dc3547c1",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\write_domain.json",
+      "sha256": "3969e7f5cfded41f4c9d3674cbaed1e87d499105d8fd6d6f27739d929a127a38",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\r1-jar.console.txt",
+      "sha256": "135e8e4d17a81393452169bf578196d8ddd2f7bd5c70b47a9f6871c7090a3621",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\r1-jar.exit.json",
+      "sha256": "3769d151ae5df56bffd25848fc995e5db6b44c2f7bf24c52ba1dd573ea86ce5e",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\r1-jar.LAUNCH.json",
+      "sha256": "b457d107dfd7bcf5160bb2ceaa181a81cd5ae0e353d590084373d86ae1685219",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-jar\\WITNESS.json",
+        "sha256": "cbeb5cdb64be701bc902d26b0f18abdcbda3cfbcd55ad1ebede17c6422f23a4a",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\calls.jsonl",
+      "sha256": "e6c0009076349cd10e20eaf4dcd46fa77f2e79b18d3316ea0e744494c95f7737",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\manager.log",
+      "sha256": "bf0162a3b1c177b093b6f261ca323f0d4f0c0466cd13e3b6e9bfcaf7469d71b8",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\mgr\\registry.json",
+      "sha256": "8e6e3d9fed99b4a6b7dabbfe78e2bb273063193b75751d4df97f67e64d070416",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\mgr\\run_20261012_215911\\rom_contract.json",
+      "sha256": "c0ca3cb906ab302ee483d7b292d248948c11a4e81885227c0b7dddb6c4f9384f",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\mgr\\run_20261012_215911\\roms\\a.gbc",
+      "sha256": "2471367eeb4e5215d0a896db27019e56127cd2cf2fb6c2498d607d5b02234704",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\mgr\\run_20261012_215911\\roms\\a_companion.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\mgr\\run_20261012_215911\\roms\\a_randomized.gbc",
+      "sha256": "2471367eeb4e5215d0a896db27019e56127cd2cf2fb6c2498d607d5b02234704",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\mgr\\run_20261012_215911\\roms\\a_randomized.gbc.log",
+      "sha256": "a69aaab9c28f87cdacfdb7b32f242479b20e5fc1555136bd397aecfe323c4996",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\mgr\\run_20261012_215911\\roms\\b.gbc",
+      "sha256": "6a00bf9d5f8bff50d84df7a6cd57405aa7163e0bc95f6a0abc94ae623a4c666d",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\mgr\\run_20261012_215911\\roms\\b_companion.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\mgr\\run_20261012_215911\\roms\\b_randomized.gbc",
+      "sha256": "6a00bf9d5f8bff50d84df7a6cd57405aa7163e0bc95f6a0abc94ae623a4c666d",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\mgr\\run_20261012_215911\\roms\\b_randomized.gbc.log",
+      "sha256": "2f3b625ec422462c1d09ac85e223d5c52d73f6f18ef2a0c7341b7ce8ddb3398e",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\mgr\\run_20261012_215911\\run_meta.json",
+      "sha256": "5c0f54655a0ae92316310ad505ebc6c430752555527523b303320141a824a8bf",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\mgr\\run_20261012_215911\\slink.log",
+      "sha256": "abc910e2278857456c24253bca89d9bdaeef9062e6f68dea278d99bf60b8ef99",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\mgr\\run_20261012_215911\\spawn.log",
+      "sha256": "2e89cd12201870429320a0b785e3bcb22ed79f8a20a8aa062ddf382cf897754c",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\rom_a.gbc",
+      "sha256": "2471367eeb4e5215d0a896db27019e56127cd2cf2fb6c2498d607d5b02234704",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\rom_b.gbc",
+      "sha256": "6a00bf9d5f8bff50d84df7a6cd57405aa7163e0bc95f6a0abc94ae623a4c666d",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\rom_contract.json",
+      "sha256": "c0ca3cb906ab302ee483d7b292d248948c11a4e81885227c0b7dddb6c4f9384f",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\summary.json",
+      "sha256": "d46e52d5faba14ae00cdbdbabe5153f6c5ef17b0e5c77067d61aafa13ff6a54e",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\write_domain\\a\\post-upr.gbc",
+      "sha256": "2471367eeb4e5215d0a896db27019e56127cd2cf2fb6c2498d607d5b02234704",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\write_domain\\a\\pre-upr.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\write_domain\\b\\post-upr.gbc",
+      "sha256": "6a00bf9d5f8bff50d84df7a6cd57405aa7163e0bc95f6a0abc94ae623a4c666d",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\write_domain\\b\\pre-upr.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\write_domain\\domain_table.json",
+      "sha256": "9a1702e25576544c9523ec2d8bb75186d2b94dd2ff55bafc4c6c2d167509b091",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\write_domain\\resources\\overlay_provenance.json",
+      "sha256": "22f00e55524434a82fba2a40e9735c24e71905be80f9e638591324a5dc3547c1",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\producer\\r1_nojar\\write_domain.json",
+      "sha256": "ecf465b2a93db1fa4774afaee782bf79c896b23c2c31d5de42a13c72a2e682a1",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\r1-nojar.console.txt",
+      "sha256": "5126bf02c1671823ef1e590a20c4e4768175211e533d76ddbedb2b7c1292b329",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\r1-nojar.exit.json",
+      "sha256": "ebe2f9f34e1b4798aa7881e8942f5e93636fe865c1dc373ae7512e806530352d",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar\\r1-nojar.LAUNCH.json",
+      "sha256": "2f54af4910f06fa76320e5acb2a377609063dca7720ec0ffeb00cbf7261b061d",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-nojar\\WITNESS.json",
+        "sha256": "4dec851a95c442e4d407da8f4f75e2d606b963b05efae2dd76e269a6ff9dd884",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-nojar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar\\producer\\r1_oldjar\\calls.jsonl",
+      "sha256": "4de6a755e8c9ee947984d216ff7d45a715f6000498b2a27f66da5d3ff6eda4eb",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-oldjar\\WITNESS.json",
+        "sha256": "366345916425684d746db5ce6c9e5abbcdf4a4b0c1548c834095719e55d79a8b",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar\\producer\\r1_oldjar\\jar_input.json",
+      "sha256": "562993f0cc53e8a52a42425cad0a2f311e6a6029e514db4004e073ab101becbd",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-oldjar\\WITNESS.json",
+        "sha256": "366345916425684d746db5ce6c9e5abbcdf4a4b0c1548c834095719e55d79a8b",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar\\producer\\r1_oldjar\\manager.log",
+      "sha256": "effc023e4e5f108214b2df634ff3578d09250693d19d802f311b015d4634a758",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-oldjar\\WITNESS.json",
+        "sha256": "366345916425684d746db5ce6c9e5abbcdf4a4b0c1548c834095719e55d79a8b",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar\\producer\\r1_oldjar\\mgr\\registry.json",
+      "sha256": "04b11ee8c28efc40f2bda08aa453c5c29756f5ca51bbde2711cb25b8339fb426",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-oldjar\\WITNESS.json",
+        "sha256": "366345916425684d746db5ce6c9e5abbcdf4a4b0c1548c834095719e55d79a8b",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar\\producer\\r1_oldjar\\mgr\\run_20261012_215918\\roms\\a_companion.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-oldjar\\WITNESS.json",
+        "sha256": "366345916425684d746db5ce6c9e5abbcdf4a4b0c1548c834095719e55d79a8b",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar\\producer\\r1_oldjar\\mgr\\run_20261012_215918\\roms\\b_companion.gbc",
+      "sha256": "9254631e18446fbf48cadb64f17e8e1012d6d783801ab96700535df986e04942",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-oldjar\\WITNESS.json",
+        "sha256": "366345916425684d746db5ce6c9e5abbcdf4a4b0c1548c834095719e55d79a8b",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar\\producer\\r1_oldjar\\mgr\\run_20261012_215918\\run_meta.json",
+      "sha256": "ee836bc60777a75e34ecb17e810e0116c8570b365510fe2c6f98f1ed4374311d",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-oldjar\\WITNESS.json",
+        "sha256": "366345916425684d746db5ce6c9e5abbcdf4a4b0c1548c834095719e55d79a8b",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar\\producer\\r1_oldjar\\mgr\\run_20261012_215918\\slink.log",
+      "sha256": "fb9c5f4517b12d7c5a71222079d86525608707a77903a6fc0dfa63c0d340618e",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-oldjar\\WITNESS.json",
+        "sha256": "366345916425684d746db5ce6c9e5abbcdf4a4b0c1548c834095719e55d79a8b",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar\\producer\\r1_oldjar\\mgr\\run_20261012_215918\\spawn.log",
+      "sha256": "d8116e3fd9c7186a4295c5758169045c2e7d31ea716aac4e0348d0074dd30d8f",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-oldjar\\WITNESS.json",
+        "sha256": "366345916425684d746db5ce6c9e5abbcdf4a4b0c1548c834095719e55d79a8b",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar\\producer\\r1_oldjar\\summary.json",
+      "sha256": "6011358aa910b2b3afc72ed39f1c5aae8935a88942e0f6da8e607142c070ecd0",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-oldjar\\WITNESS.json",
+        "sha256": "366345916425684d746db5ce6c9e5abbcdf4a4b0c1548c834095719e55d79a8b",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar\\r1-oldjar.console.txt",
+      "sha256": "b81b8631f20aa571ac8c0a63ebee8f3d10b2aecc34989be3121e47d7a2067ffd",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-oldjar\\WITNESS.json",
+        "sha256": "366345916425684d746db5ce6c9e5abbcdf4a4b0c1548c834095719e55d79a8b",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar\\r1-oldjar.exit.json",
+      "sha256": "875f7f3a779958b5cd7e821711b0cee42c1225e4f4aa93e7ba10355dec7e6987",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-oldjar\\WITNESS.json",
+        "sha256": "366345916425684d746db5ce6c9e5abbcdf4a4b0c1548c834095719e55d79a8b",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
+      }
+    },
+    {
+      "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar\\r1-oldjar.LAUNCH.json",
+      "sha256": "ab9fc83e2597f4459405abe308b80b200cb81417120ae658ee0b5f47dc27b28f",
+      "run_witness": {
+        "path": "F:\\slink-work\\lanes\\f3-ddb586d2\\witnesses\\r1-oldjar\\WITNESS.json",
+        "sha256": "366345916425684d746db5ce6c9e5abbcdf4a4b0c1548c834095719e55d79a8b",
+        "scope": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-oldjar",
+        "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+        "code_digest": "9aad133f550cd41fd48c79df54172e98b965763687cb1407e4f2eeffc0b5abe7"
       }
     }
   ],
-  "synth": [
-    "Retained SYNTH warp/scene fixture; native inputs thereafter. Phone/Pokegear/panel setup flags and scripted host/second identity remain disclosed by the lane."
+  "synth": [],
+  "not_proven": [
+    "DEV retained-run evidence only; no physical promotion or new emulator run. Checks record the owner's producer/release-verifier-level qualification, not independent per-check raw-map proof.",
+    "R1 nojar is fallback jar discovery, not a refusal; a manager_r1 fix is owed post-freeze.",
+    "R1 provisions and downloads the pair; neither cartridge was booted by this Manager job. rom_sha1_executed identifies provisioned A under bind=source."
   ],
+  "source_head": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+  "evidence_note": "Owner ruling2026-10-13: retained producer/release-verifier-level binding. No rebind3 or per-check raw map; producer_observations records the actual observed scenario facts.",
+  "producer_observations": {
+    "runs": {},
+    "mode": "jar",
+    "cartridges_status": 200,
+    "rom_a_sha1": "2aa6e36e364cd405eb8f2d55c74b60c7f7c7e275",
+    "rom_b_sha1": "db32da7dc5dc6c3fac233844b8474db4b3f6dde2",
+    "contract_matches_downloads": true,
+    "contract": {
+      "upr_version": "4.6.1-slink3",
+      "settings_sha256": "98b396043c99100e4210b3d4b2f6cd620c58665ac0ae1c692be03d146a1f4520",
+      "categories": [
+        "starters",
+        "statics",
+        "trainers",
+        "wild"
+      ],
+      "players": {
+        "a": {
+          "fingerprint": "",
+          "rom_sha1": "2aa6e36e364cd405eb8f2d55c74b60c7f7c7e275",
+          "seed": "173764536253646"
+        },
+        "b": {
+          "fingerprint": "",
+          "rom_sha1": "db32da7dc5dc6c3fac233844b8474db4b3f6dde2",
+          "seed": "99693162686789"
+        }
+      }
+    },
+    "randomizer": {
+      "upr_version": "4.6.1-slink3",
+      "settings_sha256": "98b396043c99100e4210b3d4b2f6cd620c58665ac0ae1c692be03d146a1f4520",
+      "categories": [
+        "starters",
+        "statics",
+        "trainers",
+        "wild"
+      ],
+      "spec": {
+        "wild": "random",
+        "wild_restriction": "none",
+        "wild_block_legendaries": true,
+        "wild_min_catch_rate": 0,
+        "wild_levels": 0,
+        "starters": "random",
+        "statics": "random",
+        "static_levels": 0,
+        "trainers": "random",
+        "trainers_similar_strength": false,
+        "trainers_rival_starter": true,
+        "trainers_block_legendaries": true,
+        "trainers_match_typing": false,
+        "trades": "given_and_requested"
+      },
+      "summary": "wild encounters random, starters random, static encounters random, trainer teams random, rival keeps their starter, in-game trades random given and requested",
+      "created_at": "2026-10-12T21:59:09.466543+00:00",
+      "players": {
+        "a": {
+          "seed": "173764536253646",
+          "rom_sha1": "2aa6e36e364cd405eb8f2d55c74b60c7f7c7e275",
+          "source_sha1": "ede69bbf399b7a02007cfe563ff61658535de039",
+          "content_hash": "195515a9e885dc55249f1e5dc818c57a105bf54692ede9cf3c99b0fa74b07731",
+          "output": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\mgr\\run_20261012_215904\\roms\\a.gbc"
+        },
+        "b": {
+          "seed": "99693162686789",
+          "rom_sha1": "db32da7dc5dc6c3fac233844b8474db4b3f6dde2",
+          "source_sha1": "ede69bbf399b7a02007cfe563ff61658535de039",
+          "content_hash": "fee6341121e8aecf9397b60cc013ffd07db6422a1e589e449a02f5d43d2ee814",
+          "output": "F:\\slink-work\\lanes\\f3-ddb586d2\\legacy\\random\\r1-jar\\producer\\r1_jar\\mgr\\run_20261012_215904\\roms\\b.gbc"
+        }
+      }
+    }
+  },
   "checks": [
     {
       "name": "the picker lists the Polished release dump",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\summary.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "randomizer status is ok with the pinned fork jar",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\summary.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "a run was created for gen2_polished",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\summary.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "the randomizer page served",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\summary.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "cartridges provisioned with companion + randomize",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\summary.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "both cartridges downloaded with the sha1s the contract pins",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\summary.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "the contract records upr_version, categories, seeds and per-player sha1s",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\summary.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "the randomizer summary is what the form asked for",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\summary.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "forms stay in the pool",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\summary.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     },
     {
       "name": "the write domain is recorded",
       "result": "PASS",
-      "observed": "Mapped frozen execution: F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\summary.json; producer PASS and hashed supporting evidence. Previous observation text superseded."
+      "basis": "recorded scenario producer and bound supporting observations; see producer_observations"
     }
   ],
-  "not_proven": [
-    "DEV only; no release or PHYSICAL promotion. Scope is the named recording, not exhaustive gameplay.",
-    "Manager output/cartridge download proof, not randomized cartridge boot proof; R2 is separate."
-  ],
-  "source_overlay_sha1": "fe8c57e1034059331ccf25d232ff757d675363b2",
-  "run_witness": {
-    "path": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar\\WITNESS.json",
-    "sha256": "f02cb64c1afa6f5de172e71edf0b3c23ec2c1f09e74cf41f7833734e7a78064f",
-    "scope": "F:\\slink-work\\lanes\\pol-freeze2\\legacy\\random\\r1_jar",
-    "kind": "recorded per-job/root witness",
-    "source_head": "d9876fb9d9d1656ee16db9bab2e6228622483605",
-    "code_digest": "856f3995f0bdfc87a1bc080d2249a1e33afcea28627c811a012cb1c8b90c32f9"
-  },
-  "evidence_note": "Mechanical rebind after producer PASS and recorded/scoped run witness validation; DEV only."
+  "source_overlay_sha1": "ede69bbf399b7a02007cfe563ff61658535de039"
 }
