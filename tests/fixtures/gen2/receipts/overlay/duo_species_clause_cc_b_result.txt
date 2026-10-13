@@ -1,7 +1,7 @@
-DUO_GEN2 {"artifact_kind":"overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","case":"crystal_battle_ot2","fixture_sha256":"e2298243d3b10965b354184f1778d946a0909402c57b4ccaff574f819cfcc6dd","player":"b","rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","scenario":"gen2_species_clause","title":"crystal"}
+DUO_GEN2 {"artifact_kind":"overlay","attempt":2,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","case":"crystal_battle_ot2","fixture_sha256":"e2298243d3b10965b354184f1778d946a0909402c57b4ccaff574f819cfcc6dd","player":"b","rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","scenario":"gen2_species_clause","title":"crystal"}
 CLIENT {"artifact_kind":"overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","title":"crystal"}
-JITTER requested=0 applied=0 attempt=1
-  phase title @1
+JITTER requested=37 applied=37 attempt=2
+  phase title @38
   phase continue @3182
 TX {"area_id":"route_29","artifact_kind":"overlay","badges":0,"ball_count":10,"companion_abi":3,"event":"hello","foundation":"gen2_gsc","has_pokeballs":true,"in_battle":false,"kanto_badges":0,"loc_name":"ROUTE 29","ot_id":4
 HELLO {"ball_count":10,"frame":3305,"has_pokeballs":true,"ot_id":44068}
@@ -13,59 +13,59 @@ RX link_panel
 BOOTED {"frame":3335,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12}
 MYKEY 0 21BC:AC24:9E
 RX hud_show
-RX_TEXT {"cmd":"hud_show","frame":5792,"text":"Partner caught SENTRET in Route 29"}
-A_PENDING {"frame":6617,"species_id":161}
-  phase walk @6617 xy=53,12
-  phase battle @6949 xy=52,12
+RX_TEXT {"cmd":"hud_show","frame":11462,"text":"Partner caught PIDGEY in Route 29"}
+A_PENDING {"frame":12327,"species_id":16}
+  phase walk @12327 xy=53,12
+  phase battle @12743 xy=53,12
 RX gui_prompt
-RX_TEXT {"cmd":"gui_prompt","frame":7202,"text":"Dupes clause: Sentret -- reroll!"}
+RX_TEXT {"cmd":"gui_prompt","frame":12983,"text":"Dupes clause: Pidgey -- reroll!"}
 RX unresolve_area area_id=route_29
-  phase encounter @7524 xy=52,12
-ENCOUNTER {"dupe":true,"frame":7554,"n":1,"species_id":161}
-  phase battle @7554 xy=52,12
-TX {"area_id":"route_29","event":"no_catch","level":2,"player":"b","seq":136,"species_id":161}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"b","seq":137}
+  phase encounter @13322 xy=53,12
+ENCOUNTER {"dupe":true,"frame":13352,"n":1,"species_id":16}
+  phase battle @13352 xy=53,12
+TX {"area_id":"route_29","event":"no_catch","level":2,"player":"b","seq":329,"species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"b","seq":330}
 RX unresolve_area area_id=route_29
-  phase escaped @7776 xy=52,12
-REROLL {"frame":7806,"n":1,"prompt":"Dupes clause: Sentret -- reroll!","species_id":161}
-  phase walk @7806 xy=52,12
-  phase battle @8053 xy=52,12
+  phase escaped @13574 xy=53,12
+REROLL {"frame":13604,"n":1,"prompt":"Dupes clause: Pidgey -- reroll!","species_id":16}
+  phase walk @13604 xy=53,12
+  phase battle @13898 xy=53,12
 RX gui_prompt
-RX_TEXT {"cmd":"gui_prompt","frame":8132,"text":"Dupes clause: Sentret -- reroll!"}
+RX_TEXT {"cmd":"gui_prompt","frame":14162,"text":"Dupes clause: Pidgey -- reroll!"}
 RX unresolve_area area_id=route_29
-  phase encounter @8629 xy=52,12
-ENCOUNTER {"dupe":true,"frame":8659,"n":2,"species_id":161}
-  phase battle @8659 xy=52,12
-TX {"area_id":"route_29","event":"no_catch","level":3,"player":"b","seq":163,"species_id":161}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"b","seq":164}
+  phase encounter @14476 xy=53,12
+ENCOUNTER {"dupe":true,"frame":14506,"n":2,"species_id":16}
+  phase battle @14506 xy=53,12
+TX {"area_id":"route_29","event":"no_catch","level":3,"player":"b","seq":357,"species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"b","seq":358}
 RX unresolve_area area_id=route_29
-  phase escaped @8881 xy=52,12
-REROLL {"frame":8911,"n":2,"prompt":"Dupes clause: Sentret -- reroll!","species_id":161}
-  phase walk @8911 xy=52,12
-  phase battle @9222 xy=51,12
-  phase encounter @9796 xy=51,12
-ENCOUNTER {"dupe":false,"frame":9826,"n":3,"species_id":187}
-  phase battle @9826 xy=51,12
-ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":10884,"key":"B1D7:AC24:BB","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":187}
-TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":16,"in_box":false,"key":"B1D7:AC24:BB","level":3,"maxHP":16,"nickname":"HOPPIP","player":"b","seq":204,"species_id":187,"stats":{"level":3,"maxHP
-CAPTURE_SENT {"frame":10884,"key":"B1D7:AC24:BB","seq":204}
-CAUGHT B1D7:AC24:BB
+  phase escaped @14728 xy=53,12
+REROLL {"frame":14758,"n":2,"prompt":"Dupes clause: Pidgey -- reroll!","species_id":16}
+  phase walk @14758 xy=53,12
+  phase battle @15135 xy=52,12
+  phase encounter @15710 xy=52,12
+ENCOUNTER {"dupe":false,"frame":15740,"n":3,"species_id":161}
+  phase battle @15740 xy=52,12
+ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":16805,"key":"6291:AC24:A1","level":2,"site_id":"capture_party_finalized","slot":1,"species_id":161}
+TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":13,"in_box":false,"key":"6291:AC24:A1","level":2,"maxHP":13,"nickname":"SENTRET","player":"b","seq":401,"species_id":161,"stats":{"level":2,"maxH
+CAPTURE_SENT {"frame":16805,"key":"6291:AC24:A1","seq":401}
+CAUGHT 6291:AC24:A1
 RX play_sound sound=25
 RX msgbox
-RX_TEXT {"cmd":"msgbox","frame":10888,"text":"SENTRET and HOPPIP linked!"}
-RX party_mon key=B1D7:AC24:BB
+RX_TEXT {"cmd":"msgbox","frame":16808,"text":"PIDGEY and SENTRET linked!"}
+RX party_mon key=6291:AC24:A1
 RX link_panel
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"b","seq":206}
-TX {"event":"sync_retrieve_done","key":"B1D7:AC24:BB","player":"b","seq":209}
-  phase save @10951 xy=51,12
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"b","seq":402}
+TX {"event":"sync_retrieve_done","key":"6291:AC24:A1","player":"b","seq":405}
+  phase save @16872 xy=52,12
 RX link_panel
-  phase saved @11616 xy=51,12
+  phase saved @17537 xy=52,12
 MYKEY 0 21BC:AC24:9E
-MYKEY 1 B1D7:AC24:BB
-LINKED {"frame":11646,"text":"SENTRET and HOPPIP linked!"}
-  phase settle @11646 xy=51,12
-  phase save @11804 xy=51,12
-  phase saved @12300 xy=51,12
-SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"fb6dac0b03df4a78397802cf2d15e53fe56ff28d4065d8a7d7507c90064a776e","client_saves":2,"flushed_matches":true,"frame":12330,"gate_saves":2,"save_completed_frame":12300,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_species_clause_s21_b/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_species_clause_s21_b_witness.SaveRAM"}
-RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","booted":{"frame":3335,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":10884,"key":"B1D7:AC24:BB","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":187},"case":"crystal_battle_ot2","client":{"artifact_kind":"overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","title":"crystal"},"dupe_species":161,"fixture_sha256":"e2298243d3b10965b354184f1778d946a0909402c57b4ccaff574f819cfcc6dd","harness_write_scopes":[],"hello":{"ball_count":10,"frame":3305,"has_pokeballs":true,"ot_id":44068},"input_mode":"normal_buttons","key":"B1D7:AC24:BB","linked":{"frame":11646,"text":"SENTRET and HOPPIP linked!"},"path":"reroll_observed","player":"b","rerolls":2,"role":"reroller","rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","save":{"cartram_bytes":32768,"cartram_sha256":"fb6dac0b03df4a78397802cf2d15e53fe56ff28d4065d8a7d7507c90064a776e","client_saves":2,"flushed_matches":true,"frame":12330,"gate_saves":2,"save_completed_frame":12300,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_species_clause_s21_b/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_species_clause_s21_b_witness.SaveRAM"},"scenario":"gen2_species_clause","schema":"gen2-duo-species-clause-v1","species_id":187,"title":"crystal"}
-RESULT: PASS (reroll_observed: B linked B1D7:AC24:BB after 2 reroll(s))
+MYKEY 1 6291:AC24:A1
+LINKED {"frame":17567,"text":"PIDGEY and SENTRET linked!"}
+  phase settle @17567 xy=52,12
+  phase save @17725 xy=52,12
+  phase saved @18221 xy=52,12
+SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"f746d0c12f95cb9c90471159005728d4b5e526991e8a1f9b77636b0695e646fc","client_saves":2,"flushed_matches":true,"frame":18251,"gate_saves":2,"save_completed_frame":18221,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/saveram_gen2_species_clause_s511_b/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_species_clause_s511_b_witness.SaveRAM"}
+RECEIPT {"artifact_kind":"overlay","attempt":2,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","booted":{"frame":3335,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":16805,"key":"6291:AC24:A1","level":2,"site_id":"capture_party_finalized","slot":1,"species_id":161},"case":"crystal_battle_ot2","client":{"artifact_kind":"overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","title":"crystal"},"dupe_species":16,"fixture_sha256":"e2298243d3b10965b354184f1778d946a0909402c57b4ccaff574f819cfcc6dd","harness_write_scopes":[],"hello":{"ball_count":10,"frame":3305,"has_pokeballs":true,"ot_id":44068},"input_mode":"normal_buttons","key":"6291:AC24:A1","linked":{"frame":17567,"text":"PIDGEY and SENTRET linked!"},"path":"reroll_observed","player":"b","rerolls":2,"role":"reroller","rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","save":{"cartram_bytes":32768,"cartram_sha256":"f746d0c12f95cb9c90471159005728d4b5e526991e8a1f9b77636b0695e646fc","client_saves":2,"flushed_matches":true,"frame":18251,"gate_saves":2,"save_completed_frame":18221,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/saveram_gen2_species_clause_s511_b/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_species_clause_s511_b_witness.SaveRAM"},"scenario":"gen2_species_clause","schema":"gen2-duo-species-clause-v1","species_id":161,"title":"crystal"}
+RESULT: PASS (reroll_observed: B linked 6291:AC24:A1 after 2 reroll(s))

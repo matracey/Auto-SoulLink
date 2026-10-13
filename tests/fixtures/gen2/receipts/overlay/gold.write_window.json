@@ -914,8 +914,8 @@
   ]
  },
  "code_digest": {
-  "commit": "2f2284e47c6c2881e0dfd449f40cd92fab17780d",
-  "digest": "49a338779ea7e0b5a4d9ab2ededb8d0cf3eb5ad5c615b8f539b8334770034338",
+  "commit": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+  "digest": "7dd9ac4b8e372689df51339fffa839c4818ec1d33e4964a4b9d7e48e91013dcc",
   "dirty": [],
   "schema": "gen2-code-digest-v1",
   "scope": [
@@ -954,7 +954,7 @@
    "harness_write_scopes": [],
    "input_mode": "normal_buttons",
    "liveness": {
-    "accepted": 32,
+    "accepted": 25,
     "hits": [
      {
       "bank": 37,
@@ -998,7 +998,7 @@
      }
     ],
     "other_bank": 0,
-    "raw": 32,
+    "raw": 25,
     "refusals": {},
     "refused": 0
    },
@@ -1017,18 +1017,18 @@
      "phase": "walk"
     },
     {
-     "accepted": 28,
-     "frame": 3820,
+     "accepted": 21,
+     "frame": 3754,
      "phase": "battle"
     },
     {
-     "accepted": 29,
-     "frame": 4534,
+     "accepted": 22,
+     "frame": 4815,
      "phase": "post_battle"
     },
     {
-     "accepted": 30,
-     "frame": 4536,
+     "accepted": 23,
+     "frame": 4817,
      "phase": "done"
     }
    ],
@@ -1041,11 +1041,11 @@
    "windows": {
     "battle": {
      "accepted": 0,
-     "both_edges": 663,
+     "both_edges": 1010,
      "edge_raw": 0,
      "failing_sets": [
       {
-       "frames": 664,
+       "frames": 1011,
        "symbols": [
         "wScriptRunning",
         "wScriptMode",
@@ -1054,15 +1054,15 @@
        ]
       }
      ],
-     "frames": 664,
+     "frames": 1011,
      "raw": 0,
      "refusals": {},
      "write": {
       "after_hex": "0014",
       "before_hex": "0014",
-      "faint_reason": "F:/slink-work/lanes/gen2/fs1/lua/gen2/writes.lua:195: active faint timing is not qualified",
+      "faint_reason": "F:/slink-work/lanes/gen2/fs2/lua/gen2/writes.lua:195: active faint timing is not qualified",
       "faint_refused": true,
-      "reason": "F:/slink-work/lanes/gen2/fs1/lua/gen2/writes.lua:167: write ownership refused",
+      "reason": "F:/slink-work/lanes/gen2/fs2/lua/gen2/writes.lua:167: write ownership refused",
       "refused": true,
       "slot": 0
      }
@@ -1083,13 +1083,13 @@
     "action_after_hex": "00",
     "action_before_hex": "00",
     "active_slot": 0,
-    "battle_hp_after_hex": "0012",
-    "battle_hp_before_hex": "0012",
+    "battle_hp_after_hex": "0011",
+    "battle_hp_before_hex": "0011",
     "battle_mode": 1,
     "battle_type": 0,
-    "frame": 8141,
+    "frame": 8413,
     "hp_after_hex": "0000",
-    "hp_before_hex": "000d",
+    "hp_before_hex": "0010",
     "ok": true,
     "pc": 64,
     "reason": "battle frame",
@@ -1112,7 +1112,7 @@
    ],
    "input_mode": "normal_buttons",
    "liveness": {
-    "accepted": 59,
+    "accepted": 87,
     "hits": [
      {
       "bank": 37,
@@ -1156,7 +1156,7 @@
      }
     ],
     "other_bank": 4,
-    "raw": 59,
+    "raw": 87,
     "refusals": {},
     "refused": 0
    },
@@ -1191,38 +1191,38 @@
      "phase": "catch"
     },
     {
-     "accepted": 30,
-     "frame": 7144,
+     "accepted": 23,
+     "frame": 7106,
      "phase": "hunt"
     },
     {
-     "accepted": 42,
-     "frame": 7642,
+     "accepted": 70,
+     "frame": 7913,
      "phase": "battle"
     },
     {
-     "accepted": 43,
-     "frame": 8612,
+     "accepted": 71,
+     "frame": 8884,
      "phase": "post_battle"
     },
     {
-     "accepted": 44,
-     "frame": 8614,
+     "accepted": 72,
+     "frame": 8886,
      "phase": "done"
     }
    ],
    "qualification_attempt_id": "r2q3",
    "refusals": {
     "active": {
-     "after_hex": "000012",
-     "before_hex": "000012",
-     "reason": "F:/slink-work/lanes/gen2/fs1/lua/gen2/writes.lua:195: active faint timing is not qualified",
+     "after_hex": "000011",
+     "before_hex": "000011",
+     "reason": "F:/slink-work/lanes/gen2/fs2/lua/gen2/writes.lua:195: active faint timing is not qualified",
      "refused": true,
      "slot": 0
     },
     "overworld": {
-     "after_hex": "00000d",
-     "before_hex": "00000d",
+     "after_hex": "000010",
+     "before_hex": "000010",
      "reason": "not in a battle",
      "refused": true,
      "slot": 1
@@ -1234,25 +1234,25 @@
    "title": "gold",
    "trace": [
     {
-     "frame": 7926,
+     "frame": 8197,
      "party_mon": 0,
      "seq": 1,
      "what": "fit_check"
     },
     {
-     "frame": 8159,
+     "frame": 8431,
      "party_mon": 0,
      "seq": 3,
      "what": "pkmn_loop"
     },
     {
-     "frame": 8254,
+     "frame": 8526,
      "party_mon": 1,
      "seq": 4,
      "what": "fit_check"
     },
     {
-     "frame": 8326,
+     "frame": 8598,
      "party_mon": 1,
      "seq": 5,
      "what": "pkmn_loop"
@@ -1269,24 +1269,24 @@
     "hits": [
      {
       "bank": 15,
-      "frame": 5082,
+      "frame": 5026,
       "pc": 16744,
       "seq": 1
      },
      {
       "bank": 15,
-      "frame": 8184,
+      "frame": 8131,
       "pc": 16744,
       "seq": 2
      },
      {
       "bank": 15,
-      "frame": 8787,
+      "frame": 8744,
       "pc": 16744,
       "seq": 4
      }
     ],
-    "other_bank": 15,
+    "other_bank": 12,
     "raw": 3,
     "refusals": {},
     "refused": 0
@@ -1296,11 +1296,11 @@
      "action_after_hex": "00",
      "action_before_hex": "00",
      "active_slot": 0,
-     "battle_hp_after_hex": "0012",
-     "battle_hp_before_hex": "0012",
-     "frame": 8184,
+     "battle_hp_after_hex": "0014",
+     "battle_hp_before_hex": "0014",
+     "frame": 8131,
      "hp_after_hex": "0000",
-     "hp_before_hex": "000d",
+     "hp_before_hex": "0010",
      "ok": true,
      "reason": null,
      "seq": 2,
@@ -1313,10 +1313,10 @@
      "action_before_hex": "00",
      "active_slot": 0,
      "battle_hp_after_hex": "0000",
-     "battle_hp_before_hex": "0010",
-     "frame": 8787,
+     "battle_hp_before_hex": "0011",
+     "frame": 8744,
      "hp_after_hex": "0000",
-     "hp_before_hex": "0010",
+     "hp_before_hex": "0011",
      "ok": true,
      "reason": null,
      "seq": 4,
@@ -1338,6 +1338,137 @@
     "u2-battle-faint"
    ],
    "input_mode": "normal_buttons",
+   "liveness": {
+    "accepted": 54,
+    "hits": [
+     {
+      "bank": 37,
+      "frame": 3375,
+      "pc": 26806
+     },
+     {
+      "bank": 37,
+      "frame": 3385,
+      "pc": 26806
+     },
+     {
+      "bank": 37,
+      "frame": 3387,
+      "pc": 26806
+     },
+     {
+      "bank": 37,
+      "frame": 3403,
+      "pc": 26806
+     },
+     {
+      "bank": 37,
+      "frame": 3413,
+      "pc": 26806
+     },
+     {
+      "bank": 37,
+      "frame": 3415,
+      "pc": 26806
+     },
+     {
+      "bank": 37,
+      "frame": 3431,
+      "pc": 26806
+     },
+     {
+      "bank": 37,
+      "frame": 3441,
+      "pc": 26806
+     }
+    ],
+    "other_bank": 0,
+    "raw": 54,
+    "refusals": {},
+    "refused": 0
+   },
+   "mode": "battle_faint",
+   "pack_commit": "656583c939d30f920a316177311a502dd222b57c",
+   "phases": [
+    {
+     "accepted": 0,
+     "frame": 3374,
+     "phase": "idle"
+    },
+    {
+     "accepted": 1,
+     "frame": 3376,
+     "phase": "catch"
+    },
+    {
+     "accepted": 23,
+     "frame": 7090,
+     "phase": "hunt"
+    },
+    {
+     "accepted": 37,
+     "frame": 7587,
+     "phase": "battle"
+    },
+    {
+     "accepted": 38,
+     "frame": 9212,
+     "phase": "post_battle"
+    },
+    {
+     "accepted": 39,
+     "frame": 9214,
+     "phase": "done"
+    }
+   ],
+   "qualification_attempt_id": "r2q3",
+   "result": "PASS",
+   "rom_sha1": "51b076ac7eba099a273ff7aff5c64ccb790825dd",
+   "schema": "gen2-write-window-run-v1",
+   "title": "gold",
+   "trace": [
+    {
+     "frame": 8428,
+     "seq": 3,
+     "what": "enemy_turn"
+    },
+    {
+     "frame": 8744,
+     "seq": 5,
+     "what": "faint"
+    },
+    {
+     "frame": 8902,
+     "seq": 6,
+     "what": "lost"
+    }
+   ],
+   "windows": {}
+  },
+  "boxes": {
+   "artifact_kind": "overlay",
+   "attempt_id": "u2-gold_boxes",
+   "base_sha1": "d8b8a3600a465308c9953dfa04f0081c05bdcb94",
+   "binding_sha256": "1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b",
+   "boot_cartram_sha256": null,
+   "catch": {
+    "party_after": 3,
+    "party_before": 1
+   },
+   "control": null,
+   "core_mode": "CGB",
+   "evidence_level": "PHYSICAL",
+   "fixture": "gold_battle",
+   "fixture_sha256": "6864b34a79e63fa9c8954c37cb805a690da4cf36447bda179ecf0742a072a3b6",
+   "harness_write_scopes": [
+    "u2-box-ops"
+   ],
+   "input_mode": "normal_buttons",
+   "layout": {
+    "active_flat": 11628,
+    "current_box": 0,
+    "memorial_flat": 31200
+   },
    "liveness": {
     "accepted": 59,
     "hits": [
@@ -1387,154 +1518,23 @@
     "refusals": {},
     "refused": 0
    },
-   "mode": "battle_faint",
-   "pack_commit": "656583c939d30f920a316177311a502dd222b57c",
-   "phases": [
-    {
-     "accepted": 0,
-     "frame": 3374,
-     "phase": "idle"
-    },
-    {
-     "accepted": 1,
-     "frame": 3376,
-     "phase": "catch"
-    },
-    {
-     "accepted": 30,
-     "frame": 7144,
-     "phase": "hunt"
-    },
-    {
-     "accepted": 42,
-     "frame": 7642,
-     "phase": "battle"
-    },
-    {
-     "accepted": 43,
-     "frame": 9255,
-     "phase": "post_battle"
-    },
-    {
-     "accepted": 44,
-     "frame": 9257,
-     "phase": "done"
-    }
-   ],
-   "qualification_attempt_id": "r2q3",
-   "result": "PASS",
-   "rom_sha1": "51b076ac7eba099a273ff7aff5c64ccb790825dd",
-   "schema": "gen2-write-window-run-v1",
-   "title": "gold",
-   "trace": [
-    {
-     "frame": 8479,
-     "seq": 3,
-     "what": "enemy_turn"
-    },
-    {
-     "frame": 8787,
-     "seq": 5,
-     "what": "faint"
-    },
-    {
-     "frame": 8945,
-     "seq": 6,
-     "what": "lost"
-    }
-   ],
-   "windows": {}
-  },
-  "boxes": {
-   "artifact_kind": "overlay",
-   "attempt_id": "u2-gold_boxes",
-   "base_sha1": "d8b8a3600a465308c9953dfa04f0081c05bdcb94",
-   "binding_sha256": "1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b",
-   "boot_cartram_sha256": null,
-   "catch": {
-    "party_after": 3,
-    "party_before": 1
-   },
-   "control": null,
-   "core_mode": "CGB",
-   "evidence_level": "PHYSICAL",
-   "fixture": "gold_battle",
-   "fixture_sha256": "6864b34a79e63fa9c8954c37cb805a690da4cf36447bda179ecf0742a072a3b6",
-   "harness_write_scopes": [
-    "u2-box-ops"
-   ],
-   "input_mode": "normal_buttons",
-   "layout": {
-    "active_flat": 11628,
-    "current_box": 0,
-    "memorial_flat": 31200
-   },
-   "liveness": {
-    "accepted": 64,
-    "hits": [
-     {
-      "bank": 37,
-      "frame": 3375,
-      "pc": 26806
-     },
-     {
-      "bank": 37,
-      "frame": 3385,
-      "pc": 26806
-     },
-     {
-      "bank": 37,
-      "frame": 3387,
-      "pc": 26806
-     },
-     {
-      "bank": 37,
-      "frame": 3403,
-      "pc": 26806
-     },
-     {
-      "bank": 37,
-      "frame": 3413,
-      "pc": 26806
-     },
-     {
-      "bank": 37,
-      "frame": 3415,
-      "pc": 26806
-     },
-     {
-      "bank": 37,
-      "frame": 3431,
-      "pc": 26806
-     },
-     {
-      "bank": 37,
-      "frame": 3441,
-      "pc": 26806
-     }
-    ],
-    "other_bank": 0,
-    "raw": 64,
-    "refusals": {},
-    "refused": 0
-   },
    "mode": "boxes",
    "ops": [
     {
      "changed": [
       {
-       "after_hex": "0110ffffffffffffffffffffffffffffffffffffffff100021000000c4a600000900000000000000000000de81230000004600000002ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff868e8b8350000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8f88838684985050505050ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+       "after_hex": "0113ffffffffffffffffffffffffffffffffffffffff130021270000c4a6000040000000000000000000008eea231e00004600000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff868e8b8350000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9180939380938050505050ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
        "before_hex": "00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
        "flat": 11628
       }
      ],
      "deferred": false,
-     "frame": 10149,
-     "key": "DE81:C4A6:10",
+     "frame": 12350,
+     "key": "8EEA:C4A6:13",
      "ok": true,
      "op": "deposit",
-     "party_after_hex": "029e10ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a100021000000c4a6000009000000000000000000000c7b2300000046000000020000000d000d00060007000700060006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b845050508f888386849850505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-     "party_before_hex": "039e1010ff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a100021000000c4a600000900000000000000000000de812200000046000000020000000d000d00070007000700060006100021000000c4a6000009000000000000000000000c7b2300000046000000020000000d000d00060007000700060006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b8350000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b845050508f888386849850505050508f88838684985050505050000000000000000000000000000000000000000000000000000000000000000000",
+     "party_after_hex": "029ea1ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000aa10021000000c4a600001b0000000000000000000081cc2100000046000000030000000f000f00080007000600070008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505092848d93918493505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+     "party_before_hex": "039e13a1ff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000a130021270000c4a6000040000000000000000000008eea231d00004600000004000000100010000a0008000b00070008a10021000000c4a600001b0000000000000000000081cc2100000046000000030000000f000f00080007000600070008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b8350000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b84505050918093938093805050505092848d9391849350505050000000000000000000000000000000000000000000000000000000000000000000",
      "reason": null,
      "stage": 1,
      "written": [
@@ -1546,17 +1546,17 @@
      "changed": [
       {
        "after_hex": "00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-       "before_hex": "0110ffffffffffffffffffffffffffffffffffffffff100021000000c4a600000900000000000000000000de81230000004600000002ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff868e8b8350000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8f88838684985050505050ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+       "before_hex": "0113ffffffffffffffffffffffffffffffffffffffff130021270000c4a6000040000000000000000000008eea231e00004600000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff868e8b8350000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9180939380938050505050ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
        "flat": 11628
       }
      ],
      "deferred": false,
-     "frame": 10151,
-     "key": "DE81:C4A6:10",
+     "frame": 12352,
+     "key": "8EEA:C4A6:13",
      "ok": true,
      "op": "withdraw",
-     "party_after_hex": "039e1010ff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a100021000000c4a6000009000000000000000000000c7b2300000046000000020000000d000d00060007000700060006100021000000c4a600000900000000000000000000de812300000046000000020000000d000d00070007000700060006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b8350000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b845050508f888386849850505050508f88838684985050505050000000000000000000000000000000000000000000000000000000000000000000",
-     "party_before_hex": "029e10ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a100021000000c4a6000009000000000000000000000c7b2300000046000000020000000d000d00060007000700060006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b845050508f888386849850505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+     "party_after_hex": "039ea113ff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000aa10021000000c4a600001b0000000000000000000081cc2100000046000000030000000f000f00080007000600070008130021270000c4a6000040000000000000000000008eea231e00004600000004000000100010000a0008000b00070008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b8350000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505092848d93918493505050509180939380938050505050000000000000000000000000000000000000000000000000000000000000000000",
+     "party_before_hex": "029ea1ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000aa10021000000c4a600001b0000000000000000000081cc2100000046000000030000000f000f00080007000600070008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505092848d93918493505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
      "reason": null,
      "stage": 1,
      "written": [
@@ -1567,18 +1567,18 @@
     {
      "changed": [
       {
-       "after_hex": "0110ff00000000000000000000000000000000000000100021000000c4a6000009000000000000000000000c7b2300000046000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b835000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008f888386849850505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+       "after_hex": "01a1ff00000000000000000000000000000000000000a10021000000c4a600001b0000000000000000000081cc2300000046000000030000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000092848d93918493505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
        "before_hex": "00ff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
        "flat": 31200
       }
      ],
      "deferred": false,
-     "frame": 10153,
-     "key": "0C7B:C4A6:10",
+     "frame": 12354,
+     "key": "81CC:C4A6:A1",
      "ok": true,
      "op": "memorialize",
-     "party_after_hex": "029e10ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a100021000000c4a600000900000000000000000000de812300000046000000020000000d000d00070007000700060006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b845050508f888386849850505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-     "party_before_hex": "039e1010ff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a100021000000c4a6000009000000000000000000000c7b2300000046000000020000000d000d00060007000700060006100021000000c4a600000900000000000000000000de812300000046000000020000000d000d00070007000700060006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b8350000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b845050508f888386849850505050508f88838684985050505050000000000000000000000000000000000000000000000000000000000000000000",
+     "party_after_hex": "029e13ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000a130021270000c4a6000040000000000000000000008eea231e00004600000004000000100010000a0008000b00070008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505091809393809380505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+     "party_before_hex": "039ea113ff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000aa10021000000c4a600001b0000000000000000000081cc2100000046000000030000000f000f00080007000600070008130021270000c4a6000040000000000000000000008eea231e00004600000004000000100010000a0008000b00070008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b8350000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505092848d93918493505050509180939380938050505050000000000000000000000000000000000000000000000000000000000000000000",
      "reason": null,
      "stage": 1,
      "written": [
@@ -1589,18 +1589,18 @@
     {
      "changed": [
       {
-       "after_hex": "0110ffffffffffffffffffffffffffffffffffffffff100021000000c4a600000900000000000000000000de81230000004600000002ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff868e8b8350000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8f88838684985050505050ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+       "after_hex": "0113ffffffffffffffffffffffffffffffffffffffff130021270000c4a6000040000000000000000000008eea231e00004600000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff868e8b8350000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9180939380938050505050ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
        "before_hex": "00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
        "flat": 11628
       }
      ],
      "deferred": false,
-     "frame": 10155,
-     "key": "DE81:C4A6:10",
+     "frame": 12356,
+     "key": "8EEA:C4A6:13",
      "ok": true,
      "op": "deposit",
-     "party_after_hex": "019effffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b835000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-     "party_before_hex": "029e10ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a100021000000c4a600000900000000000000000000de812300000046000000020000000d000d00070007000700060006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b845050508f888386849850505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+     "party_after_hex": "019effffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b835000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+     "party_before_hex": "029e13ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000a130021270000c4a6000040000000000000000000008eea231e00004600000004000000100010000a0008000b00070008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505091809393809380505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
      "reason": null,
      "stage": 1,
      "written": [
@@ -1623,58 +1623,58 @@
      "phase": "walk"
     },
     {
-     "accepted": 28,
-     "frame": 3820,
+     "accepted": 21,
+     "frame": 3754,
      "phase": "battle"
     },
     {
-     "accepted": 29,
-     "frame": 6450,
+     "accepted": 22,
+     "frame": 6396,
      "phase": "save"
     },
     {
-     "accepted": 31,
-     "frame": 7349,
+     "accepted": 24,
+     "frame": 7295,
      "phase": "walk"
     },
     {
-     "accepted": 42,
-     "frame": 7642,
+     "accepted": 37,
+     "frame": 7587,
      "phase": "battle"
     },
     {
-     "accepted": 43,
-     "frame": 9250,
+     "accepted": 38,
+     "frame": 11451,
      "phase": "save"
     },
     {
-     "accepted": 44,
-     "frame": 9944,
+     "accepted": 39,
+     "frame": 12145,
      "phase": "post_save"
     },
     {
-     "accepted": 45,
-     "frame": 10149,
+     "accepted": 40,
+     "frame": 12350,
      "phase": "ops"
     },
     {
-     "accepted": 49,
-     "frame": 10156,
+     "accepted": 44,
+     "frame": 12357,
      "phase": "done"
     }
    ],
    "qualification_attempt_id": "r2q3",
    "reset": {
-    "cartram_sha256": "cf1e0006afce4d8f9dedb08ce5e6b5f87b3bc547bf7f053e0597a15787eded07",
+    "cartram_sha256": "09372db0f0dec8d6cdffa7c7c9552a7862b3c603c9db32f8cb85e93a07d0bc12",
     "flushed": true,
-    "frame": 10156
+    "frame": 12357
    },
    "result": "PASS",
    "rom_sha1": "51b076ac7eba099a273ff7aff5c64ccb790825dd",
    "save": {
-    "cartram_sha256": "835db7aa9290d24f13a37b6d886a2943a32242c1b1b0da0f81971aee838bd15f",
+    "cartram_sha256": "eea8377107ca58a081e71278365343e9464b8b3266656e8b89551a7e51f68f50",
     "flushed": true,
-    "frame": 9944
+    "frame": 12145
    },
    "save2": null,
    "schema": "gen2-write-window-run-v1",
@@ -1686,13 +1686,13 @@
    "attempt_id": "u2-gold_boxes_reload",
    "base_sha1": "d8b8a3600a465308c9953dfa04f0081c05bdcb94",
    "binding_sha256": "1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b",
-   "boot_cartram_sha256": "95f48caa2e427e3f9f610933d5e4ed5b5a9e9ff1c89c8db04dc94141dc1a2c96",
+   "boot_cartram_sha256": "9a8b58f935d55932b5b1146a708cbe45a4e6e1ac63c8b6b2ba7e7e505d91b906",
    "catch": null,
    "control": null,
    "core_mode": "CGB",
    "evidence_level": "PHYSICAL",
    "fixture": "gold_battle",
-   "fixture_sha256": "c005ad51ad314651fe4c2ebaa0b471af6262c04fa92bb5294735055a6daca66f",
+   "fixture_sha256": "ba6117a1e62839e7d1d6f5ea73031020079971b007f85531231df0f9ae000b6b",
    "harness_write_scopes": [],
    "input_mode": "normal_buttons",
    "layout": {
@@ -1753,10 +1753,10 @@
    "ops": [],
    "pack_commit": "656583c939d30f920a316177311a502dd222b57c",
    "persist": {
-    "active_hex": "0110ffffffffffffffffffffffffffffffffffffffff100021000000c4a600000900000000000000000000de81230000004600000002ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff868e8b8350000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8f88838684985050505050ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-    "backing_hex": "0110ffffffffffffffffffffffffffffffffffffffff100021000000c4a600000900000000000000000000de81230000004600000002ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff868e8b8350000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8f88838684985050505050ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-    "memorial_hex": "0110ff00000000000000000000000000000000000000100021000000c4a6000009000000000000000000000c7b2300000046000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b835000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008f888386849850505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-    "party_hex": "019effffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b835000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    "active_hex": "0113ffffffffffffffffffffffffffffffffffffffff130021270000c4a6000040000000000000000000008eea231e00004600000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff868e8b8350000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9180939380938050505050ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "backing_hex": "0113ffffffffffffffffffffffffffffffffffffffff130021270000c4a6000040000000000000000000008eea231e00004600000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff868e8b8350000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9180939380938050505050ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "memorial_hex": "01a1ff00000000000000000000000000000000000000a10021000000c4a600001b0000000000000000000081cc2300000046000000030000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000092848d93918493505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "party_hex": "019effffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b835000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
    },
    "phases": [
     {
@@ -1785,18 +1785,18 @@
    "attempt_id": "u2-gold_boxes_reset",
    "base_sha1": "d8b8a3600a465308c9953dfa04f0081c05bdcb94",
    "binding_sha256": "1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b",
-   "boot_cartram_sha256": "cf1e0006afce4d8f9dedb08ce5e6b5f87b3bc547bf7f053e0597a15787eded07",
+   "boot_cartram_sha256": "09372db0f0dec8d6cdffa7c7c9552a7862b3c603c9db32f8cb85e93a07d0bc12",
    "catch": null,
    "control": {
     "active_hex": "00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
     "backing_hex": "00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-    "memorial_hex": "0110ff00000000000000000000000000000000000000100021000000c4a6000009000000000000000000000c7b2300000046000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b835000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008f888386849850505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-    "party_hex": "039e1010ff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a100021000000c4a600000900000000000000000000de812200000046000000020000000d000d00070007000700060006100021000000c4a6000009000000000000000000000c7b2300000046000000020000000d000d00060007000700060006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b8350000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b845050508f888386849850505050508f88838684985050505050000000000000000000000000000000000000000000000000000000000000000000"
+    "memorial_hex": "01a1ff00000000000000000000000000000000000000a10021000000c4a600001b0000000000000000000081cc2300000046000000030000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000092848d93918493505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "party_hex": "039e13a1ff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000a130021270000c4a6000040000000000000000000008eea231d00004600000004000000100010000a0008000b00070008a10021000000c4a600001b0000000000000000000081cc2100000046000000030000000f000f00080007000600070008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b8350000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b84505050918093938093805050505092848d9391849350505050000000000000000000000000000000000000000000000000000000000000000000"
    },
    "core_mode": "CGB",
    "evidence_level": "PHYSICAL",
    "fixture": "gold_battle",
-   "fixture_sha256": "18fc8d684b2d3a9aa9300d65ce84a28d149b13536706799e83c4a91d59b26680",
+   "fixture_sha256": "cd56f30c73eafa9fdb0e8eb99331fb04651559dfa7610603f5a3ee88e0878122",
    "harness_write_scopes": [
     "u2-box-ops"
    ],
@@ -1861,11 +1861,11 @@
      "changed": [],
      "deferred": false,
      "frame": 3377,
-     "key": "0C7B:C4A6:10",
+     "key": "81CC:C4A6:A1",
      "ok": true,
      "op": "memorialize",
-     "party_after_hex": "029e10ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a100021000000c4a600000900000000000000000000de812200000046000000020000000d000d00070007000700060006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b845050508f888386849850505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-     "party_before_hex": "039e1010ff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a100021000000c4a600000900000000000000000000de812200000046000000020000000d000d00070007000700060006100021000000c4a6000009000000000000000000000c7b2300000046000000020000000d000d00060007000700060006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b8350000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b845050508f888386849850505050508f88838684985050505050000000000000000000000000000000000000000000000000000000000000000000",
+     "party_after_hex": "029e13ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000a130021270000c4a6000040000000000000000000008eea231d00004600000004000000100010000a0008000b00070008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505091809393809380505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+     "party_before_hex": "039e13a1ff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000a130021270000c4a6000040000000000000000000008eea231d00004600000004000000100010000a0008000b00070008a10021000000c4a600001b0000000000000000000081cc2100000046000000030000000f000f00080007000600070008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b8350000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b84505050918093938093805050505092848d9391849350505050000000000000000000000000000000000000000000000000000000000000000000",
      "reason": null,
      "stage": 1,
      "written": [
@@ -1876,11 +1876,11 @@
      "changed": [],
      "deferred": true,
      "frame": 3379,
-     "key": "0C7B:C4A6:10",
+     "key": "81CC:C4A6:A1",
      "ok": true,
      "op": "withdraw",
-     "party_after_hex": "039e1010ff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a100021000000c4a600000900000000000000000000de812200000046000000020000000d000d00070007000700060006100021000000c4a6000009000000000000000000000c7b2300000046000000020000000d000d00060007000700060006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b8350000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b845050508f888386849850505050508f88838684985050505050000000000000000000000000000000000000000000000000000000000000000000",
-     "party_before_hex": "029e10ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a100021000000c4a600000900000000000000000000de812200000046000000020000000d000d00070007000700060006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b845050508f888386849850505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+     "party_after_hex": "039e13a1ff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000a130021270000c4a6000040000000000000000000008eea231d00004600000004000000100010000a0008000b00070008a10021000000c4a600001b0000000000000000000081cc2300000046000000030000000f000f00080007000600070008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b8350000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b84505050918093938093805050505092848d9391849350505050000000000000000000000000000000000000000000000000000000000000000000",
+     "party_before_hex": "029e13ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000a130021270000c4a6000040000000000000000000008eea231d00004600000004000000100010000a0008000b00070008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505091809393809380505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
      "reason": "backing removal deferred to the save witness",
      "stage": 1,
      "written": [
@@ -1890,18 +1890,18 @@
     {
      "changed": [
       {
-       "after_hex": "0110ffffffffffffffffffffffffffffffffffffffff100021000000c4a600000900000000000000000000de81230000004600000002ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff868e8b8350000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8f88838684985050505050ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+       "after_hex": "0113ffffffffffffffffffffffffffffffffffffffff130021270000c4a6000040000000000000000000008eea231e00004600000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff868e8b8350000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9180939380938050505050ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
        "before_hex": "00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
        "flat": 11628
       }
      ],
      "deferred": false,
      "frame": 3381,
-     "key": "DE81:C4A6:10",
+     "key": "8EEA:C4A6:13",
      "ok": true,
      "op": "deposit",
-     "party_after_hex": "029e10ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a100021000000c4a6000009000000000000000000000c7b2300000046000000020000000d000d00060007000700060006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b845050508f888386849850505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-     "party_before_hex": "039e1010ff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a100021000000c4a600000900000000000000000000de812200000046000000020000000d000d00070007000700060006100021000000c4a6000009000000000000000000000c7b2300000046000000020000000d000d00060007000700060006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b8350000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b845050508f888386849850505050508f88838684985050505050000000000000000000000000000000000000000000000000000000000000000000",
+     "party_after_hex": "029ea1ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000aa10021000000c4a600001b0000000000000000000081cc2300000046000000030000000f000f00080007000600070008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505092848d93918493505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+     "party_before_hex": "039e13a1ff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000a130021270000c4a6000040000000000000000000008eea231d00004600000004000000100010000a0008000b00070008a10021000000c4a600001b0000000000000000000081cc2300000046000000030000000f000f00080007000600070008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b8350000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b84505050918093938093805050505092848d9391849350505050000000000000000000000000000000000000000000000000000000000000000000",
      "reason": null,
      "stage": 1,
      "written": [
@@ -1913,17 +1913,17 @@
      "changed": [
       {
        "after_hex": "00ffff00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-       "before_hex": "0110ff00000000000000000000000000000000000000100021000000c4a6000009000000000000000000000c7b2300000046000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b835000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008f888386849850505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+       "before_hex": "01a1ff00000000000000000000000000000000000000a10021000000c4a600001b0000000000000000000081cc2300000046000000030000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000092848d93918493505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
        "flat": 31200
       }
      ],
      "deferred": false,
      "frame": 4285,
-     "key": "0C7B:C4A6:10",
+     "key": "81CC:C4A6:A1",
      "ok": true,
      "op": "settle",
-     "party_after_hex": "029e10ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a100021000000c4a6000009000000000000000000000c7b2300000046000000020000000d000d00060007000700060006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b845050508f888386849850505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-     "party_before_hex": "029e10ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a100021000000c4a6000009000000000000000000000c7b2300000046000000020000000d000d00060007000700060006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b845050508f888386849850505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+     "party_after_hex": "029ea1ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000aa10021000000c4a600001b0000000000000000000081cc2300000046000000030000000f000f00080007000600070008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505092848d93918493505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+     "party_before_hex": "029ea1ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000aa10021000000c4a600001b0000000000000000000081cc2300000046000000030000000f000f00080007000600070008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505092848d93918493505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
      "reason": null,
      "stage": 2,
      "written": [
@@ -1933,18 +1933,18 @@
     {
      "changed": [
       {
-       "after_hex": "0110ff00000000000000000000000000000000000000100021000000c4a6000009000000000000000000000c7b2300000046000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b835000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008f888386849850505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+       "after_hex": "01a1ff00000000000000000000000000000000000000a10021000000c4a600001b0000000000000000000081cc2300000046000000030000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000092848d93918493505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
        "before_hex": "00ffff00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
        "flat": 31200
       }
      ],
      "deferred": false,
      "frame": 4287,
-     "key": "0C7B:C4A6:10",
+     "key": "81CC:C4A6:A1",
      "ok": true,
      "op": "memorialize",
-     "party_after_hex": "019effffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b835000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-     "party_before_hex": "029e10ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a100021000000c4a6000009000000000000000000000c7b2300000046000000020000000d000d00060007000700060006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b845050508f888386849850505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+     "party_after_hex": "019effffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b835000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+     "party_before_hex": "029ea1ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000aa10021000000c4a600001b0000000000000000000081cc2300000046000000030000000f000f00080007000600070008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505092848d93918493505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
      "reason": null,
      "stage": 2,
      "written": [
@@ -1956,11 +1956,11 @@
      "changed": [],
      "deferred": true,
      "frame": 5023,
-     "key": "0C7B:C4A6:10",
+     "key": "81CC:C4A6:A1",
      "ok": true,
      "op": "withdraw",
-     "party_after_hex": "029e10ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a100021000000c4a6000009000000000000000000000c7b2300000046000000020000000d000d00060007000700060006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b845050508f888386849850505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-     "party_before_hex": "019effffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e00004600000005000000120014000c000c00090009000a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b835000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+     "party_after_hex": "029ea1ffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000aa10021000000c4a600001b0000000000000000000081cc2300000046000000030000000f000f00080007000600070008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b8350000000000000868e8b83500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505092848d93918493505050500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+     "party_before_hex": "019effffff0000009ead0a2b0000c4a600008700000000000000000000ec63231e000046000000050000000e0014000c000c00090009000a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000868e8b835000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000938e938e83888b8450505000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
      "reason": "backing removal deferred to the save witness",
      "stage": 3,
      "written": [
@@ -2029,19 +2029,19 @@
    ],
    "qualification_attempt_id": "r2q3",
    "reset": {
-    "cartram_sha256": "95f48caa2e427e3f9f610933d5e4ed5b5a9e9ff1c89c8db04dc94141dc1a2c96",
+    "cartram_sha256": "9a8b58f935d55932b5b1146a708cbe45a4e6e1ac63c8b6b2ba7e7e505d91b906",
     "flushed": true,
     "frame": 5026
    },
    "result": "PASS",
    "rom_sha1": "51b076ac7eba099a273ff7aff5c64ccb790825dd",
    "save": {
-    "cartram_sha256": "9eb61dd5db0869f010f69d0e629bfa7e6dad41825e58f3f88dea62eed5e595ba",
+    "cartram_sha256": "e7fac265e73fd10fd566382eb207ed6e4a0ddabb463051c5e016b74b6c8492c2",
     "flushed": true,
     "frame": 4080
    },
    "save2": {
-    "cartram_sha256": "7bdad19bc0ab8eebd70865bfeb04ce8061803263d868fc69df5eff70301f27d0",
+    "cartram_sha256": "6b34f508a7028bdcd3213c8982a66fa6e6d183240c9676d41ee71b660e6dc6fb",
     "flushed": true,
     "frame": 4818
    },
@@ -2055,11 +2055,11 @@
    "base_sha1": "d8b8a3600a465308c9953dfa04f0081c05bdcb94",
    "battle_model": null,
    "binding_sha256": "1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b",
-   "boot_cartram_sha256": "8ee9e22b16ead03ccf5a8d948d79a369c7e539e0e74d157647de8172f95da7cf",
+   "boot_cartram_sha256": "3453c59a971d1e03c4f1a735cb54c69c6440189dbca9808c59ba3033055e0854",
    "core_mode": "CGB",
    "evidence_level": "PHYSICAL",
    "fixture": "gold_town",
-   "fixture_sha256": "365cf131639c24319b52a4aa70d89baafeef35b1aa2e897520ad3ae5a59498e0",
+   "fixture_sha256": "f8b4d71b3511c852561643c3078cea81d690d8e67c77409b7097afcfa2a88ebc",
    "harness_write_scopes": [],
    "input_mode": "normal_buttons",
    "liveness": {
@@ -2254,7 +2254,7 @@
    "result": "PASS",
    "rom_sha1": "51b076ac7eba099a273ff7aff5c64ccb790825dd",
    "save": {
-    "cartram_sha256": "8ee9e22b16ead03ccf5a8d948d79a369c7e539e0e74d157647de8172f95da7cf",
+    "cartram_sha256": "3453c59a971d1e03c4f1a735cb54c69c6440189dbca9808c59ba3033055e0854",
     "flushed": true,
     "frame": 4663,
     "mon_hp": 34,
@@ -2285,7 +2285,7 @@
      "write": {
       "after_hex": "0013",
       "before_hex": "0013",
-      "reason": "F:/slink-work/lanes/gen2/fs1/lua/gen2/writes.lua:167: write ownership refused",
+      "reason": "F:/slink-work/lanes/gen2/fs2/lua/gen2/writes.lua:167: write ownership refused",
       "refused": true,
       "slot": 0
      }
@@ -2311,7 +2311,7 @@
      "write": {
       "after_hex": "0013",
       "before_hex": "0013",
-      "reason": "F:/slink-work/lanes/gen2/fs1/lua/gen2/writes.lua:167: write ownership refused",
+      "reason": "F:/slink-work/lanes/gen2/fs2/lua/gen2/writes.lua:167: write ownership refused",
       "refused": true,
       "slot": 0
      }
@@ -2336,7 +2336,7 @@
      "write": {
       "after_hex": "0013",
       "before_hex": "0013",
-      "reason": "F:/slink-work/lanes/gen2/fs1/lua/gen2/writes.lua:167: write ownership refused",
+      "reason": "F:/slink-work/lanes/gen2/fs2/lua/gen2/writes.lua:167: write ownership refused",
       "refused": true,
       "slot": 0
      }
@@ -2361,7 +2361,7 @@
      "write": {
       "after_hex": "0013",
       "before_hex": "0013",
-      "reason": "F:/slink-work/lanes/gen2/fs1/lua/gen2/writes.lua:167: write ownership refused",
+      "reason": "F:/slink-work/lanes/gen2/fs2/lua/gen2/writes.lua:167: write ownership refused",
       "refused": true,
       "slot": 0
      }

@@ -12,66 +12,68 @@ RX dead_keys
 RX link_panel
 BOOTED {"frame":3336,"map_group":24,"map_number":5,"party_count":1,"x":5,"y":3}
 MYKEY 0 F794:B541:9E
-  phase leave-elm @3336 xy=5,3
-  phase to-route29 @4338 xy=6,3
-  phase pre-walk @4588 xy=59,8
-TX {"area_id":"route_29","event":"area_enter","loc_name":"ROUTE 29","player":"a","seq":43}
-  phase pre-grass @4778 xy=53,12
-  phase walk @4808 xy=53,12
-  phase battle @5000 xy=53,12
-  phase encounter @5579 xy=53,12
-  phase battle @5609 xy=53,12
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":70}
-  phase escaped @5831 xy=53,12
-BALL_PRE {"area_id":"route_29","ball_count":0,"foe":16,"frame":5861,"has_pokeballs":false}
-  phase errand-west @5861 xy=53,12
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":138}
-TX {"area_id":"cherrygrove_city","event":"area_enter","loc_name":"CHERRYGROVE CITY","player":"a","seq":150}
-  phase errand-mr-pokemon @9157 xy=6,53
-TX {"area_id":"route_30","event":"area_enter","loc_name":"ROUTE 30","player":"a","seq":173}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":207}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":247}
-  phase errand-egg @17956 xy=3,6
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":498}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":538}
-  phase errand-east @22073 xy=17,0
-TX {"area_id":"cherrygrove_city","event":"area_enter","loc_name":"CHERRYGROVE CITY","player":"a","seq":554}
-TX {"event":"trainer_battle_start","player":"a","seq":602,"trainer_id":2305}
-ENGINE_FAINT {"cause":"battle","frame":33542,"key":"F794:B541:9E","site_id":"battle_faint","slot":0}
-TX {"area_id":"cherrygrove_city","event":"faint","key":"F794:B541:9E","player":"a","seq":834}
-FAINT_SENT {"frame":33542,"key":"F794:B541:9E","seq":834}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":841}
-TX {"area_id":"route_29","event":"area_enter","loc_name":"ROUTE 29","player":"a","seq":864}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":918}
-  phase errand-elm @36858 xy=0,8
-TX {"area_id":"new_bark_town","event":"area_enter","loc_name":"NEW BARK TOWN","player":"a","seq":934}
-  phase errand-handoff @40945 xy=5,3
-  phase leave-elm @40946 xy=5,3
-  phase to-route29 @42155 xy=6,3
-  phase route29-grass @42405 xy=59,8
-TX {"area_id":"route_29","event":"area_enter","loc_name":"ROUTE 29","player":"a","seq":1115}
-  phase post-grass @43607 xy=53,12
-BALL_FLIP {"ball_count":5,"frame":43637,"has_pokeballs":true}
-  phase walk @43637 xy=53,12
-  phase battle @44164 xy=53,12
-RX hud_show
-RX_TEXT {"cmd":"hud_show","frame":46352,"text":"Partner caught PIDGEY in Route 29"}
-ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":46699,"key":"7DDF:B541:13","level":2,"site_id":"capture_party_finalized","slot":1,"species_id":19}
-TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":6,"in_box":false,"key":"7DDF:B541:13","level":2,"maxHP":13,"nickname":"RATTATA","player":"a","seq":1226,"species_id":19,"stats":{"level":2,"maxHP
-CAPTURE_SENT {"frame":46699,"key":"7DDF:B541:13","seq":1226}
-CAUGHT 7DDF:B541:13
+  phase leave-elm @3400 xy=5,3
+  phase to-route29 @4403 xy=6,3
+TX {"area_id":"route_29","event":"area_enter","loc_name":"ROUTE 29","player":"a","seq":45}
+  phase pre-walk @4653 xy=59,8
+  phase pre-grass @4843 xy=53,12
+  phase walk @4873 xy=53,12
+  phase battle @5149 xy=52,12
+  phase encounter @5728 xy=52,12
+  phase battle @5758 xy=52,12
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":74}
+  phase escaped @5980 xy=52,12
+BALL_PRE {"area_id":"route_29","ball_count":0,"foe":16,"frame":6010,"has_pokeballs":false}
+  phase errand-west @6010 xy=52,12
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":98}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":122}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":147}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":189}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":225}
+TX {"area_id":"cherrygrove_city","event":"area_enter","loc_name":"CHERRYGROVE CITY","player":"a","seq":238}
+  phase errand-mr-pokemon @13215 xy=6,53
+TX {"area_id":"route_30","event":"area_enter","loc_name":"ROUTE 30","player":"a","seq":261}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":314}
+  phase errand-egg @21026 xy=3,6
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":558}
+  phase errand-east @24170 xy=17,0
+TX {"area_id":"cherrygrove_city","event":"area_enter","loc_name":"CHERRYGROVE CITY","player":"a","seq":596}
+TX {"event":"trainer_battle_start","player":"a","seq":644,"trainer_id":2305}
+ENGINE_FAINT {"cause":"battle","frame":34216,"key":"F794:B541:9E","site_id":"battle_faint","slot":0}
+TX {"area_id":"cherrygrove_city","event":"faint","key":"F794:B541:9E","player":"a","seq":843}
+FAINT_SENT {"frame":34216,"key":"F794:B541:9E","seq":843}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":850}
+TX {"area_id":"route_29","event":"area_enter","loc_name":"ROUTE 29","player":"a","seq":872}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":899}
+TX {"area_id":"new_bark_town","event":"area_enter","loc_name":"NEW BARK TOWN","player":"a","seq":942}
+  phase errand-elm @37530 xy=0,8
+  phase errand-handoff @41618 xy=5,3
+  phase leave-elm @41619 xy=5,3
+  phase to-route29 @42828 xy=6,3
+  phase route29-grass @43078 xy=59,8
+TX {"area_id":"route_29","event":"area_enter","loc_name":"ROUTE 29","player":"a","seq":1123}
+  phase post-grass @44280 xy=53,12
+BALL_FLIP {"ball_count":5,"frame":44310,"has_pokeballs":true}
+  phase walk @44310 xy=53,12
+  phase battle @44501 xy=53,12
+ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":47108,"key":"374C:B541:BB","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":187}
+TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":9,"in_box":false,"key":"374C:B541:BB","level":3,"maxHP":15,"nickname":"HOPPIP","player":"a","seq":1219,"species_id":187,"stats":{"level":3,"maxHP
+CAPTURE_SENT {"frame":47108,"key":"374C:B541:BB","seq":1219}
+CAUGHT 374C:B541:BB
+RX box_mon key=374C:B541:BB
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":1220}
+TX {"event":"stats_cache","key":"374C:B541:BB","player":"a","seq":1223,"stats":{"level":3,"maxHP":15}}
 RX play_sound sound=25
 RX msgbox
-RX_TEXT {"cmd":"msgbox","frame":46702,"text":"RATTATA and PIDGEY linked!"}
-RX party_mon key=7DDF:B541:13
+RX_TEXT {"cmd":"msgbox","frame":48063,"text":"HOPPIP and SENTRET linked!"}
+RX party_mon key=374C:B541:BB
 RX link_panel
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":1227}
-TX {"event":"sync_retrieve_done","key":"7DDF:B541:13","player":"a","seq":1229}
-  phase save @46766 xy=53,12
+TX {"event":"sync_retrieve_done","key":"374C:B541:BB","player":"a","seq":1254}
+  phase save @48065 xy=53,12
 RX link_panel
-  phase saved @47483 xy=53,12
+  phase saved @48782 xy=53,12
 MYKEY 0 F794:B541:9E
-MYKEY 1 7DDF:B541:13
-SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"83b47a3ca3f21f9300e9e2bbff7b177272259332b70f93d22b053df632e1c87a","client_saves":1,"flushed_matches":true,"frame":47513,"gate_saves":1,"save_completed_frame":47483,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs3/patch/build/saveram_gen2_ball_gate_s21_a/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs3/patch/build/e2e_gen2_ball_gate_s21_a_witness.SaveRAM"}
-RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","booted":{"frame":3336,"map_group":24,"map_number":5,"party_count":1,"x":5,"y":3},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":46699,"key":"7DDF:B541:13","level":2,"site_id":"capture_party_finalized","slot":1,"species_id":19},"case":"crystal_town","client":{"artifact_kind":"overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","title":"crystal"},"faint":{"cause":"battle","frame":33542,"key":"F794:B541:9E","site_id":"battle_faint","slot":0},"fixture_sha256":"3b2794f82c2839afc39c8523c94ef9940c18ed6b8dc5a5817b09b6d4a4a56edf","flip":{"ball_count":5,"frame":43637,"has_pokeballs":true},"harness_write_scopes":[],"hello":{"ball_count":0,"frame":3306,"has_pokeballs":false,"ot_id":46401},"input_mode":"normal_buttons","key":"7DDF:B541:13","player":"a","pre_ball":{"area_id":"route_29","ball_count":0,"foe":16,"frame":5861,"has_pokeballs":false},"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","save":{"cartram_bytes":32768,"cartram_sha256":"83b47a3ca3f21f9300e9e2bbff7b177272259332b70f93d22b053df632e1c87a","client_saves":1,"flushed_matches":true,"frame":47513,"gate_saves":1,"save_completed_frame":47483,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs3/patch/build/saveram_gen2_ball_gate_s21_a/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs3/patch/build/e2e_gen2_ball_gate_s21_a_witness.SaveRAM"},"scenario":"gen2_ball_gate","schema":"gen2-duo-ball-gate-v1","synth":[],"title":"crystal"}
-RESULT: PASS (pre-Ball encounter and faint withheld; aide's Balls opened the gate; caught 7DDF:B541:13)
+MYKEY 1 374C:B541:BB
+SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"6c23d3aa4336d0015039fe9e9bc7d84cdefc30401b6b57754bafff2a7f96e590","client_saves":1,"flushed_matches":true,"frame":48812,"gate_saves":1,"save_completed_frame":48782,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_ball_gate_s21_a/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_ball_gate_s21_a_witness.SaveRAM"}
+RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","booted":{"frame":3336,"map_group":24,"map_number":5,"party_count":1,"x":5,"y":3},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":47108,"key":"374C:B541:BB","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":187},"case":"crystal_town","client":{"artifact_kind":"overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","title":"crystal"},"faint":{"cause":"battle","frame":34216,"key":"F794:B541:9E","site_id":"battle_faint","slot":0},"fixture_sha256":"3b2794f82c2839afc39c8523c94ef9940c18ed6b8dc5a5817b09b6d4a4a56edf","flip":{"ball_count":5,"frame":44310,"has_pokeballs":true},"harness_write_scopes":[],"hello":{"ball_count":0,"frame":3306,"has_pokeballs":false,"ot_id":46401},"input_mode":"normal_buttons","key":"374C:B541:BB","player":"a","pre_ball":{"area_id":"route_29","ball_count":0,"foe":16,"frame":6010,"has_pokeballs":false},"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","save":{"cartram_bytes":32768,"cartram_sha256":"6c23d3aa4336d0015039fe9e9bc7d84cdefc30401b6b57754bafff2a7f96e590","client_saves":1,"flushed_matches":true,"frame":48812,"gate_saves":1,"save_completed_frame":48782,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_ball_gate_s21_a/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_ball_gate_s21_a_witness.SaveRAM"},"scenario":"gen2_ball_gate","schema":"gen2-duo-ball-gate-v1","synth":[],"title":"crystal"}
+RESULT: PASS (pre-Ball encounter and faint withheld; aide's Balls opened the gate; caught 374C:B541:BB)

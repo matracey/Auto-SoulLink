@@ -12,28 +12,28 @@ RX dead_keys
 RX link_panel
 BOOTED {"frame":3374,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12}
 MYKEY 0 EC63:C4A6:9E
-HELLO_AT_CHECKPOINT {"frame":3440,"hellos":1,"ot_id":50342,"writes_enabled":true}
-CHORD_GATE {"frame":3479}
-CHORD {"frame":3479,"frames":4}
-RESET_SEEN {"delta":39,"frame":3518}
-HELLO_CLEARED {"delta":0,"frame":3518}
-WRITES_PAUSED {"delta":262,"frame":3780}
-  phase title @3780
-  phase continue @6736
+HELLO_AT_CHECKPOINT {"frame":3396,"hellos":1,"ot_id":50342,"writes_enabled":true}
+CHORD_GATE {"frame":3436}
+CHORD {"frame":3436,"frames":4}
+RESET_SEEN {"delta":39,"frame":3475}
+HELLO_CLEARED {"delta":0,"frame":3475}
+WRITES_PAUSED {"delta":245,"frame":3720}
+  phase title @3720
+  phase continue @6693
 TX {"area_id":"route_29","artifact_kind":"overlay","badges":0,"ball_count":10,"companion_abi":3,"event":"hello","foundation":"gen2_gsc","has_pokeballs":true,"in_battle":false,"kanto_badges":0,"loc_name":"ROUTE 29","ot_id":5
-HELLO_AGAIN {"frame":6856,"n":2,"ot_id":50342}
-  phase loaded @6856
+HELLO_AGAIN {"frame":6813,"n":2,"ot_id":50342}
+  phase loaded @6813
 RX resolved_areas
 RX config
 RX dead_keys
 RX link_panel
-REBOOTED {"frame":6886,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12}
-WRITES_RESUMED {"delta":3368,"frame":6886}
-REHELLO {"frame":6886,"hellos":2,"ot_id":50342}
+REBOOTED {"frame":6843,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12}
+WRITES_RESUMED {"delta":3368,"frame":6843}
+REHELLO {"frame":6843,"hellos":2,"ot_id":50342}
 NO_WRITES_IN_WINDOW {"writes":0}
 MYKEY 0 EC63:C4A6:9E
-  phase save @6886 xy=53,12
-  phase saved @7580 xy=53,12
-SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"90f34e05058d14e9bda312a288855e8ec43c6bbbbda22a277c841d3c55562337","client_saves":1,"flushed_matches":true,"frame":7610,"gate_saves":1,"save_completed_frame":7580,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_soft_reset_s841_a/gen2 gold overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_soft_reset_s841_a_witness.SaveRAM"}
-RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","booted":{"frame":3374,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"case":"gold_battle","client":{"artifact_kind":"overlay","binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","pack":"gen2_gold","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"51b076ac7eba099a273ff7aff5c64ccb790825dd","title":"gold"},"fixture_sha256":"6864b34a79e63fa9c8954c37cb805a690da4cf36447bda179ecf0742a072a3b6","harness_write_scopes":[],"hello":{"ball_count":10,"frame":3344,"has_pokeballs":true,"ot_id":50342},"input_mode":"normal_buttons","paused":{"delta":262,"frame":3780},"player":"a","rehello":{"frame":6886,"hellos":2,"ot_id":50342},"reset":{"delta":39,"frame":3518},"rom_sha1":"51b076ac7eba099a273ff7aff5c64ccb790825dd","save":{"cartram_bytes":32768,"cartram_sha256":"90f34e05058d14e9bda312a288855e8ec43c6bbbbda22a277c841d3c55562337","client_saves":1,"flushed_matches":true,"frame":7610,"gate_saves":1,"save_completed_frame":7580,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_soft_reset_s841_a/gen2 gold overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_soft_reset_s841_a_witness.SaveRAM"},"scenario":"gen2_soft_reset","schema":"gen2-duo-soft-reset-v1","title":"gold"}
+  phase save @6843 xy=53,12
+  phase saved @7537 xy=53,12
+SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"f881498fbbf76225c2efa374da529718b5b109a74e0fe7a17d11212bf020a141","client_saves":1,"flushed_matches":true,"frame":7567,"gate_saves":1,"save_completed_frame":7537,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_soft_reset_s841_a/gen2 gold overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_soft_reset_s841_a_witness.SaveRAM"}
+RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","booted":{"frame":3374,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"case":"gold_battle","client":{"artifact_kind":"overlay","binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","pack":"gen2_gold","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"51b076ac7eba099a273ff7aff5c64ccb790825dd","title":"gold"},"fixture_sha256":"6864b34a79e63fa9c8954c37cb805a690da4cf36447bda179ecf0742a072a3b6","harness_write_scopes":[],"hello":{"ball_count":10,"frame":3344,"has_pokeballs":true,"ot_id":50342},"input_mode":"normal_buttons","paused":{"delta":245,"frame":3720},"player":"a","rehello":{"frame":6843,"hellos":2,"ot_id":50342},"reset":{"delta":39,"frame":3475},"rom_sha1":"51b076ac7eba099a273ff7aff5c64ccb790825dd","save":{"cartram_bytes":32768,"cartram_sha256":"f881498fbbf76225c2efa374da529718b5b109a74e0fe7a17d11212bf020a141","client_saves":1,"flushed_matches":true,"frame":7567,"gate_saves":1,"save_completed_frame":7537,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_soft_reset_s841_a/gen2 gold overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_soft_reset_s841_a_witness.SaveRAM"},"scenario":"gen2_soft_reset","schema":"gen2-duo-soft-reset-v1","title":"gold"}
 RESULT: PASS (same-save soft reset: one re-hello, no writes in the cleared window)

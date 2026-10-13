@@ -14,58 +14,48 @@ BOOTED {"frame":3335,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12
 MYKEY 0 FFFF:AC24:9E
   phase walk @3335 xy=53,12
   phase battle @3610 xy=52,12
-RX hud_show
-RX_TEXT {"cmd":"hud_show","frame":5942,"text":"Partner caught PIDGEY in Route 29"}
 ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":7704,"key":"4EFD:AC24:10","level":2,"site_id":"capture_party_finalized","slot":1,"species_id":16}
 TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":13,"in_box":false,"key":"4EFD:AC24:10","level":2,"maxHP":13,"nickname":"PIDGEY","player":"b","seq":77,"species_id":16,"stats":{"level":2,"maxHP":
 CAPTURE_SENT {"frame":7704,"key":"4EFD:AC24:10","seq":77}
 CAUGHT 4EFD:AC24:10
+RX box_mon key=4EFD:AC24:10
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"b","seq":79}
+TX {"event":"stats_cache","key":"4EFD:AC24:10","player":"b","seq":82,"stats":{"level":2,"maxHP":13}}
 RX play_sound sound=25
 RX msgbox
-RX_TEXT {"cmd":"msgbox","frame":7707,"text":"PIDGEY and PIDGEY linked!"}
+RX_TEXT {"cmd":"msgbox","frame":13172,"text":"PIDGEY and PIDGEY linked!"}
 RX party_mon key=4EFD:AC24:10
 RX link_panel
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"b","seq":79}
-TX {"event":"sync_retrieve_done","key":"4EFD:AC24:10","player":"b","seq":82}
-  phase save @7771 xy=52,12
+TX {"event":"sync_retrieve_done","key":"4EFD:AC24:10","player":"b","seq":263}
+  phase save @13173 xy=52,12
 RX link_panel
-  phase saved @8488 xy=52,12
+  phase saved @13890 xy=52,12
 MYKEY 0 FFFF:AC24:9E
 MYKEY 1 4EFD:AC24:10
-LINK_SAVE {"cartram_bytes":32768,"cartram_sha256":"f72eafd96dc9b2df1313396686b3be76a39cacf258e610d47e5ed528e4bb00cb","client_saves":1,"frame":8518,"gate_saves":1,"key":"4EFD:AC24:10","save_completed_frame":8488,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_faint_active_trainer_s131_b_link_save.SaveRAM"}
+LINK_SAVE {"cartram_bytes":32768,"cartram_sha256":"3a0da22394019462f36e52f1ac3249f448cc869a287bf061bc221aa880678608","client_saves":1,"frame":13920,"gate_saves":1,"key":"4EFD:AC24:10","save_completed_frame":13890,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_faint_active_trainer_s131_b_link_save.SaveRAM"}
   PI battle mode=0 map=24:3 xy=52,12 phase=travel active=nil foe_sting=nil party=0:29/33:0 1:13/13:0
-  phase settle @8518 xy=52,12
-  phase travel @8676 xy=52,12
-  PI battle mode=1 map=24:3 xy=44,12 phase=travel active=0 foe_sting=false party=0:29/33:0 1:13/13:0
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"b","seq":162}
-  PI battle mode=0 map=24:3 xy=44,12 phase=travel active=nil foe_sting=nil party=0:29/33:0 1:13/13:0
-  PI battle mode=1 map=24:3 xy=42,14 phase=travel active=0 foe_sting=false party=0:29/33:0 1:13/13:0
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"b","seq":187}
-  PI battle mode=0 map=24:3 xy=42,14 phase=travel active=nil foe_sting=nil party=0:29/33:0 1:13/13:0
-  PI battle mode=1 map=24:3 xy=36,8 phase=travel active=0 foe_sting=false party=0:29/33:0 1:13/13:0
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"b","seq":226}
-  PI battle mode=0 map=24:3 xy=36,8 phase=travel active=nil foe_sting=nil party=0:29/33:0 1:13/13:0
-  PI battle mode=1 map=24:3 xy=16,4 phase=travel active=0 foe_sting=false party=0:29/33:0 1:13/13:0
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"b","seq":266}
-  PI battle mode=0 map=24:3 xy=16,4 phase=travel active=nil foe_sting=nil party=0:29/33:0 1:13/13:0
-TX {"area_id":"cherrygrove_city","event":"area_enter","loc_name":"CHERRYGROVE CITY","player":"b","seq":283}
-  phase hunt @15830 xy=7,53
-TX {"area_id":"route_30","event":"area_enter","loc_name":"ROUTE 30","player":"b","seq":306}
-  PI battle mode=1 map=26:1 xy=12,47 phase=hunt active=0 foe_sting=false party=0:29/33:0 1:13/13:0
-POISON_ENCOUNTER {"candidate":false,"encounter":1,"foe_sting":false,"frame":16804,"level":4,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
-TX {"area_id":"route_30","event":"no_catch","level":4,"player":"b","seq":334,"species_id":10}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"b","seq":335}
-  PI battle mode=0 map=26:1 xy=12,47 phase=hunt active=nil foe_sting=nil party=0:29/33:0 1:13/13:0
+  phase settle @13920 xy=52,12
+  phase travel @14077 xy=52,12
+  PI battle mode=1 map=24:3 xy=16,5 phase=travel active=0 foe_sting=false party=0:29/33:0 1:13/13:0
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"b","seq":384}
+  PI battle mode=0 map=24:3 xy=16,5 phase=travel active=nil foe_sting=nil party=0:29/33:0 1:13/13:0
+TX {"area_id":"cherrygrove_city","event":"area_enter","loc_name":"CHERRYGROVE CITY","player":"b","seq":401}
+  phase hunt @18287 xy=7,53
+TX {"area_id":"route_30","event":"area_enter","loc_name":"ROUTE 30","player":"b","seq":424}
+  PI battle mode=1 map=26:1 xy=12,37 phase=hunt active=0 foe_sting=false party=0:29/33:0 1:13/13:0
+POISON_ENCOUNTER {"candidate":false,"encounter":1,"foe_sting":false,"frame":19441,"level":4,"map_group":26,"map_number":1,"moves":[150,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":187}
+TX {"area_id":"route_30","event":"no_catch","level":4,"player":"b","seq":458,"species_id":187}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"b","seq":459}
+  PI battle mode=0 map=26:1 xy=12,37 phase=hunt active=nil foe_sting=nil party=0:29/33:0 1:13/13:0
 RX play_sound sound=26
 RX msgbox
-RX_TEXT {"cmd":"msgbox","frame":16972,"text":"Route 30 is a dead zone!"}
+RX_TEXT {"cmd":"msgbox","frame":19609,"text":"Route 30 is a dead zone!"}
 RX link_panel
   PI battle mode=2 map=26:1 xy=5,28 phase=hunt active=0 foe_sting=false party=0:29/33:0 1:13/13:0
-  phase poisoned @19032 xy=5,28
-TX {"event":"trainer_battle_start","player":"b","seq":402,"trainer_id":5633}
-  phase battle @19062 xy=5,28
-LINKED_ACTIVE {"battle_mode":2,"battle_mon_species":16,"battle_type":0,"cur_battle_mon":1,"frame":20669,"key":"4EFD:AC24:10","link_mode":0,"other_trainer_class":22,"other_trainer_id":1,"slot":1}
-RX link_panel
+  phase poisoned @21482 xy=5,28
+TX {"event":"trainer_battle_start","player":"b","seq":518,"trainer_id":5633}
+  phase battle @21512 xy=5,28
+LINKED_ACTIVE {"battle_mode":2,"battle_mon_species":16,"battle_type":0,"cur_battle_mon":1,"frame":23119,"key":"4EFD:AC24:10","link_mode":0,"other_trainer_class":22,"other_trainer_id":1,"slot":1}
 RX link_panel
 RX link_panel
 RX link_panel
@@ -74,23 +64,23 @@ RX play_sound sound=26
 RX memorialize key=4EFD:AC24:10
 RX game_over
 RX link_panel
-BATTLE_HOLD_WRITE {"action_after_hex":"01","action_before_hex":"00","active_slot":1,"battle_hp_after_hex":"0000","battle_hp_before_hex":"0007","frame":25892,"hp_after_hex":"0000","hp_before_hex":"0007","hrom_bank":15,"key":"4EFD:AC24:10","kind":"battle_faint","log":[{"addr":50748,"artifact":"pokecrystal","attempted":2,"batch_index":1,"batch_size":4,"completed":2,"domain":"System Bus","evidence":"U2 PHYSICAL receipt","n":2,"rom_sha1":"f4cd194bdee0d04ca4eac29e09b8e4e9d818c133","site":"lua/gen2/entry.lua production","status":"written","title":"crystal","why":"battle_hold"},{"addr":56623,"artifact":"pokecrystal","attempted":1,"batch_index":2,"batch_size":4,"completed":1,"domain":"System Bus","evidence":"U2 PHYSICAL receipt","n":1,"rom_sha1":"f4cd194bdee0d04ca4eac29e09b8e4e9d818c133","site":"lua/gen2/entry.lua production","status":"written","title":"crystal","why":"battle_hold"},{"addr":56625,"artifact":"pokecrystal","attempted":2,"batch_index":3,"batch_size":4,"completed":2,"domain":"System Bus","evidence":"U2 PHYSICAL receipt","n":2,"rom_sha1":"f4cd194bdee0d04ca4eac29e09b8e4e9d818c133","site":"lua/gen2/entry.lua production","status":"written","title":"crystal","why":"battle_hold"},{"addr":53484,"artifact":"pokecrystal","attempted":1,"batch_index":4,"batch_size":4,"completed":1,"domain":"System Bus","evidence":"U2 PHYSICAL receipt","n":1,"rom_sha1":"f4cd194bdee0d04ca4eac29e09b8e4e9d818c133","site":"lua/gen2/entry.lua production","status":"written","title":"crystal","why":"battle_hold"}],"ok":true,"pc":16788,"seq":1,"slot":1,"status_after_hex":"00"}
-BATTLE_TRACE {"frame":25892,"seq":2,"what":"faint"}
+BATTLE_HOLD_WRITE {"action_after_hex":"01","action_before_hex":"00","active_slot":1,"battle_hp_after_hex":"0000","battle_hp_before_hex":"0007","frame":27152,"hp_after_hex":"0000","hp_before_hex":"0007","hrom_bank":15,"key":"4EFD:AC24:10","kind":"battle_faint","log":[{"addr":50748,"artifact":"pokecrystal","attempted":2,"batch_index":1,"batch_size":4,"completed":2,"domain":"System Bus","evidence":"U2 PHYSICAL receipt","n":2,"rom_sha1":"f4cd194bdee0d04ca4eac29e09b8e4e9d818c133","site":"lua/gen2/entry.lua production","status":"written","title":"crystal","why":"battle_hold"},{"addr":56623,"artifact":"pokecrystal","attempted":1,"batch_index":2,"batch_size":4,"completed":1,"domain":"System Bus","evidence":"U2 PHYSICAL receipt","n":1,"rom_sha1":"f4cd194bdee0d04ca4eac29e09b8e4e9d818c133","site":"lua/gen2/entry.lua production","status":"written","title":"crystal","why":"battle_hold"},{"addr":56625,"artifact":"pokecrystal","attempted":2,"batch_index":3,"batch_size":4,"completed":2,"domain":"System Bus","evidence":"U2 PHYSICAL receipt","n":2,"rom_sha1":"f4cd194bdee0d04ca4eac29e09b8e4e9d818c133","site":"lua/gen2/entry.lua production","status":"written","title":"crystal","why":"battle_hold"},{"addr":53484,"artifact":"pokecrystal","attempted":1,"batch_index":4,"batch_size":4,"completed":1,"domain":"System Bus","evidence":"U2 PHYSICAL receipt","n":1,"rom_sha1":"f4cd194bdee0d04ca4eac29e09b8e4e9d818c133","site":"lua/gen2/entry.lua production","status":"written","title":"crystal","why":"battle_hold"}],"ok":true,"pc":16788,"seq":1,"slot":1,"status_after_hex":"00"}
+BATTLE_TRACE {"frame":27152,"seq":2,"what":"faint"}
 RX link_panel
-ENGINE_FAINT {"cause":"battle","frame":25998,"key":"4EFD:AC24:10","site_id":"battle_faint","slot":1}
-REPLACED {"active_slot":0,"frame":26067,"hp":29}
+ENGINE_FAINT {"cause":"battle","frame":27257,"key":"4EFD:AC24:10","site_id":"battle_faint","slot":1}
+REPLACED {"active_slot":0,"frame":27326,"hp":29}
 RX link_panel
-BATTLE_TRACE {"frame":26606,"seq":3,"what":"enemy_turn"}
-BATTLE_TRACE {"battle_mode":2,"frame":27091,"hp_after":0,"hp_before":5,"seq":4,"species":19,"title":"crystal","what":"enemy_faint"}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"b","seq":660}
-  phase fainted @27886 xy=5,28
-MEMORIAL_PREIMAGE {"frame":27887,"key":"4EFD:AC24:10","nickname_raw_hex":"8f88838684985050505050","ot_raw_hex":"8c80935050505050505050","raw_hex":"100021000000ac24000009000000000000000000004efd21000000460082020200000000000d00060007000700060006","slot":1,"species_marker":16}
-TX {"box":13,"event":"memorialize_done","key":"4EFD:AC24:10","player":"b","seq":663}
-MEMORIAL_ACK {"box":13,"event":"memorialize_done","frame":27887,"key":"4EFD:AC24:10","ticks":648}
+BATTLE_TRACE {"frame":27870,"seq":3,"what":"enemy_turn"}
+BATTLE_TRACE {"battle_mode":2,"frame":28443,"hp_after":0,"hp_before":4,"seq":4,"species":19,"title":"crystal","what":"enemy_faint"}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"b","seq":742}
+  phase fainted @29232 xy=5,28
+MEMORIAL_PREIMAGE {"frame":29233,"key":"4EFD:AC24:10","nickname_raw_hex":"8f88838684985050505050","ot_raw_hex":"8c80935050505050505050","raw_hex":"100021000000ac24000009000000000000000000004efd23000000460082020200000000000d00060007000700060006","slot":1,"species_marker":16}
+TX {"box":13,"event":"memorialize_done","key":"4EFD:AC24:10","player":"b","seq":746}
+MEMORIAL_ACK {"box":13,"event":"memorialize_done","frame":29233,"key":"4EFD:AC24:10","ticks":733}
 RX link_panel
 LINKED_HP_STATUS 0000 00
-  phase save @27916 xy=5,28
-  phase saved @28633 xy=5,28
-SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"dbb69b1e867f6fadd69a1beedd6298c3a42e3662bdf69d5ea36e43b3ef09040a","client_saves":2,"flushed_matches":true,"frame":28663,"gate_saves":2,"save_completed_frame":28633,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/saveram_gen2_faint_active_trainer_s131_b/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_faint_active_trainer_s131_b_witness.SaveRAM"}
-RECEIPT {"artifact_kind":"overlay","attempt":1,"battle_write":{"action_after_hex":"01","battle_hp_before_hex":"0007","frame":25892,"hrom_bank":15,"pc":16788,"seq":1,"slot":1},"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","booted":{"frame":3335,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":7704,"key":"4EFD:AC24:10","level":2,"site_id":"capture_party_finalized","slot":1,"species_id":16},"case":"crystal_battle_ot2_errand","client":{"artifact_kind":"overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","title":"crystal"},"fixture_sha256":"c4b29133dce4714fc31bf17330e59bf3f886a00b55d077fc68c1cc113e053055","force_faint_key":"4EFD:AC24:10","harness_write_scopes":[],"hello":{"ball_count":15,"frame":3305,"has_pokeballs":true,"ot_id":44068},"input_mode":"normal_buttons","key":"4EFD:AC24:10","link_save":{"cartram_bytes":32768,"cartram_sha256":"f72eafd96dc9b2df1313396686b3be76a39cacf258e610d47e5ed528e4bb00cb","client_saves":1,"frame":8518,"gate_saves":1,"key":"4EFD:AC24:10","save_completed_frame":8488,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_faint_active_trainer_s131_b_link_save.SaveRAM"},"linked_active":{"battle_mode":2,"battle_mon_species":16,"battle_type":0,"cur_battle_mon":1,"frame":20669,"key":"4EFD:AC24:10","link_mode":0,"other_trainer_class":22,"other_trainer_id":1,"slot":1},"memorial":{"ack":{"box":13,"event":"memorialize_done","frame":27887,"key":"4EFD:AC24:10","ticks":648},"preimage_frame":27887},"native_faint":{"frame":25892,"seq":2,"what":"faint"},"player":"b","replaced":{"active_slot":0,"frame":26067,"hp":29},"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","save":{"cartram_bytes":32768,"cartram_sha256":"dbb69b1e867f6fadd69a1beedd6298c3a42e3662bdf69d5ea36e43b3ef09040a","client_saves":2,"flushed_matches":true,"frame":28663,"gate_saves":2,"save_completed_frame":28633,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/saveram_gen2_faint_active_trainer_s131_b/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_faint_active_trainer_s131_b_witness.SaveRAM"},"scenario":"gen2_faint_active_trainer","schema":"gen2-duo-faint-active-trainer-v1","title":"crystal","trainer":{"class":22,"id":1}}
+  phase save @29262 xy=5,28
+  phase saved @29979 xy=5,28
+SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"f46966d551d93d9ca497bdba716a2333b9db22dbd8c58e79fe6bceb228d3b244","client_saves":2,"flushed_matches":true,"frame":30009,"gate_saves":2,"save_completed_frame":29979,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_faint_active_trainer_s131_b/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_faint_active_trainer_s131_b_witness.SaveRAM"}
+RECEIPT {"artifact_kind":"overlay","attempt":1,"battle_write":{"action_after_hex":"01","battle_hp_before_hex":"0007","frame":27152,"hrom_bank":15,"pc":16788,"seq":1,"slot":1},"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","booted":{"frame":3335,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":7704,"key":"4EFD:AC24:10","level":2,"site_id":"capture_party_finalized","slot":1,"species_id":16},"case":"crystal_battle_ot2_errand","client":{"artifact_kind":"overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","title":"crystal"},"fixture_sha256":"c4b29133dce4714fc31bf17330e59bf3f886a00b55d077fc68c1cc113e053055","force_faint_key":"4EFD:AC24:10","harness_write_scopes":[],"hello":{"ball_count":15,"frame":3305,"has_pokeballs":true,"ot_id":44068},"input_mode":"normal_buttons","key":"4EFD:AC24:10","link_save":{"cartram_bytes":32768,"cartram_sha256":"3a0da22394019462f36e52f1ac3249f448cc869a287bf061bc221aa880678608","client_saves":1,"frame":13920,"gate_saves":1,"key":"4EFD:AC24:10","save_completed_frame":13890,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_faint_active_trainer_s131_b_link_save.SaveRAM"},"linked_active":{"battle_mode":2,"battle_mon_species":16,"battle_type":0,"cur_battle_mon":1,"frame":23119,"key":"4EFD:AC24:10","link_mode":0,"other_trainer_class":22,"other_trainer_id":1,"slot":1},"memorial":{"ack":{"box":13,"event":"memorialize_done","frame":29233,"key":"4EFD:AC24:10","ticks":733},"preimage_frame":29233},"native_faint":{"frame":27152,"seq":2,"what":"faint"},"player":"b","replaced":{"active_slot":0,"frame":27326,"hp":29},"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","save":{"cartram_bytes":32768,"cartram_sha256":"f46966d551d93d9ca497bdba716a2333b9db22dbd8c58e79fe6bceb228d3b244","client_saves":2,"flushed_matches":true,"frame":30009,"gate_saves":2,"save_completed_frame":29979,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_faint_active_trainer_s131_b/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_faint_active_trainer_s131_b_witness.SaveRAM"},"scenario":"gen2_faint_active_trainer","schema":"gen2-duo-faint-active-trainer-v1","title":"crystal","trainer":{"class":22,"id":1}}
 RESULT: PASS (killed the active battler 4EFD:AC24:10)

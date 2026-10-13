@@ -580,7 +580,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/crystal.panel_gate.json",
-              "sha256": "d11d3295a09cefb3728e26f7b9a15a7aa454b337ef1fbd41874c634dbb8f2316"
+              "sha256": "9ca92bfb31bc9e295af5dec71658ead27b6ae0496116b91e7e87dae7a38056f3"
             }
           }
         }
@@ -605,7 +605,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/gold.panel_gate.json",
-              "sha256": "685207f3f863eaaaf35ce92502291b1d3e5aa69734b33791ac0646ef42733b73"
+              "sha256": "31030c92f8f7f29e0d6cace59285da8f81f271b2129267f54823a19caa3ac125"
             }
           }
         }
@@ -630,7 +630,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/silver.panel_gate.json",
-              "sha256": "8972b435992f7087d217a01711a9a473529a7585f320d366a94510508e65ccb8"
+              "sha256": "9d17e8c1af8fdb580ef2ea5d6c831df6578c29b50eaedc79b7130ec70cc938fc"
             }
           }
         }
@@ -654,7 +654,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/crystal.sfx_gate.json",
-              "sha256": "a246f198aa6b847d606e64aebe3ba5539bd3439b4af54c1be70b675c2efd12b9"
+              "sha256": "b405254781a102eb92ab2cd6e87ea9d9e1751a80ac9e1b0e1808f97eb8f8b177"
             }
           }
         }
@@ -678,7 +678,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/gold.sfx_gate.json",
-              "sha256": "66a8b0de677f503ca5bb93a8990c9683f135c74081c0166ab87d3f869cfbec61"
+              "sha256": "2cd2baa3b0267db39426d1a389322fceca7cc13bac23a8cfc358e69d0023f3cd"
             }
           }
         }
@@ -702,7 +702,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/silver.sfx_gate.json",
-              "sha256": "f1b9f56c9f624a80f3cad9aedc0e8a7756d2a377019f7987485f11603fe831c5"
+              "sha256": "7e9f384e98cbd52578c9cf9c2adcdf845d4f078ab4268d66c0b1d3804d37097b"
             }
           }
         }
@@ -726,7 +726,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/crystal.w6_gate.json",
-              "sha256": "ec79fcff22ceb69ce6569b7555bcfc1ddceab5f2cfac461255de5023300b22e5"
+              "sha256": "84df9bb88042ecace2839cef6d13ba4abfb0da6b69a57540cc26d12cb84440f1"
             }
           }
         }
@@ -750,7 +750,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/silver.w6_gate.json",
-              "sha256": "f451ca43a6a816f3dc7475cf7bac830ea87a9ec7c927dc7227b9aa8253814c6d"
+              "sha256": "6b55d913773243e8cde37e617de5af85880a09d72166d241aee0a3e00d3999da"
             }
           }
         }
@@ -774,7 +774,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/gold.w6_gate.json",
-              "sha256": "8a6a9f4292bea88c3127812b6caa6bb7a5a412003731db137ec8942584f39c4c"
+              "sha256": "7251799ad3e25fb883e013e6efb8523777e95aa3624da86565a0a11afa617b0f"
             }
           }
         }
@@ -798,7 +798,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/crystal.phone_gate.json",
-              "sha256": "9be27ba45cb6e17f44c422edb9b865f3c80ce883c759fad0c8920c829a74ae2c"
+              "sha256": "f04f4c597ffcdf0f51a858ad69018fa0b16cff991a4fabc8a7d104964b59c9e1"
             }
           }
         }
@@ -822,7 +822,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/gold.phone_gate.json",
-              "sha256": "0349cc12c8cc40af8b53dc718d16c88ed7c2e1d323001e9f5a800340d70ddaab"
+              "sha256": "99c4022a2191a41a03500c26eb451d95477e2c995ae7c7fb9658ba199036af12"
             }
           }
         }
@@ -846,7 +846,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/silver.phone_gate.json",
-              "sha256": "9fb26f347369fb4e6ed6b222f22ccaa607b20f4d18f19d820bd040866757a176"
+              "sha256": "e473de4f489236f90da7bd2456cd51c0a8edfb110f27cc3dae5c59bbfd3bdd24"
             }
           }
         }
@@ -871,7 +871,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/crystal.sp_lowwater_gate.json",
-              "sha256": "f92e2019e95bef22469f97dbbafcde8e53d9ad22e58c0005a358e91c4fce091a"
+              "sha256": "ab2df50b72bbc64827d65db6efac2bd83a35a31726c647904f1c06176ba0e999"
             }
           }
         }
@@ -896,7 +896,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/gold.sp_lowwater_gate.json",
-              "sha256": "2c894337edb76173f2909a8134478bb816a01f8d5aa02b69974b16dbc0b71b06"
+              "sha256": "b3474b8948aa7537d8d97e32e729728ac87bcbc2c74ab2a74fb6a92cf985eb26"
             }
           }
         }
@@ -921,7 +921,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/silver.sp_lowwater_gate.json",
-              "sha256": "d29504f7a0784e5ddb08bfe8f66b9e3ec8e7f39ee06d2563caf85801a15b914f"
+              "sha256": "ccc54ba44b29f685a16374c73e40b5fe4eda3d84c0b7cb2fba0843266f9e52a9"
             }
           }
         }
@@ -973,7 +973,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/crystal.engine_sites.json",
-              "sha256": "470a13652400ef839b6ae970f3bab32929b0f088c63157674fee44ddabd173f6"
+              "sha256": "6c98d9d7412df4ac71073958dd8f33e145f1b0c06e14c9152b0d34ae2ac3dbf6"
             }
           }
         }
@@ -997,7 +997,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/gold.engine_sites.json",
-              "sha256": "d29725d7825649a0ed25feb83a596c95ccc22f119c56f528db6f4f7be47f04f5"
+              "sha256": "aa7a6293b328e4e6b6b7ff52d1d3fbe991bf48a15447dd38dfd1c00fbab7e3a8"
             }
           }
         }
@@ -1021,7 +1021,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/silver.engine_sites.json",
-              "sha256": "b7588f9eaab098519de5935279edbdc6a78260f9aca9ffd5f92aa5c036e8a631"
+              "sha256": "1adc03714b35734b77f5648b52215c85b6daca637c662585d7ec2fe5ddc9213f"
             }
           }
         }
@@ -1048,7 +1048,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/crystal.write_window.json",
-              "sha256": "7b56bb7cc465e909660af021b0c13b25839540c5fe5ddd47836a747834362d03"
+              "sha256": "f4dcc70e3e12d6537e0f5648192c6aeecdfa9f4ace34c353aee05d3b646e8779"
             }
           }
         }
@@ -1075,7 +1075,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/gold.write_window.json",
-              "sha256": "c567250088de5cc65e06002e4ee58e2b51fef2bcedd9d79e033f2201c32e3fdb"
+              "sha256": "039742d1fbaa52a0b47d8a6aad42914245f434671c9fe013c32ac7b8e01aea0b"
             }
           }
         }
@@ -1102,7 +1102,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/silver.write_window.json",
-              "sha256": "b177ffb662db0709620292884dbc9eb5cd1de28aa0480612eadb91c262e54c8a"
+              "sha256": "06a4be964277647d1524014d7aa5da961403362e51446d8bbcf6bd22b3bcee2a"
             }
           }
         }
@@ -1487,7 +1487,7 @@
           "receipts": {
             "receipt": {
               "path": "tests/fixtures/gen2/receipts/overlay/live_new_gates.inspect_run.json",
-              "sha256": "81edb8e5cebbcf3773b0d7aa2a7f41d34786d59cc7bc3bd587b4e297c94ba718"
+              "sha256": "55c1fa93ed8de5f83245b0c5daffd1275a7e7612618a3c842131cc710b19decd"
             }
           }
         }

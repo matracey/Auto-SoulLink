@@ -12,23 +12,23 @@ RX dead_keys
 RX link_panel
 BOOTED {"frame":3374,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12}
 MYKEY 0 EC63:C4A6:9E
-  phase walk @3495 xy=53,12
-  phase battle @4236 xy=53,12
-ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":7953,"key":"5637:C4A6:10","level":4,"site_id":"capture_party_finalized","slot":1,"species_id":16}
-TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":18,"in_box":false,"key":"5637:C4A6:10","level":4,"maxHP":18,"nickname":"PIDGEY","player":"a","seq":156,"species_id":16,"stats":{"level":4,"maxHP"
-CAPTURE_SENT {"frame":7953,"key":"5637:C4A6:10","seq":156}
-CAUGHT 5637:C4A6:10
-RX box_mon key=5637:C4A6:10
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":157}
-TX {"event":"stats_cache","key":"5637:C4A6:10","player":"a","seq":160,"stats":{"level":4,"maxHP":18}}
-  phase save @8013 xy=53,12
-  phase saved @8707 xy=53,12
+  phase walk @3374 xy=53,12
+  phase battle @3727 xy=53,12
+ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":6409,"key":"99D1:C4A6:A1","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":161}
+TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":16,"in_box":false,"key":"99D1:C4A6:A1","level":3,"maxHP":16,"nickname":"SENTRET","player":"a","seq":103,"species_id":161,"stats":{"level":3,"maxH
+CAPTURE_SENT {"frame":6409,"key":"99D1:C4A6:A1","seq":103}
+CAUGHT 99D1:C4A6:A1
+RX box_mon key=99D1:C4A6:A1
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":104}
+TX {"event":"stats_cache","key":"99D1:C4A6:A1","player":"a","seq":107,"stats":{"level":3,"maxHP":16}}
+  phase save @6469 xy=53,12
+  phase saved @7163 xy=53,12
 MYKEY 0 EC63:C4A6:9E
-CLAUSE_CAPTURE {"area_id":"route_29","frame":8737,"gender":"female","key":"5637:C4A6:10","species_id":16,"types":["Normal","Flying"]}
+CLAUSE_CAPTURE {"area_id":"route_29","frame":7193,"gender":"male","key":"99D1:C4A6:A1","species_id":161,"types":["Normal"]}
 RX play_sound sound=22
-CLAUSE_VERDICT {"frame":9062,"verdict":"partner_rejected"}
-  phase save @9062 xy=53,12
-  phase saved @9587 xy=53,12
-SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"abeb45e5a4eade3595a29a195285dad1e239fa388c2e5da1e6f75598facded12","client_saves":2,"flushed_matches":true,"frame":9617,"gate_saves":2,"save_completed_frame":9587,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/saveram_gen2_gender_clause_s611_a/gen2 gold overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_gender_clause_s611_a_witness.SaveRAM"}
-RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","booted":{"frame":3374,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":7953,"key":"5637:C4A6:10","level":4,"site_id":"capture_party_finalized","slot":1,"species_id":16},"case":"gold_battle","clause":"gender","client":{"artifact_kind":"overlay","binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","pack":"gen2_gold","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"51b076ac7eba099a273ff7aff5c64ccb790825dd","title":"gold"},"fixture_sha256":"6864b34a79e63fa9c8954c37cb805a690da4cf36447bda179ecf0742a072a3b6","gender":"female","harness_write_scopes":[],"hello":{"ball_count":10,"frame":3344,"has_pokeballs":true,"ot_id":50342},"input_mode":"normal_buttons","key":"5637:C4A6:10","path":"clause_observed","player":"a","rom_sha1":"51b076ac7eba099a273ff7aff5c64ccb790825dd","save":{"cartram_bytes":32768,"cartram_sha256":"abeb45e5a4eade3595a29a195285dad1e239fa388c2e5da1e6f75598facded12","client_saves":2,"flushed_matches":true,"frame":9617,"gate_saves":2,"save_completed_frame":9587,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/saveram_gen2_gender_clause_s611_a/gen2 gold overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_gender_clause_s611_a_witness.SaveRAM"},"scenario":"gen2_gender_clause","schema":"gen2-duo-gender-clause-v1","species_id":16,"title":"gold","types":["Normal","Flying"],"verdict":"partner_rejected"}
-RESULT: PASS (gender clause partner_rejected 5637:C4A6:10 (clause_observed))
+CLAUSE_VERDICT {"frame":11792,"verdict":"partner_rejected"}
+  phase save @11792 xy=53,12
+  phase saved @12317 xy=53,12
+SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"e150624e4378b742cabf0c78af16f53e7da66b38e7c92cf453e63e801f4525f0","client_saves":2,"flushed_matches":true,"frame":12347,"gate_saves":2,"save_completed_frame":12317,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/saveram_gen2_gender_clause_s611_a/gen2 gold overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_gender_clause_s611_a_witness.SaveRAM"}
+RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","booted":{"frame":3374,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":6409,"key":"99D1:C4A6:A1","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":161},"case":"gold_battle","clause":"gender","client":{"artifact_kind":"overlay","binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","pack":"gen2_gold","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"51b076ac7eba099a273ff7aff5c64ccb790825dd","title":"gold"},"fixture_sha256":"6864b34a79e63fa9c8954c37cb805a690da4cf36447bda179ecf0742a072a3b6","gender":"male","harness_write_scopes":[],"hello":{"ball_count":10,"frame":3344,"has_pokeballs":true,"ot_id":50342},"input_mode":"normal_buttons","key":"99D1:C4A6:A1","path":"clause_observed","player":"a","rom_sha1":"51b076ac7eba099a273ff7aff5c64ccb790825dd","save":{"cartram_bytes":32768,"cartram_sha256":"e150624e4378b742cabf0c78af16f53e7da66b38e7c92cf453e63e801f4525f0","client_saves":2,"flushed_matches":true,"frame":12347,"gate_saves":2,"save_completed_frame":12317,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/saveram_gen2_gender_clause_s611_a/gen2 gold overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_gender_clause_s611_a_witness.SaveRAM"},"scenario":"gen2_gender_clause","schema":"gen2-duo-gender-clause-v1","species_id":161,"title":"gold","types":["Normal"],"verdict":"partner_rejected"}
+RESULT: PASS (gender clause partner_rejected 99D1:C4A6:A1 (clause_observed))

@@ -3,8 +3,8 @@
  "base_sha1": "d8b8a3600a465308c9953dfa04f0081c05bdcb94",
  "binding_sha256": "1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b",
  "code_digest": {
-  "commit": "926fa17178f1ad63a40753a84a9945bfa26493f2",
-  "digest": "49a338779ea7e0b5a4d9ab2ededb8d0cf3eb5ad5c615b8f539b8334770034338",
+  "commit": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+  "digest": "7dd9ac4b8e372689df51339fffa839c4818ec1d33e4964a4b9d7e48e91013dcc",
   "dirty": [],
   "schema": "gen2-code-digest-v1",
   "scope": [
@@ -17,7 +17,7 @@
    "data/games/gen2_silver/**"
   ]
  },
- "corpus_frames": 211680,
+ "corpus_frames": 202348,
  "evidence_level": "PHYSICAL",
  "facts": {
   "allow": [
@@ -89,7 +89,7 @@
  "input_mode": "normal_buttons",
  "legs": {
   "panel": {
-   "allowed_writes": 148953,
+   "allowed_writes": 149122,
    "armed_frame": 1,
    "boot_clear": {},
    "boot_writes": 0,
@@ -100,18 +100,18 @@
     "lua_kind": "harness",
     "lua_source": "main",
     "native_addr": 52970,
-    "native_allowed": 11449,
+    "native_allowed": 11462,
     "native_caught": true,
-    "native_flagged": 12695,
+    "native_flagged": 12680,
     "native_writers": {
-     "00:0068 SlinkDelayFrameBridge+0x5": 11449,
-     "00:01CE VBlank_Normal.done_oam+0x4": 12453,
+     "00:0068 SlinkDelayFrameBridge+0x5": 11462,
+     "00:01CE VBlank_Normal.done_oam+0x4": 12438,
      "00:021D VBlank_Cutscene.skip_lcd+0x4": 190,
      "00:0607 Init.ByteFill+0x2": 1,
      "33:41DF BattleAnimDelayFrame.wait+0x0": 51
     }
    },
-   "corpus_frames": 12862,
+   "corpus_frames": 12847,
    "driver": null,
    "evidence_level": "PHYSICAL",
    "fixture": "gold_battle",
@@ -155,18 +155,18 @@
    "violation_count": 0,
    "violations": [],
    "writers": {
-    "13:4006 SlinkService+0x6": 11449,
-    "13:4009 SlinkService+0x9": 11449,
-    "13:400C SlinkService+0xc": 11449,
-    "13:400F SlinkService+0xf": 11449,
-    "13:4012 SlinkService+0x12": 11449,
-    "13:4017 SlinkService+0x17": 11449,
+    "13:4006 SlinkService+0x6": 11462,
+    "13:4009 SlinkService+0x9": 11462,
+    "13:400C SlinkService+0xc": 11462,
+    "13:400F SlinkService+0xf": 11462,
+    "13:4012 SlinkService+0x12": 11462,
+    "13:4017 SlinkService+0x17": 11462,
     "13:4026 SlinkService+0x26": 1,
     "13:402A SlinkService+0x2a": 1,
     "13:402D SlinkService+0x2d": 1,
-    "13:403D SlinkService.sample+0xe": 11448,
-    "13:4045 SlinkService.remember+0x0": 11448,
-    "13:4049 SlinkService.remember+0x4": 11449,
+    "13:403D SlinkService.sample+0xe": 11461,
+    "13:4045 SlinkService.remember+0x0": 11461,
+    "13:4049 SlinkService.remember+0x4": 11462,
     "13:4C89 SlinkPanel+0xb": 15,
     "13:4C8C SlinkPanel+0xe": 15,
     "13:4C8F SlinkPanel+0x11": 15,
@@ -176,14 +176,14 @@
     "13:4CFA SlinkPanel.close+0x4": 15,
     "13:4CFD SlinkPanel.close+0x7": 15,
     "13:4D00 SlinkPanel.close+0xa": 15,
-    "13:4E38 SlinkPhoneService.armed_valid+0x6": 11449,
-    "13:4F59 SlinkSfxService.reset_blocked+0x0": 11449,
-    "13:4F5D SlinkSfxService.reset_blocked+0x4": 11449,
-    "13:4F60 SlinkSfxService.reset_blocked+0x7": 11449
+    "13:4E38 SlinkPhoneService.armed_valid+0x6": 11462,
+    "13:4F59 SlinkSfxService.reset_blocked+0x0": 11462,
+    "13:4F5D SlinkSfxService.reset_blocked+0x4": 11462,
+    "13:4F60 SlinkSfxService.reset_blocked+0x7": 11462
    }
   },
   "sfx": {
-   "allowed_writes": 67932,
+   "allowed_writes": 67490,
    "armed_frame": 1,
    "boot_clear": {
     "00:0607 Init.ByteFill+0x2": 39
@@ -196,18 +196,18 @@
     "lua_kind": "harness",
     "lua_source": "main",
     "native_addr": 52970,
-    "native_allowed": 5237,
+    "native_allowed": 5203,
     "native_caught": true,
-    "native_flagged": 6421,
+    "native_flagged": 6353,
     "native_writers": {
-     "00:0068 SlinkDelayFrameBridge+0x5": 5237,
-     "00:01CE VBlank_Normal.done_oam+0x4": 6178,
+     "00:0068 SlinkDelayFrameBridge+0x5": 5203,
+     "00:01CE VBlank_Normal.done_oam+0x4": 6110,
      "00:021D VBlank_Cutscene.skip_lcd+0x4": 190,
      "00:0607 Init.ByteFill+0x2": 2,
      "33:41DF BattleAnimDelayFrame.wait+0x0": 51
     }
    },
-   "corpus_frames": 6473,
+   "corpus_frames": 6405,
    "driver": null,
    "evidence_level": "PHYSICAL",
    "fixture": "gold_battle",
@@ -215,7 +215,7 @@
    "gate": "lua/tests/gen2_sfx_gate.lua",
    "init_entries": [
     1,
-    5602
+    5534
    ],
    "inner_completed": true,
    "leg": "sfx",
@@ -255,32 +255,32 @@
     "00:0086 SlinkResetSoundBridge+0x6": 1,
     "00:008A SlinkResetSoundBridge+0xa": 1,
     "00:008D SlinkResetSoundBridge+0xd": 1,
-    "13:4006 SlinkService+0x6": 5237,
-    "13:4009 SlinkService+0x9": 5237,
-    "13:400C SlinkService+0xc": 5237,
-    "13:400F SlinkService+0xf": 5237,
-    "13:4012 SlinkService+0x12": 5237,
-    "13:4017 SlinkService+0x17": 5237,
+    "13:4006 SlinkService+0x6": 5203,
+    "13:4009 SlinkService+0x9": 5203,
+    "13:400C SlinkService+0xc": 5203,
+    "13:400F SlinkService+0xf": 5203,
+    "13:4012 SlinkService+0x12": 5203,
+    "13:4017 SlinkService+0x17": 5203,
     "13:4026 SlinkService+0x26": 2,
     "13:402A SlinkService+0x2a": 2,
     "13:402D SlinkService+0x2d": 2,
-    "13:403D SlinkService.sample+0xe": 5235,
-    "13:4045 SlinkService.remember+0x0": 5235,
-    "13:4049 SlinkService.remember+0x4": 5237,
-    "13:4E38 SlinkPhoneService.armed_valid+0x6": 5237,
+    "13:403D SlinkService.sample+0xe": 5201,
+    "13:4045 SlinkService.remember+0x0": 5201,
+    "13:4049 SlinkService.remember+0x4": 5203,
+    "13:4E38 SlinkPhoneService.armed_valid+0x6": 5203,
     "13:4F2E SlinkSfxService.play+0xf": 10,
     "13:4F31 SlinkSfxService.play+0x12": 10,
     "13:4F34 SlinkSfxService.play+0x15": 10,
     "13:4F45 SlinkSfxService.hold+0xc": 1,
     "13:4F49 SlinkSfxService.count+0x0": 1,
     "13:4F54 SlinkSfxService.count+0xb": 62,
-    "13:4F59 SlinkSfxService.reset_blocked+0x0": 5133,
-    "13:4F5D SlinkSfxService.reset_blocked+0x4": 5165,
-    "13:4F60 SlinkSfxService.reset_blocked+0x7": 5165
+    "13:4F59 SlinkSfxService.reset_blocked+0x0": 5099,
+    "13:4F5D SlinkSfxService.reset_blocked+0x4": 5131,
+    "13:4F60 SlinkSfxService.reset_blocked+0x7": 5131
    }
   },
   "u1": {
-   "allowed_writes": 1063258,
+   "allowed_writes": 1003874,
    "armed_frame": 1,
    "boot_clear": {},
    "boot_writes": 0,
@@ -290,11 +290,11 @@
     "cartram_sha256": "44acf2ef55bba944362bf79e04930013b365d5f7dd934a8dc01652c7f98b0d88",
     "field": "BizHawk gambatte RTC trailer",
     "game_hour": 11,
-    "host_time": 1791553814,
-    "new_hex": "000000006ac8f11600100101050026fd9c0010010105",
+    "host_time": 1791850370,
+    "new_hex": "000000006acd778200130101050026fd9c0013010105",
     "old_hex": "000000006ab46dc400000010060026fd9c0000001006",
     "schema": "gen2-clock-setup-v1",
-    "sha256": "c9177a83dc2f42913ced37d0de29d8768bb87156b7223b4ab8fb2887b0fe5de2",
+    "sha256": "1d6902647020d4e41126874905b276a5927133162c1bf627862d239ae73641e6",
     "source_facts": [
      "home/time.asm FixTime: game time = wStartHour/Minute/Second + RTC",
      "libgambatte cartridge.cpp:504-580: the 22-byte RTC trailer"
@@ -312,42 +312,42 @@
     "lua_kind": "harness",
     "lua_source": "main",
     "native_addr": 52970,
-    "native_allowed": 81789,
+    "native_allowed": 77221,
     "native_caught": true,
-    "native_flagged": 224720,
+    "native_flagged": 214979,
     "native_writers": {
-     "00:0068 SlinkDelayFrameBridge+0x5": 81789,
-     "00:01CE VBlank_Normal.done_oam+0x4": 154391,
-     "00:021D VBlank_Cutscene.skip_lcd+0x4": 37289,
+     "00:0068 SlinkDelayFrameBridge+0x5": 77221,
+     "00:01CE VBlank_Normal.done_oam+0x4": 145451,
+     "00:021D VBlank_Cutscene.skip_lcd+0x4": 37000,
      "00:0607 Init.ByteFill+0x2": 1,
-     "33:41DF BattleAnimDelayFrame.wait+0x0": 33039
+     "33:41DF BattleAnimDelayFrame.wait+0x0": 32527
     }
    },
-   "corpus_frames": 192345,
+   "corpus_frames": 183096,
    "driver": {
     "files": {
      "lua/tests/duo/gen2_faint_inputs.lua": {
-      "ref": "926fa17178f1ad63a40753a84a9945bfa26493f2",
+      "ref": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
       "sha256": "e9f448a62ed055fa47c5bd27b59ed3f11326f78fbcd6e7c95b570251b0c9b026"
      },
      "lua/tests/gen2_frame_align.lua": {
-      "ref": "926fa17178f1ad63a40753a84a9945bfa26493f2",
+      "ref": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
       "sha256": "d8a133468935eade8a4fe260649a127bbe5cbba9b963f56a222d28565e6515a4"
      },
      "lua/tests/gen2_pc_inputs.lua": {
-      "ref": "926fa17178f1ad63a40753a84a9945bfa26493f2",
+      "ref": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
       "sha256": "e75c8697d8a659113a5a573d2a80d18e6cb565faba80c9ad1bd100aaf3e1829b"
      },
      "lua/tests/gen2_poison_inputs.lua": {
-      "ref": "926fa17178f1ad63a40753a84a9945bfa26493f2",
+      "ref": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
       "sha256": "0703936e9cd9dde9b5d4a7124ff2a68ffdf039a607c6cd2983448d6c94063c82"
      },
      "lua/tests/gen2_walk.lua": {
-      "ref": "926fa17178f1ad63a40753a84a9945bfa26493f2",
+      "ref": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
       "sha256": "a23d52070817e2588753d5363c586832eca4e37164a1ddfbe2c2bd2b370ce3cc"
      },
      "tests/live/test_gen2_frame_align.py": {
-      "ref": "926fa17178f1ad63a40753a84a9945bfa26493f2",
+      "ref": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
       "sha256": "9ca437688b74ad6c04a0dc1d8a9624ecbd6d281d5d3061afdea4d5a96ba76fd7"
      }
     },
@@ -461,22 +461,22 @@
    "violation_count": 0,
    "violations": [],
    "writers": {
-    "13:4006 SlinkService+0x6": 81789,
-    "13:4009 SlinkService+0x9": 81789,
-    "13:400C SlinkService+0xc": 81789,
-    "13:400F SlinkService+0xf": 81789,
-    "13:4012 SlinkService+0x12": 81789,
-    "13:4017 SlinkService+0x17": 81789,
+    "13:4006 SlinkService+0x6": 77221,
+    "13:4009 SlinkService+0x9": 77221,
+    "13:400C SlinkService+0xc": 77221,
+    "13:400F SlinkService+0xf": 77221,
+    "13:4012 SlinkService+0x12": 77221,
+    "13:4017 SlinkService+0x17": 77221,
     "13:4026 SlinkService+0x26": 1,
     "13:402A SlinkService+0x2a": 1,
     "13:402D SlinkService+0x2d": 1,
-    "13:403D SlinkService.sample+0xe": 81788,
-    "13:4045 SlinkService.remember+0x0": 81788,
-    "13:4049 SlinkService.remember+0x4": 81789,
-    "13:4E38 SlinkPhoneService.armed_valid+0x6": 81789,
-    "13:4F59 SlinkSfxService.reset_blocked+0x0": 81789,
-    "13:4F5D SlinkSfxService.reset_blocked+0x4": 81789,
-    "13:4F60 SlinkSfxService.reset_blocked+0x7": 81789
+    "13:403D SlinkService.sample+0xe": 77220,
+    "13:4045 SlinkService.remember+0x0": 77220,
+    "13:4049 SlinkService.remember+0x4": 77221,
+    "13:4E38 SlinkPhoneService.armed_valid+0x6": 77221,
+    "13:4F59 SlinkSfxService.reset_blocked+0x0": 77221,
+    "13:4F5D SlinkSfxService.reset_blocked+0x4": 77221,
+    "13:4F60 SlinkSfxService.reset_blocked+0x7": 77221
    }
   }
  },
@@ -491,18 +491,18 @@
   "00:0086 SlinkResetSoundBridge+0x6": 1,
   "00:008A SlinkResetSoundBridge+0xa": 1,
   "00:008D SlinkResetSoundBridge+0xd": 1,
-  "13:4006 SlinkService+0x6": 98475,
-  "13:4009 SlinkService+0x9": 98475,
-  "13:400C SlinkService+0xc": 98475,
-  "13:400F SlinkService+0xf": 98475,
-  "13:4012 SlinkService+0x12": 98475,
-  "13:4017 SlinkService+0x17": 98475,
+  "13:4006 SlinkService+0x6": 93886,
+  "13:4009 SlinkService+0x9": 93886,
+  "13:400C SlinkService+0xc": 93886,
+  "13:400F SlinkService+0xf": 93886,
+  "13:4012 SlinkService+0x12": 93886,
+  "13:4017 SlinkService+0x17": 93886,
   "13:4026 SlinkService+0x26": 4,
   "13:402A SlinkService+0x2a": 4,
   "13:402D SlinkService+0x2d": 4,
-  "13:403D SlinkService.sample+0xe": 98471,
-  "13:4045 SlinkService.remember+0x0": 98471,
-  "13:4049 SlinkService.remember+0x4": 98475,
+  "13:403D SlinkService.sample+0xe": 93882,
+  "13:4045 SlinkService.remember+0x0": 93882,
+  "13:4049 SlinkService.remember+0x4": 93886,
   "13:4C89 SlinkPanel+0xb": 15,
   "13:4C8C SlinkPanel+0xe": 15,
   "13:4C8F SlinkPanel+0x11": 15,
@@ -512,15 +512,15 @@
   "13:4CFA SlinkPanel.close+0x4": 15,
   "13:4CFD SlinkPanel.close+0x7": 15,
   "13:4D00 SlinkPanel.close+0xa": 15,
-  "13:4E38 SlinkPhoneService.armed_valid+0x6": 98475,
+  "13:4E38 SlinkPhoneService.armed_valid+0x6": 93886,
   "13:4F2E SlinkSfxService.play+0xf": 10,
   "13:4F31 SlinkSfxService.play+0x12": 10,
   "13:4F34 SlinkSfxService.play+0x15": 10,
   "13:4F45 SlinkSfxService.hold+0xc": 1,
   "13:4F49 SlinkSfxService.count+0x0": 1,
   "13:4F54 SlinkSfxService.count+0xb": 62,
-  "13:4F59 SlinkSfxService.reset_blocked+0x0": 98371,
-  "13:4F5D SlinkSfxService.reset_blocked+0x4": 98403,
-  "13:4F60 SlinkSfxService.reset_blocked+0x7": 98403
+  "13:4F59 SlinkSfxService.reset_blocked+0x0": 93782,
+  "13:4F5D SlinkSfxService.reset_blocked+0x4": 93814,
+  "13:4F60 SlinkSfxService.reset_blocked+0x7": 93814
  }
 }

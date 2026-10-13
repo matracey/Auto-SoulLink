@@ -13,34 +13,36 @@ RX link_panel
 BOOTED {"frame":3336,"map_group":24,"map_number":5,"party_count":2,"x":5,"y":3}
 MYKEY 0 4C29:B541:A1
 MYKEY 1 6B38:B541:45
-  phase poison @3462 xy=5,3
-ENGINE_FAINT {"cause":"poison","frame":3490,"key":"4C29:B541:A1","site_id":"poison_faint","slot":0}
-TX {"area_id":"new_bark_town","event":"faint","key":"4C29:B541:A1","player":"a","seq":8}
-FAINT_SENT {"frame":3490,"key":"4C29:B541:A1","seq":8}
-ENGINE_WHITEOUT {"frame":3907,"party":[{"hp":0,"key":"4C29:B541:A1"},{"hp":0,"key":"6B38:B541:45"}],"site_id":"whiteout_before_heal"}
-TX {"event":"whiteout","player":"a","seq":22}
-TX {"area_id":"violet_city","event":"area_enter","loc_name":"VIOLET CITY","player":"a","seq":23}
-  phase to-house @3940 xy=31,26
-ENGINE_CAPTURE {"acquisition":"egg_hatch","area_id":"gift_daycare","destination":"party","frame":5257,"key":"6B38:B541:45","level":5,"site_id":"hatch_finalized","slot":1,"species_id":69}
-TX {"area_id":"gift_daycare","event":"capture","gift":true,"held_item_id":0,"hp":20,"in_box":false,"key":"6B38:B541:45","level":5,"maxHP":20,"nickname":"BELLSPROUT","player":"a","seq":60,"species_id":69,"stats":{"level":5,"
-CAPTURE_SENT {"frame":5257,"key":"6B38:B541:45","seq":60}
+  phase poison @3336 xy=5,3
+ENGINE_FAINT {"cause":"poison","frame":3364,"key":"4C29:B541:A1","site_id":"poison_faint","slot":0}
+TX {"area_id":"new_bark_town","event":"faint","key":"4C29:B541:A1","player":"a","seq":4}
+FAINT_SENT {"frame":3364,"key":"4C29:B541:A1","seq":4}
+ENGINE_WHITEOUT {"frame":3781,"party":[{"hp":0,"key":"4C29:B541:A1"},{"hp":0,"key":"6B38:B541:45"}],"site_id":"whiteout_before_heal"}
+TX {"event":"whiteout","player":"a","seq":18}
+TX {"area_id":"violet_city","event":"area_enter","loc_name":"VIOLET CITY","player":"a","seq":19}
+  phase to-house @3814 xy=31,26
+ENGINE_CAPTURE {"acquisition":"egg_hatch","area_id":"gift_daycare","destination":"party","frame":5131,"key":"6B38:B541:45","level":5,"site_id":"hatch_finalized","slot":1,"species_id":69}
+TX {"area_id":"gift_daycare","event":"capture","gift":true,"held_item_id":0,"hp":20,"in_box":false,"key":"6B38:B541:45","level":5,"maxHP":20,"nickname":"BELLSPROUT","player":"a","seq":56,"species_id":69,"stats":{"level":5,"
+CAPTURE_SENT {"frame":5131,"key":"6B38:B541:45","seq":56}
+RX hud_show
+RX_TEXT {"cmd":"hud_show","frame":5132,"text":"Partner caught BELLSPROUT in Egg Hatch"}
 RX play_sound sound=25
 RX msgbox
-RX_TEXT {"cmd":"msgbox","frame":5282,"text":"BELLSPROUT and BELLSPROUT linked!"}
+RX_TEXT {"cmd":"msgbox","frame":5133,"text":"BELLSPROUT and BELLSPROUT linked!"}
 RX party_mon key=6B38:B541:45
 RX link_panel
-TX {"event":"sync_retrieve_done","key":"6B38:B541:45","player":"a","seq":63}
-  phase talk @6332 xy=3,7
-ENGINE_KEY_CHANGE {"frame":6899,"new_key":"9666:BF1E:5F","old_key":"6B38:B541:45","reason":"npc_trade","site_id":"npc_trade_finalized","species_id":95}
-TX {"event":"key_change","new_key":"9666:BF1E:5F","new_nickname":"ROCKY","new_species":95,"old_key":"6B38:B541:45","player":"a","reason":"npc_trade","seq":115}
+TX {"event":"sync_retrieve_done","key":"6B38:B541:45","player":"a","seq":59}
+  phase talk @6206 xy=3,7
+ENGINE_KEY_CHANGE {"frame":6831,"new_key":"9666:BF1E:5F","old_key":"6B38:B541:45","reason":"npc_trade","site_id":"npc_trade_finalized","species_id":95}
+TX {"event":"key_change","new_key":"9666:BF1E:5F","new_nickname":"ROCKY","new_species":95,"old_key":"6B38:B541:45","player":"a","reason":"npc_trade","seq":113}
 RX key_change_ack
 RX link_panel
 RX link_panel
-  phase done @10319 xy=5,6
-  phase save @10349 xy=5,6
-  phase saved @11014 xy=5,6
+  phase done @10253 xy=5,4
+  phase save @10283 xy=5,4
+  phase saved @10948 xy=5,4
 MYKEY 0 4C29:B541:A1
 MYKEY 1 9666:BF1E:5F
-SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"ad5438a41c6efdaefd77d8ffa8fc82c2ceb67d9ff9f308c138e1ad55fa74ad9c","client_saves":1,"flushed_matches":true,"frame":11044,"gate_saves":1,"save_completed_frame":11014,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_npc_trade_s721_a/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_npc_trade_s721_a_witness.SaveRAM"}
-RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","capture":{"acquisition":"egg_hatch","area_id":"gift_daycare","destination":"party","frame":5257,"key":"6B38:B541:45","level":5,"site_id":"hatch_finalized","slot":1,"species_id":69},"case":"crystal_town","client":{"artifact_kind":"overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","title":"crystal"},"fixture_sha256":"06481e52e2eb516d1471b567e9e79f6175cf68a9939fe89ae4cb021d3087f11d","harness_write_scopes":[],"input_mode":"normal_buttons","key":"9666:BF1E:5F","key_change":{"frame":6899,"new_key":"9666:BF1E:5F","old_key":"6B38:B541:45","reason":"npc_trade","site_id":"npc_trade_finalized","species_id":95},"player":"a","rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","save":{"cartram_bytes":32768,"cartram_sha256":"ad5438a41c6efdaefd77d8ffa8fc82c2ceb67d9ff9f308c138e1ad55fa74ad9c","client_saves":1,"flushed_matches":true,"frame":11044,"gate_saves":1,"save_completed_frame":11014,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_npc_trade_s721_a/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_npc_trade_s721_a_witness.SaveRAM"},"scenario":"gen2_npc_trade","schema":"gen2-duo-npc-trade-v1","synth":"crystal_synth_trade","title":"crystal"}
+SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"171b37d85ac813c62d5a734c393d16a92a2a99c8961e9bb83681ed6fe373dc3c","client_saves":1,"flushed_matches":true,"frame":10978,"gate_saves":1,"save_completed_frame":10948,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/saveram_gen2_npc_trade_s721_a/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_npc_trade_s721_a_witness.SaveRAM"}
+RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","capture":{"acquisition":"egg_hatch","area_id":"gift_daycare","destination":"party","frame":5131,"key":"6B38:B541:45","level":5,"site_id":"hatch_finalized","slot":1,"species_id":69},"case":"crystal_town","client":{"artifact_kind":"overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","title":"crystal"},"fixture_sha256":"06481e52e2eb516d1471b567e9e79f6175cf68a9939fe89ae4cb021d3087f11d","harness_write_scopes":[],"input_mode":"normal_buttons","key":"9666:BF1E:5F","key_change":{"frame":6831,"new_key":"9666:BF1E:5F","old_key":"6B38:B541:45","reason":"npc_trade","site_id":"npc_trade_finalized","species_id":95},"player":"a","rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","save":{"cartram_bytes":32768,"cartram_sha256":"171b37d85ac813c62d5a734c393d16a92a2a99c8961e9bb83681ed6fe373dc3c","client_saves":1,"flushed_matches":true,"frame":10978,"gate_saves":1,"save_completed_frame":10948,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/saveram_gen2_npc_trade_s721_a/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_npc_trade_s721_a_witness.SaveRAM"},"scenario":"gen2_npc_trade","schema":"gen2-duo-npc-trade-v1","synth":"crystal_synth_trade","title":"crystal"}
 RESULT: PASS (trade linked 9666:BF1E:5F)

@@ -13,15 +13,15 @@ RX link_panel
 BOOTED {"frame":3374,"map_group":24,"map_number":3,"party_count":2,"x":53,"y":12}
 MYKEY 0 9A61:C78C:0A
 MYKEY 1 3C83:C78C:13
-  phase walk @3374 xy=53,12
-ENGINE_CAPTURE {"acquisition":"egg_hatch","area_id":"gift_daycare","destination":"party","frame":4477,"key":"9A61:C78C:0A","level":5,"site_id":"hatch_finalized","slot":0,"species_id":10}
+  phase walk @3376 xy=53,12
+ENGINE_CAPTURE {"acquisition":"egg_hatch","area_id":"gift_daycare","destination":"party","frame":4479,"key":"9A61:C78C:0A","level":5,"site_id":"hatch_finalized","slot":0,"species_id":10}
 TX {"area_id":"gift_daycare","event":"capture","gift":true,"held_item_id":0,"hp":20,"in_box":false,"key":"9A61:C78C:0A","level":5,"maxHP":20,"nickname":"CATERPIE","player":"b","seq":40,"species_id":10,"stats":{"level":5,"ma
-CAPTURE_SENT {"frame":4477,"key":"9A61:C78C:0A","seq":40}
+CAPTURE_SENT {"frame":4479,"key":"9A61:C78C:0A","seq":40}
 RX hud_show
-RX_TEXT {"cmd":"hud_show","frame":4480,"text":"Partner caught CATERPIE in Egg Hatch"}
+RX_TEXT {"cmd":"hud_show","frame":4482,"text":"Partner caught CATERPIE in Egg Hatch"}
 RX play_sound sound=25
 RX msgbox
-RX_TEXT {"cmd":"msgbox","frame":4480,"text":"CATERPIE and CATERPIE linked!"}
+RX_TEXT {"cmd":"msgbox","frame":4482,"text":"CATERPIE and CATERPIE linked!"}
 RX party_mon key=9A61:C78C:0A
 RX link_panel
 TX {"event":"sync_retrieve_done","key":"9A61:C78C:0A","player":"b","seq":43}
@@ -33,18 +33,17 @@ RX link_panel
 RX link_panel
 RX link_panel
 RX link_panel
-RX link_panel
-ENGINE_KEY_CHANGE {"frame":10756,"new_key":"9A61:C78C:0B","old_key":"9A61:C78C:0A","reason":"evolution","site_id":"evolution_species_published","species_id":11}
-TX {"event":"key_change","new_key":"9A61:C78C:0B","new_nickname":"METAPOD","new_species":11,"old_key":"9A61:C78C:0A","player":"b","reason":"evolution","seq":246}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"b","seq":247}
+ENGINE_KEY_CHANGE {"frame":10349,"new_key":"9A61:C78C:0B","old_key":"9A61:C78C:0A","reason":"evolution","site_id":"evolution_species_published","species_id":11}
+TX {"event":"key_change","new_key":"9A61:C78C:0B","new_nickname":"METAPOD","new_species":11,"old_key":"9A61:C78C:0A","player":"b","reason":"evolution","seq":233}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"b","seq":234}
 RX key_change_ack
 RX link_panel
-  phase evolved @10823 xy=52,12
-  phase save @10853 xy=52,12
+  phase evolved @10416 xy=53,12
+  phase save @10446 xy=53,12
 RX link_panel
-  phase saved @11548 xy=52,12
+  phase saved @11141 xy=53,12
 MYKEY 0 9A61:C78C:0B
 MYKEY 1 3C83:C78C:13
-SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"2622973127f62b1d6ca6732861e43ec3d1fa075930f063bb076a8c782b288ab4","client_saves":1,"flushed_matches":true,"frame":11578,"gate_saves":1,"save_completed_frame":11548,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs3/patch/build/saveram_gen2_evolution_s781_b/gen2 silver overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs3/patch/build/e2e_gen2_evolution_s781_b_witness.SaveRAM"}
-RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"0f519bffa9dc90bc0709c3202f49a45790412050e341b9b38907dd8e8e75bc19","capture":{"acquisition":"egg_hatch","area_id":"gift_daycare","destination":"party","frame":4477,"key":"9A61:C78C:0A","level":5,"site_id":"hatch_finalized","slot":0,"species_id":10},"case":"silver_battle","client":{"artifact_kind":"overlay","binding_sha256":"0f519bffa9dc90bc0709c3202f49a45790412050e341b9b38907dd8e8e75bc19","pack":"gen2_silver","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"209e0b46340f67221d6e5c24d7b1125ac35c9d1d","title":"silver"},"fixture_sha256":"2377d626c3cc7f19f9757b63d2af0038e64cbe1573ac9a637b0d2b74e88922ed","harness_write_scopes":[],"input_mode":"normal_buttons","key":"9A61:C78C:0B","key_change":{"frame":10756,"new_key":"9A61:C78C:0B","old_key":"9A61:C78C:0A","reason":"evolution","site_id":"evolution_species_published","species_id":11},"player":"b","rom_sha1":"209e0b46340f67221d6e5c24d7b1125ac35c9d1d","save":{"cartram_bytes":32768,"cartram_sha256":"2622973127f62b1d6ca6732861e43ec3d1fa075930f063bb076a8c782b288ab4","client_saves":1,"flushed_matches":true,"frame":11578,"gate_saves":1,"save_completed_frame":11548,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs3/patch/build/saveram_gen2_evolution_s781_b/gen2 silver overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs3/patch/build/e2e_gen2_evolution_s781_b_witness.SaveRAM"},"scenario":"gen2_evolution","schema":"gen2-duo-evolution-v1","synth":"silver_synth_evolve","title":"silver"}
+SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"fc51bb6422d98ffa3a97384e828465475a647898b882e12379b57b5cdce7db02","client_saves":1,"flushed_matches":true,"frame":11171,"gate_saves":1,"save_completed_frame":11141,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/saveram_gen2_evolution_s781_b/gen2 silver overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_evolution_s781_b_witness.SaveRAM"}
+RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"0f519bffa9dc90bc0709c3202f49a45790412050e341b9b38907dd8e8e75bc19","capture":{"acquisition":"egg_hatch","area_id":"gift_daycare","destination":"party","frame":4479,"key":"9A61:C78C:0A","level":5,"site_id":"hatch_finalized","slot":0,"species_id":10},"case":"silver_battle","client":{"artifact_kind":"overlay","binding_sha256":"0f519bffa9dc90bc0709c3202f49a45790412050e341b9b38907dd8e8e75bc19","pack":"gen2_silver","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"209e0b46340f67221d6e5c24d7b1125ac35c9d1d","title":"silver"},"fixture_sha256":"2377d626c3cc7f19f9757b63d2af0038e64cbe1573ac9a637b0d2b74e88922ed","harness_write_scopes":[],"input_mode":"normal_buttons","key":"9A61:C78C:0B","key_change":{"frame":10349,"new_key":"9A61:C78C:0B","old_key":"9A61:C78C:0A","reason":"evolution","site_id":"evolution_species_published","species_id":11},"player":"b","rom_sha1":"209e0b46340f67221d6e5c24d7b1125ac35c9d1d","save":{"cartram_bytes":32768,"cartram_sha256":"fc51bb6422d98ffa3a97384e828465475a647898b882e12379b57b5cdce7db02","client_saves":1,"flushed_matches":true,"frame":11171,"gate_saves":1,"save_completed_frame":11141,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/saveram_gen2_evolution_s781_b/gen2 silver overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_evolution_s781_b_witness.SaveRAM"},"scenario":"gen2_evolution","schema":"gen2-duo-evolution-v1","synth":"silver_synth_evolve","title":"silver"}
 RESULT: PASS (evolve linked 9A61:C78C:0B)

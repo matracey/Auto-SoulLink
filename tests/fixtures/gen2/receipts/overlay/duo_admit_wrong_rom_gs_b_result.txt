@@ -1,6 +1,6 @@
 DUO_GEN2 {"attempt":1,"expect_admission":"refused","player":"b","rom_sha1":"f2f52230b536214ef7c9924f483392993e226cfb","scenario":"gen2_admit_wrong_rom","title":"crystal"}
 ADMISSION_REFUSED {"client":false,"console":"[SLink-gen2] crystal cartridge refused (production admission): artifact selection BUILD_ONLY is not admitted","frame":1,"rom_sha1":"f2f52230b536214ef7c9924f483392993e226cfb"}
-NO_TRAFFIC {"frame":5635,"frames":600,"tx":0}
+NO_TRAFFIC {"frame":5163,"frames":600,"tx":0}
 CARTRAM_UNCHANGED {"after":"cd246673dc2e3c57ffd4ec4b2fb9f47bc054ab05fd718ab591ed587aa38b5975","before":"cd246673dc2e3c57ffd4ec4b2fb9f47bc054ab05fd718ab591ed587aa38b5975"}
 RECEIPT {"attempt":1,"cartram_sha256":"cd246673dc2e3c57ffd4ec4b2fb9f47bc054ab05fd718ab591ed587aa38b5975","expect_admission":"refused","harness_write_scopes":[],"input_mode":"normal_buttons","player":"b","refusal":{"client":false,"console":"[SLink-gen2] crystal cartridge refused (production admission): artifact selection BUILD_ONLY is not admitted","frame":1,"rom_sha1":"f2f52230b536214ef7c9924f483392993e226cfb"},"rom_sha1":"f2f52230b536214ef7c9924f483392993e226cfb","scenario":"gen2_admit_wrong_rom","schema":"gen2-duo-admit-wrong-rom-v1","title":"crystal"}
 RESULT: PASS (refused, silent, CartRAM unchanged)

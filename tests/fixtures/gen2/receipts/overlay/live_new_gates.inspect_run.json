@@ -17,8 +17,8 @@
   }
  },
  "code_digest": {
-  "commit": "2f2284e47c6c2881e0dfd449f40cd92fab17780d",
-  "digest": "49a338779ea7e0b5a4d9ab2ededb8d0cf3eb5ad5c615b8f539b8334770034338",
+  "commit": "ddb586d21a4f2beb53c992eee6bb0c31e703fd7f",
+  "digest": "7dd9ac4b8e372689df51339fffa839c4818ec1d33e4964a4b9d7e48e91013dcc",
   "dirty": [],
   "schema": "gen2-code-digest-v1",
   "scope": [

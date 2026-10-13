@@ -12,25 +12,25 @@ RX dead_keys
 RX link_panel
 BOOTED {"frame":3335,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12}
 MYKEY 0 F794:B541:9E
-  phase walk @3441 xy=53,12
-  phase battle @3791 xy=53,12
-ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":5434,"key":"C886:B541:10","level":2,"site_id":"capture_party_finalized","slot":1,"species_id":16}
-TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":13,"in_box":false,"key":"C886:B541:10","level":2,"maxHP":13,"nickname":"PIDGEY","player":"a","seq":45,"species_id":16,"stats":{"level":2,"maxHP":
-CAPTURE_SENT {"frame":5434,"key":"C886:B541:10","seq":45}
-CAUGHT C886:B541:10
-RX box_mon key=C886:B541:10
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":46}
-TX {"event":"stats_cache","key":"C886:B541:10","player":"a","seq":49,"stats":{"level":2,"maxHP":13}}
+  phase walk @3337 xy=53,12
+  phase battle @3799 xy=53,12
+ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":6429,"key":"3965:B541:10","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":16}
+TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":16,"in_box":false,"key":"3965:B541:10","level":3,"maxHP":16,"nickname":"PIDGEY","player":"a","seq":63,"species_id":16,"stats":{"level":3,"maxHP":
+CAPTURE_SENT {"frame":6429,"key":"3965:B541:10","seq":63}
+CAUGHT 3965:B541:10
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":64}
+RX box_mon key=3965:B541:10
+TX {"event":"stats_cache","key":"3965:B541:10","player":"a","seq":68,"stats":{"level":3,"maxHP":16}}
 RX play_sound sound=25
 RX msgbox
-RX_TEXT {"cmd":"msgbox","frame":8222,"text":"PIDGEY and RATTATA linked!"}
-RX party_mon key=C886:B541:10
+RX_TEXT {"cmd":"msgbox","frame":7791,"text":"PIDGEY and PIDGEY linked!"}
+RX party_mon key=3965:B541:10
 RX link_panel
-TX {"event":"sync_retrieve_done","key":"C886:B541:10","player":"a","seq":141}
-  phase save @8224 xy=53,12
+TX {"event":"sync_retrieve_done","key":"3965:B541:10","player":"a","seq":111}
+  phase save @7792 xy=53,12
 RX link_panel
-  phase saved @8889 xy=53,12
+  phase saved @8457 xy=53,12
 MYKEY 0 F794:B541:9E
-MYKEY 1 C886:B541:10
-SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"e12df3324190d333d6571922fda52d3db63fac524e1d30af982f732c275bf9d0","client_saves":1,"flushed_matches":true,"frame":8919,"gate_saves":1,"save_completed_frame":8889,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/saveram_gen2_reconnect_s481_a/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_reconnect_s481_a_witness.SaveRAM"}
-RECONNECT_READY {"frame":8919,"key":"C886:B541:10","phase":"initial","player":"a"}
+MYKEY 1 3965:B541:10
+SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"1cdec104f40b34f8a3b807a7ee76f235045f872a20b23826e98eaf00ad66c7e2","client_saves":1,"flushed_matches":true,"frame":8487,"gate_saves":1,"save_completed_frame":8457,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_reconnect_s481_a/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_reconnect_s481_a_witness.SaveRAM"}
+RECONNECT_READY {"frame":8487,"key":"3965:B541:10","phase":"initial","player":"a"}

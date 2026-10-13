@@ -13,92 +13,78 @@ RX link_panel
 BOOTED {"frame":3374,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12}
 SYNTH_SETUP {"address":55850,"bank":1,"bytes_after":"9e000a2b0000c4a600155400000000000000000000ec63231e0000450000001400000032003200240023001800170019","bytes_before":"9e000a2b0000c4a600008700000000000000000000ec63231e00004500000005000000140014000c000c00090009000a","disclosure":"SYNTH: coherent level/EXP/HP/stats only; species, DVs, OT, moves, status and names preserved","domain":"WRAM","frame":3374,"key":"EC63:C4A6:9E","level":20,"offset":0,"purpose":"gs_starter_resilience","slot":0,"symbol":"wPartyMon1"}
 MYKEY 0 EC63:C4A6:9E
-  phase walk @3755 xy=53,12
-  phase battle @4020 xy=52,12
-ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":5901,"key":"5CB0:C4A6:10","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":16}
-TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":16,"in_box":false,"key":"5CB0:C4A6:10","level":3,"maxHP":16,"nickname":"PIDGEY","player":"a","seq":87,"species_id":16,"stats":{"level":3,"maxHP":
-CAPTURE_SENT {"frame":5901,"key":"5CB0:C4A6:10","seq":87}
-CAUGHT 5CB0:C4A6:10
-RX box_mon key=5CB0:C4A6:10
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":89}
-TX {"event":"stats_cache","key":"5CB0:C4A6:10","player":"a","seq":91,"stats":{"level":3,"maxHP":16}}
+  phase walk @3715 xy=53,12
+  phase battle @4018 xy=53,12
+RX hud_show
+RX_TEXT {"cmd":"hud_show","frame":6872,"text":"Partner caught PIDGEY in Route 29"}
+ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":7954,"key":"920B:C4A6:10","level":2,"site_id":"capture_party_finalized","slot":1,"species_id":16}
+TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":13,"in_box":false,"key":"920B:C4A6:10","level":2,"maxHP":13,"nickname":"PIDGEY","player":"a","seq":156,"species_id":16,"stats":{"level":2,"maxHP"
+CAPTURE_SENT {"frame":7954,"key":"920B:C4A6:10","seq":156}
+CAUGHT 920B:C4A6:10
 RX play_sound sound=25
 RX msgbox
-RX_TEXT {"cmd":"msgbox","frame":7142,"text":"PIDGEY and PIDGEY linked!"}
-RX party_mon key=5CB0:C4A6:10
+RX_TEXT {"cmd":"msgbox","frame":7958,"text":"PIDGEY and PIDGEY linked!"}
+RX party_mon key=920B:C4A6:10
 RX link_panel
-TX {"event":"sync_retrieve_done","key":"5CB0:C4A6:10","player":"a","seq":132}
-  phase save @7143 xy=52,12
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":157}
 RX link_panel
-  phase saved @7891 xy=52,12
+TX {"event":"sync_retrieve_done","key":"920B:C4A6:10","player":"a","seq":160}
+  phase save @8014 xy=53,12
+  phase saved @8762 xy=53,12
 MYKEY 0 EC63:C4A6:9E
-MYKEY 1 5CB0:C4A6:10
-LINK_SAVE {"cartram_bytes":32768,"cartram_sha256":"aadf5f425bfddaca0d57e12c890e261e89d7c7608c1b4b6286898aff35bf0af8","client_saves":1,"frame":7921,"gate_saves":1,"key":"5CB0:C4A6:10","save_completed_frame":7891,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_poison_s11_a_link_save.SaveRAM"}
-SYNTH_SETUP {"address":55898,"bank":1,"bytes_after":"100021000000c4a6001554000000000000000000005cb023000000460000001400000032003200190019001f00130013","bytes_before":"100021000000c4a6000039000000000000000000005cb023000000460000000300000010001000080008000900070007","disclosure":"SYNTH: coherent level/EXP/HP/stats only; species, DVs, OT, moves, status and names preserved","domain":"WRAM","frame":7921,"key":"5CB0:C4A6:10","level":20,"offset":48,"purpose":"gs_linked_poison_resilience","slot":1,"symbol":"wPartyMon1"}
-  PI battle mode=0 map=24:3 xy=52,12 phase=travel active=nil foe_sting=nil party=0:50/50:0 1:50/50:0
-  phase settle @7921 xy=52,12
+MYKEY 1 920B:C4A6:10
+LINK_SAVE {"cartram_bytes":32768,"cartram_sha256":"4bdc9db2314c8e4cda794cad3d51b9f7068a13381c16d9934963b4c1dfe9e6b8","client_saves":1,"frame":8792,"gate_saves":1,"key":"920B:C4A6:10","save_completed_frame":8762,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_poison_s31_a_link_save.SaveRAM"}
+SYNTH_SETUP {"address":55898,"bank":1,"bytes_after":"100021000000c4a600155400000000000000000000920b210000004600000014000000310031001a0015001b00170017","bytes_before":"100021000000c4a600000900000000000000000000920b2100000046000000020000000d000d00070006000700060006","disclosure":"SYNTH: coherent level/EXP/HP/stats only; species, DVs, OT, moves, status and names preserved","domain":"WRAM","frame":8792,"key":"920B:C4A6:10","level":20,"offset":48,"purpose":"gs_linked_poison_resilience","slot":1,"symbol":"wPartyMon1"}
+  PI battle mode=0 map=24:3 xy=53,12 phase=travel active=nil foe_sting=nil party=0:45/50:0 1:49/49:0
+  phase settle @8792 xy=53,12
 RX link_panel
-  phase travel @8096 xy=52,12
-  PI battle mode=1 map=24:3 xy=44,10 phase=travel active=0 foe_sting=false party=0:50/50:0 1:50/50:0
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"a","seq":223}
-  PI battle mode=0 map=24:3 xy=44,10 phase=travel active=nil foe_sting=nil party=0:50/50:0 1:50/50:0
-  PI battle mode=1 map=24:3 xy=44,14 phase=travel active=0 foe_sting=false party=0:50/50:0 1:50/50:0
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"a","seq":257}
-  PI battle mode=0 map=24:3 xy=44,14 phase=travel active=nil foe_sting=nil party=0:50/50:0 1:50/50:0
-TX {"area_id":"cherrygrove_city","event":"area_enter","loc_name":"CHERRYGROVE CITY","player":"a","seq":313}
-TX {"area_id":"route_30","event":"area_enter","loc_name":"ROUTE 30","player":"a","seq":383}
-TX {"event":"trainer_battle_start","player":"a","seq":429,"trainer_id":5634}
-  PI battle mode=2 map=26:1 xy=5,24 phase=travel active=0 foe_sting=false party=0:50/50:0 1:50/50:0
-  PI moves mode=2 map=26:1 xy=5,24 phase=travel active=0 foe_sting=false party=0:50/50:0 1:50/50:0 items=SCRATCH|LEER
-  PI moves mode=2 map=26:1 xy=5,24 phase=travel active=0 foe_sting=false party=0:50/50:0 1:50/50:0 items=SCRATCH|LEER
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"a","seq":527}
-  PI battle mode=0 map=26:1 xy=5,24 phase=travel active=nil foe_sting=nil party=0:50/50:0 1:50/50:0
-TX {"event":"trainer_battle_start","player":"a","seq":565,"trainer_id":9217}
-  PI battle mode=2 map=26:1 xy=2,7 phase=travel active=0 foe_sting=false party=0:50/50:0 1:50/50:0
-  PI moves mode=2 map=26:1 xy=2,7 phase=travel active=0 foe_sting=false party=0:50/50:0 1:50/50:0 items=SCRATCH|LEER
-  PI moves mode=2 map=26:1 xy=2,7 phase=travel active=0 foe_sting=false party=0:50/50:0 1:50/50:0 items=SCRATCH|LEER
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"a","seq":664}
-  PI battle mode=0 map=26:1 xy=2,7 phase=travel active=nil foe_sting=nil party=0:50/50:0 1:50/50:0
-TX {"area_id":"route_31","event":"area_enter","loc_name":"ROUTE 31","player":"a","seq":676}
-  phase hunt @24455 xy=26,17
-  PI battle mode=1 map=26:2 xy=32,13 phase=hunt active=0 foe_sting=false party=0:50/50:0 1:50/50:0
-POISON_ENCOUNTER {"candidate":false,"encounter":1,"foe_sting":false,"frame":25362,"level":4,"map_group":26,"map_number":2,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
-TX {"area_id":"route_31","event":"no_catch","level":4,"player":"a","seq":754,"species_id":10}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"a","seq":755}
-  PI battle mode=0 map=26:2 xy=32,13 phase=hunt active=nil foe_sting=nil party=0:50/50:0 1:50/50:0
+  phase travel @8967 xy=53,12
+  PI battle mode=1 map=24:3 xy=39,14 phase=travel active=0 foe_sting=false party=0:45/50:0 1:49/49:0
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":258}
+  PI battle mode=0 map=24:3 xy=39,14 phase=travel active=nil foe_sting=nil party=0:45/50:0 1:49/49:0
+  PI battle mode=1 map=24:3 xy=36,8 phase=travel active=0 foe_sting=false party=0:45/50:0 1:49/49:0
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":305}
+  PI battle mode=0 map=24:3 xy=36,8 phase=travel active=nil foe_sting=nil party=0:45/50:0 1:49/49:0
+  PI battle mode=1 map=24:3 xy=16,5 phase=travel active=0 foe_sting=false party=0:45/50:0 1:49/49:0
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":355}
+  PI battle mode=0 map=24:3 xy=16,5 phase=travel active=nil foe_sting=nil party=0:45/50:0 1:49/49:0
+TX {"area_id":"cherrygrove_city","event":"area_enter","loc_name":"CHERRYGROVE CITY","player":"a","seq":372}
+TX {"area_id":"route_30","event":"area_enter","loc_name":"ROUTE 30","player":"a","seq":442}
+  PI battle mode=1 map=26:1 xy=10,48 phase=travel active=0 foe_sting=false party=0:50/50:0 1:49/49:0
+TX {"area_id":"route_30","event":"no_catch","level":4,"player":"a","seq":479,"species_id":11}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":480}
+  PI battle mode=0 map=26:1 xy=10,48 phase=travel active=nil foe_sting=nil party=0:50/50:0 1:49/49:0
 RX play_sound sound=26
 RX msgbox
-RX_TEXT {"cmd":"msgbox","frame":25530,"text":"Route 31 is a dead zone!"}
+RX_TEXT {"cmd":"msgbox","frame":17409,"text":"Route 30 is a dead zone!"}
 RX link_panel
-TX {"event":"trainer_battle_start","player":"a","seq":817,"trainer_id":9220}
-  PI battle mode=2 map=26:2 xy=18,12 phase=hunt active=0 foe_sting=false party=0:50/50:0 1:50/50:0
-  PI moves mode=2 map=26:2 xy=18,12 phase=hunt active=0 foe_sting=false party=0:50/50:0 1:50/50:0 items=SCRATCH|LEER
-  PI moves mode=2 map=26:2 xy=18,12 phase=hunt active=0 foe_sting=false party=0:50/50:0 1:50/50:0 items=SCRATCH|LEER
-RX link_panel
-  PI moves mode=2 map=26:2 xy=18,12 phase=hunt active=1 foe_sting=true party=0:50/50:0 1:48/50:8 items=TACKLE
-RX link_panel
-  PI moves mode=2 map=26:2 xy=18,12 phase=hunt active=1 foe_sting=true party=0:50/50:0 1:40/50:8 items=TACKLE
-  PI moves mode=2 map=26:2 xy=18,12 phase=hunt active=0 foe_sting=false party=0:49/50:0 1:40/50:8 items=SCRATCH|LEER
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"a","seq":1080}
-  PI battle mode=0 map=26:2 xy=18,12 phase=hunt active=nil foe_sting=nil party=0:49/50:0 1:40/50:8
-  phase tick @35283 xy=18,12
-RX link_panel
-RX link_panel
-RX link_panel
-RX link_panel
-RX link_panel
-RX link_panel
-RX link_panel
-RX link_panel
-RX link_panel
+TX {"event":"trainer_battle_start","player":"a","seq":549,"trainer_id":5634}
+  PI battle mode=2 map=26:1 xy=5,24 phase=travel active=0 foe_sting=false party=0:50/50:0 1:49/49:0
+  PI moves mode=2 map=26:1 xy=5,24 phase=travel active=0 foe_sting=false party=0:50/50:0 1:49/49:0 items=SCRATCH|LEER
+  PI moves mode=2 map=26:1 xy=5,24 phase=travel active=0 foe_sting=false party=0:50/50:0 1:49/49:0 items=SCRATCH|LEER
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":647}
+  PI battle mode=0 map=26:1 xy=5,24 phase=travel active=nil foe_sting=nil party=0:50/50:0 1:49/49:0
+TX {"event":"trainer_battle_start","player":"a","seq":687,"trainer_id":9217}
+  PI battle mode=2 map=26:1 xy=4,5 phase=travel active=0 foe_sting=false party=0:50/50:0 1:49/49:0
+  PI moves mode=2 map=26:1 xy=4,5 phase=travel active=0 foe_sting=false party=0:50/50:0 1:49/49:0 items=SCRATCH|LEER
+  PI moves mode=2 map=26:1 xy=4,5 phase=travel active=0 foe_sting=false party=0:50/50:0 1:49/49:0 items=SCRATCH|LEER
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":786}
+  PI battle mode=0 map=26:1 xy=4,5 phase=travel active=nil foe_sting=nil party=0:50/50:0 1:49/49:0
+TX {"area_id":"route_31","event":"area_enter","loc_name":"ROUTE 31","player":"a","seq":795}
+  phase hunt @27982 xy=26,17
+TX {"event":"trainer_battle_start","player":"a","seq":877,"trainer_id":9220}
+  PI battle mode=2 map=26:2 xy=18,12 phase=hunt active=0 foe_sting=false party=0:50/50:0 1:49/49:0
+  PI moves mode=2 map=26:2 xy=18,12 phase=hunt active=0 foe_sting=false party=0:50/50:0 1:49/49:0 items=SCRATCH|LEER
+  PI moves mode=2 map=26:2 xy=18,12 phase=hunt active=0 foe_sting=false party=0:50/50:0 1:49/49:0 items=SCRATCH|LEER
+  PI moves mode=2 map=26:2 xy=18,12 phase=hunt active=1 foe_sting=true party=0:50/50:0 1:47/49:0 items=TACKLE
 RX link_panel
 RX link_panel
 RX link_panel
-RX link_panel
-RX link_panel
-RX link_panel
-RX link_panel
-RX link_panel
+  PI moves mode=2 map=26:2 xy=18,12 phase=hunt active=1 foe_sting=true party=0:50/50:0 1:43/49:8 items=TACKLE
+  PI moves mode=2 map=26:2 xy=18,12 phase=hunt active=0 foe_sting=false party=0:49/50:0 1:43/49:8 items=SCRATCH|LEER
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1298}
+  PI battle mode=0 map=26:2 xy=18,12 phase=hunt active=nil foe_sting=nil party=0:49/50:0 1:43/49:8
+  phase tick @41802 xy=18,12
 RX link_panel
 RX link_panel
 RX link_panel
@@ -121,21 +107,41 @@ RX link_panel
 RX link_panel
 RX link_panel
 RX link_panel
-ENGINE_FAINT {"cause":"poison","frame":39966,"key":"5CB0:C4A6:10","site_id":"poison_faint","slot":1}
-TX {"area_id":"route_31","event":"faint","key":"5CB0:C4A6:10","player":"a","seq":1240}
-FAINT_SENT {"frame":39966,"key":"5CB0:C4A6:10","seq":1240}
-RX memorialize key=5CB0:C4A6:10
+RX link_panel
+RX link_panel
+RX link_panel
+RX link_panel
+RX link_panel
+RX link_panel
+RX link_panel
+RX link_panel
+RX link_panel
+RX link_panel
+RX link_panel
+RX link_panel
+RX link_panel
+RX link_panel
+RX link_panel
+RX link_panel
+RX link_panel
+RX link_panel
+RX link_panel
+RX link_panel
+ENGINE_FAINT {"cause":"poison","frame":46853,"key":"920B:C4A6:10","site_id":"poison_faint","slot":1}
+TX {"area_id":"route_31","event":"faint","key":"920B:C4A6:10","player":"a","seq":1469}
+FAINT_SENT {"frame":46853,"key":"920B:C4A6:10","seq":1469}
+RX memorialize key=920B:C4A6:10
 RX game_over
 RX link_panel
 RX link_panel
-  phase park @40100 xy=20,12
-MEMORIAL_PREIMAGE {"frame":40100,"key":"5CB0:C4A6:10","nickname_raw_hex":"8f88838684985050505050","ot_raw_hex":"868e8b8350000000000000","raw_hex":"100021000000c4a600156e002a00200020002f00145cb021000000420000001400000000003200190019001f00130013","slot":1,"species_marker":16}
-TX {"box":13,"event":"memorialize_done","key":"5CB0:C4A6:10","player":"a","seq":1245}
-MEMORIAL_ACK {"box":13,"event":"memorialize_done","frame":40100,"key":"5CB0:C4A6:10","ticks":1225}
-  phase poisoned @40101 xy=20,12
+MEMORIAL_PREIMAGE {"frame":46986,"key":"920B:C4A6:10","nickname_raw_hex":"8f88838684985050505050","ot_raw_hex":"868e8b8350000000000000","raw_hex":"100021000000c4a600156e002a00200020002f0014920b220000004200000014000000000031001a0015001b00170017","slot":1,"species_marker":16}
+TX {"box":13,"event":"memorialize_done","key":"920B:C4A6:10","player":"a","seq":1475}
+MEMORIAL_ACK {"box":13,"event":"memorialize_done","frame":46986,"key":"920B:C4A6:10","ticks":1455}
+  phase park @46987 xy=20,12
 RX link_panel
-  phase save @40131 xy=20,12
-  phase saved @40880 xy=20,12
-SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"f39c789dd8d0f7f2636b43117112d8c8e9ee4ab256f325ad179bb7f46fde9bff","client_saves":2,"flushed_matches":true,"frame":40910,"gate_saves":2,"save_completed_frame":40880,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_poison_s11_a/gen2 gold overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_poison_s11_a_witness.SaveRAM"}
-RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","booted":{"frame":3374,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":5901,"key":"5CB0:C4A6:10","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":16},"case":"gold_battle_errand","client":{"artifact_kind":"overlay","binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","pack":"gen2_gold","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"51b076ac7eba099a273ff7aff5c64ccb790825dd","title":"gold"},"faint":{"cause":"poison","frame":39966,"key":"5CB0:C4A6:10","site_id":"poison_faint","slot":1},"faint_sent":{"frame":39966,"key":"5CB0:C4A6:10","seq":1240},"fixture_sha256":"9ddbf7d9b3261805860a8116bfa3d7a3165f60c0d1fa47a5ab25e5ac822a7c70","gs_harden":true,"harness_write_scopes":[{"address":55850,"bank":1,"bytes_after":"9e000a2b0000c4a600155400000000000000000000ec63231e0000450000001400000032003200240023001800170019","bytes_before":"9e000a2b0000c4a600008700000000000000000000ec63231e00004500000005000000140014000c000c00090009000a","disclosure":"SYNTH: coherent level/EXP/HP/stats only; species, DVs, OT, moves, status and names preserved","domain":"WRAM","frame":3374,"key":"EC63:C4A6:9E","level":20,"offset":0,"purpose":"gs_starter_resilience","slot":0,"symbol":"wPartyMon1"},{"address":55898,"bank":1,"bytes_after":"100021000000c4a6001554000000000000000000005cb023000000460000001400000032003200190019001f00130013","bytes_before":"100021000000c4a6000039000000000000000000005cb023000000460000000300000010001000080008000900070007","disclosure":"SYNTH: coherent level/EXP/HP/stats only; species, DVs, OT, moves, status and names preserved","domain":"WRAM","frame":7921,"key":"5CB0:C4A6:10","level":20,"offset":48,"purpose":"gs_linked_poison_resilience","slot":1,"symbol":"wPartyMon1"}],"hello":{"ball_count":15,"frame":3344,"has_pokeballs":true,"ot_id":50342},"input_mode":"SYNTH_setup_then_normal_buttons","key":"5CB0:C4A6:10","link_save":{"cartram_bytes":32768,"cartram_sha256":"aadf5f425bfddaca0d57e12c890e261e89d7c7608c1b4b6286898aff35bf0af8","client_saves":1,"frame":7921,"gate_saves":1,"key":"5CB0:C4A6:10","save_completed_frame":7891,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_poison_s11_a_link_save.SaveRAM"},"memorial":{"ack":{"box":13,"event":"memorialize_done","frame":40100,"key":"5CB0:C4A6:10","ticks":1225},"preimage_frame":40100},"player":"a","rom_sha1":"51b076ac7eba099a273ff7aff5c64ccb790825dd","save":{"cartram_bytes":32768,"cartram_sha256":"f39c789dd8d0f7f2636b43117112d8c8e9ee4ab256f325ad179bb7f46fde9bff","client_saves":2,"flushed_matches":true,"frame":40910,"gate_saves":2,"save_completed_frame":40880,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_poison_s11_a/gen2 gold overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_poison_s11_a_witness.SaveRAM"},"scenario":"gen2_poison","schema":"gen2-duo-poison-v1","synth_disclosure":[{"address":55850,"bank":1,"bytes_after":"9e000a2b0000c4a600155400000000000000000000ec63231e0000450000001400000032003200240023001800170019","bytes_before":"9e000a2b0000c4a600008700000000000000000000ec63231e00004500000005000000140014000c000c00090009000a","disclosure":"SYNTH: coherent level/EXP/HP/stats only; species, DVs, OT, moves, status and names preserved","domain":"WRAM","frame":3374,"key":"EC63:C4A6:9E","level":20,"offset":0,"purpose":"gs_starter_resilience","slot":0,"symbol":"wPartyMon1"},{"address":55898,"bank":1,"bytes_after":"100021000000c4a6001554000000000000000000005cb023000000460000001400000032003200190019001f00130013","bytes_before":"100021000000c4a6000039000000000000000000005cb023000000460000000300000010001000080008000900070007","disclosure":"SYNTH: coherent level/EXP/HP/stats only; species, DVs, OT, moves, status and names preserved","domain":"WRAM","frame":7921,"key":"5CB0:C4A6:10","level":20,"offset":48,"purpose":"gs_linked_poison_resilience","slot":1,"symbol":"wPartyMon1"}],"title":"gold"}
-RESULT: PASS (poisoned to death: 5CB0:C4A6:10)
+  phase poisoned @46988 xy=20,12
+  phase save @47018 xy=20,12
+  phase saved @47766 xy=20,12
+SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"0e96ba31b78279ad5cd8b8b96bef0922d1f89d7a3c32ba7f14bad71af3a193e4","client_saves":2,"flushed_matches":true,"frame":47796,"gate_saves":2,"save_completed_frame":47766,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/saveram_gen2_poison_s31_a/gen2 gold overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_poison_s31_a_witness.SaveRAM"}
+RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","booted":{"frame":3374,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":7954,"key":"920B:C4A6:10","level":2,"site_id":"capture_party_finalized","slot":1,"species_id":16},"case":"gold_battle_errand","client":{"artifact_kind":"overlay","binding_sha256":"1f9b89bc1be2fe9fc62f502365131eac5dac3495d4b2c91e8c3e8d271844403b","pack":"gen2_gold","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"51b076ac7eba099a273ff7aff5c64ccb790825dd","title":"gold"},"faint":{"cause":"poison","frame":46853,"key":"920B:C4A6:10","site_id":"poison_faint","slot":1},"faint_sent":{"frame":46853,"key":"920B:C4A6:10","seq":1469},"fixture_sha256":"9ddbf7d9b3261805860a8116bfa3d7a3165f60c0d1fa47a5ab25e5ac822a7c70","gs_harden":true,"harness_write_scopes":[{"address":55850,"bank":1,"bytes_after":"9e000a2b0000c4a600155400000000000000000000ec63231e0000450000001400000032003200240023001800170019","bytes_before":"9e000a2b0000c4a600008700000000000000000000ec63231e00004500000005000000140014000c000c00090009000a","disclosure":"SYNTH: coherent level/EXP/HP/stats only; species, DVs, OT, moves, status and names preserved","domain":"WRAM","frame":3374,"key":"EC63:C4A6:9E","level":20,"offset":0,"purpose":"gs_starter_resilience","slot":0,"symbol":"wPartyMon1"},{"address":55898,"bank":1,"bytes_after":"100021000000c4a600155400000000000000000000920b210000004600000014000000310031001a0015001b00170017","bytes_before":"100021000000c4a600000900000000000000000000920b2100000046000000020000000d000d00070006000700060006","disclosure":"SYNTH: coherent level/EXP/HP/stats only; species, DVs, OT, moves, status and names preserved","domain":"WRAM","frame":8792,"key":"920B:C4A6:10","level":20,"offset":48,"purpose":"gs_linked_poison_resilience","slot":1,"symbol":"wPartyMon1"}],"hello":{"ball_count":15,"frame":3344,"has_pokeballs":true,"ot_id":50342},"input_mode":"SYNTH_setup_then_normal_buttons","key":"920B:C4A6:10","link_save":{"cartram_bytes":32768,"cartram_sha256":"4bdc9db2314c8e4cda794cad3d51b9f7068a13381c16d9934963b4c1dfe9e6b8","client_saves":1,"frame":8792,"gate_saves":1,"key":"920B:C4A6:10","save_completed_frame":8762,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_poison_s31_a_link_save.SaveRAM"},"memorial":{"ack":{"box":13,"event":"memorialize_done","frame":46986,"key":"920B:C4A6:10","ticks":1455},"preimage_frame":46986},"player":"a","rom_sha1":"51b076ac7eba099a273ff7aff5c64ccb790825dd","save":{"cartram_bytes":32768,"cartram_sha256":"0e96ba31b78279ad5cd8b8b96bef0922d1f89d7a3c32ba7f14bad71af3a193e4","client_saves":2,"flushed_matches":true,"frame":47796,"gate_saves":2,"save_completed_frame":47766,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/saveram_gen2_poison_s31_a/gen2 gold overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_poison_s31_a_witness.SaveRAM"},"scenario":"gen2_poison","schema":"gen2-duo-poison-v1","synth_disclosure":[{"address":55850,"bank":1,"bytes_after":"9e000a2b0000c4a600155400000000000000000000ec63231e0000450000001400000032003200240023001800170019","bytes_before":"9e000a2b0000c4a600008700000000000000000000ec63231e00004500000005000000140014000c000c00090009000a","disclosure":"SYNTH: coherent level/EXP/HP/stats only; species, DVs, OT, moves, status and names preserved","domain":"WRAM","frame":3374,"key":"EC63:C4A6:9E","level":20,"offset":0,"purpose":"gs_starter_resilience","slot":0,"symbol":"wPartyMon1"},{"address":55898,"bank":1,"bytes_after":"100021000000c4a600155400000000000000000000920b210000004600000014000000310031001a0015001b00170017","bytes_before":"100021000000c4a600000900000000000000000000920b2100000046000000020000000d000d00070006000700060006","disclosure":"SYNTH: coherent level/EXP/HP/stats only; species, DVs, OT, moves, status and names preserved","domain":"WRAM","frame":8792,"key":"920B:C4A6:10","level":20,"offset":48,"purpose":"gs_linked_poison_resilience","slot":1,"symbol":"wPartyMon1"}],"title":"gold"}
+RESULT: PASS (poisoned to death: 920B:C4A6:10)

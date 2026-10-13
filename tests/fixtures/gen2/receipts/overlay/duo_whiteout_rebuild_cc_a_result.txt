@@ -12,61 +12,61 @@ RX dead_keys
 RX link_panel
 BOOTED {"frame":3335,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12}
 MYKEY 0 F794:B541:9E
-  phase walk @3464 xy=53,12
-  phase battle @3840 xy=52,12
-ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":5487,"key":"2C56:B541:A1","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":161}
-TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":173,"hp":15,"in_box":false,"key":"2C56:B541:A1","level":3,"maxHP":15,"nickname":"SENTRET","player":"a","seq":47,"species_id":161,"stats":{"level":3,"max
-CAPTURE_SENT {"frame":5487,"key":"2C56:B541:A1","seq":47}
-CAUGHT 2C56:B541:A1
-RX box_mon key=2C56:B541:A1
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":49}
-TX {"event":"stats_cache","key":"2C56:B541:A1","player":"a","seq":52,"stats":{"level":3,"maxHP":15}}
+  phase walk @3375 xy=53,12
+  phase battle @3679 xy=53,12
+RX hud_show
+RX_TEXT {"cmd":"hud_show","frame":8222,"text":"Partner caught RATTATA in Route 29"}
+ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":14568,"key":"6223:B541:10","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":16}
+TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":15,"in_box":false,"key":"6223:B541:10","level":3,"maxHP":15,"nickname":"PIDGEY","player":"a","seq":176,"species_id":16,"stats":{"level":3,"maxHP"
+CAPTURE_SENT {"frame":14568,"key":"6223:B541:10","seq":176}
+CAUGHT 6223:B541:10
 RX play_sound sound=25
 RX msgbox
-RX_TEXT {"cmd":"msgbox","frame":8402,"text":"SENTRET and RATTATA linked!"}
-RX party_mon key=2C56:B541:A1
+RX_TEXT {"cmd":"msgbox","frame":14570,"text":"PIDGEY and RATTATA linked!"}
+RX party_mon key=6223:B541:10
 RX link_panel
-TX {"event":"sync_retrieve_done","key":"2C56:B541:A1","player":"a","seq":148}
-  phase save @8404 xy=52,12
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":177}
+TX {"event":"sync_retrieve_done","key":"6223:B541:10","player":"a","seq":179}
+  phase save @14635 xy=53,12
 RX link_panel
-  phase saved @9069 xy=52,12
+  phase saved @15300 xy=53,12
 MYKEY 0 F794:B541:9E
-MYKEY 1 2C56:B541:A1
-LINK_SAVE {"cartram_bytes":32768,"cartram_sha256":"43552da253e74cef8ab2c3dc31a8fe72982ac2ae7ac421d490f913e510f9c678","client_saves":1,"frame":9099,"gate_saves":1,"key":"2C56:B541:A1","save_completed_frame":9069,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs3/patch/build/e2e_gen2_whiteout_rebuild_s121_a_link_save.SaveRAM"}
-  phase settle @9139 xy=52,12
-  phase to-pc @9262 xy=52,12
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"a","seq":225}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"a","seq":251}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"a","seq":289}
-TX {"area_id":"cherrygrove_city","event":"area_enter","loc_name":"CHERRYGROVE CITY","player":"a","seq":325}
-  phase pc @15391 xy=9,2
-ENGINE_PC {"box_index":0,"frame":15827,"key":"2C56:B541:A1","kind":"party_to_box","site_id":"pc_deposit_complete"}
-TX {"event":"party_to_box","key":"2C56:B541:A1","player":"a","seq":361,"stats":{"level":3}}
+MYKEY 1 6223:B541:10
+LINK_SAVE {"cartram_bytes":32768,"cartram_sha256":"fe46a1bf5d2fcae4402fbe38d625919bf1d3b29c92f26307894f2d94db5b2810","client_saves":1,"frame":15330,"gate_saves":1,"key":"6223:B541:10","save_completed_frame":15300,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_whiteout_rebuild_s121_a_link_save.SaveRAM"}
+  phase settle @15330 xy=53,12
+  phase to-pc @15493 xy=53,12
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":260}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":300}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":325}
+TX {"area_id":"cherrygrove_city","event":"area_enter","loc_name":"CHERRYGROVE CITY","player":"a","seq":359}
+  phase pc @21666 xy=9,2
+ENGINE_PC {"box_index":0,"frame":22102,"key":"6223:B541:10","kind":"party_to_box","site_id":"pc_deposit_complete"}
+TX {"event":"party_to_box","key":"6223:B541:10","player":"a","seq":394,"stats":{"level":3}}
 RX link_panel
 RX link_panel
-  phase pc-done @16131 xy=9,2
-  phase to-grass @16161 xy=9,2
-TX {"area_id":"route_29","event":"area_enter","loc_name":"ROUTE 29","player":"a","seq":391}
-  phase grass @16861 xy=4,10
-  phase walk @16891 xy=4,10
-  phase battle @17314 xy=4,11
-ENGINE_FAINT {"cause":"battle","frame":28607,"key":"F794:B541:9E","site_id":"battle_faint","slot":0}
-TX {"area_id":"route_29","event":"faint","key":"F794:B541:9E","player":"a","seq":692}
-FAINT_SENT {"frame":28607,"key":"F794:B541:9E","seq":692}
-TX {"event":"safe","pc_boxes":[{"box":0,"held_item_id":173,"key":"2C56:B541:A1","level":3,"moves":[33,0,0,0],"nickname":"SENTRET","slot":0,"species_id":161}],"pc_boxes_generation":5,"player":"a","seq":693}
-ENGINE_WHITEOUT {"frame":28899,"party":[{"hp":0,"key":"F794:B541:9E"}],"site_id":"whiteout_before_heal"}
-TX {"event":"whiteout","player":"a","seq":704}
-RX party_mon key=2C56:B541:A1
+  phase pc-done @22409 xy=9,2
+  phase to-grass @22439 xy=9,2
+TX {"area_id":"route_29","event":"area_enter","loc_name":"ROUTE 29","player":"a","seq":424}
+  phase grass @23140 xy=4,10
+  phase walk @23170 xy=4,10
+  phase battle @23660 xy=4,11
+ENGINE_FAINT {"cause":"battle","frame":25596,"key":"F794:B541:9E","site_id":"battle_faint","slot":0}
+TX {"area_id":"route_29","event":"faint","key":"F794:B541:9E","player":"a","seq":484}
+FAINT_SENT {"frame":25596,"key":"F794:B541:9E","seq":484}
+TX {"event":"safe","pc_boxes":[{"box":0,"held_item_id":0,"key":"6223:B541:10","level":3,"moves":[33,0,0,0],"nickname":"PIDGEY","slot":0,"species_id":16}],"pc_boxes_generation":4,"player":"a","seq":485}
+ENGINE_WHITEOUT {"frame":25888,"party":[{"hp":0,"key":"F794:B541:9E"}],"site_id":"whiteout_before_heal"}
+TX {"event":"whiteout","player":"a","seq":495}
+TX {"area_id":"cherrygrove_city","event":"area_enter","loc_name":"CHERRYGROVE CITY","player":"a","seq":496}
+RX party_mon key=6223:B541:10
 RX rebuild_start
-TX {"area_id":"cherrygrove_city","event":"area_enter","loc_name":"CHERRYGROVE CITY","player":"a","seq":705}
-TX {"event":"sync_retrieve_done","key":"2C56:B541:A1","player":"a","seq":707}
-  phase fainted @28932 xy=29,4
+TX {"event":"sync_retrieve_done","key":"6223:B541:10","player":"a","seq":499}
+  phase fainted @25921 xy=29,4
 RX rebuild_done
+REBUILT {"box_count":0,"frame":25951,"hp":15,"key":"6223:B541:10","party_count":2,"slot":1}
+  phase save @25951 xy=29,4
 RX link_panel
-REBUILT {"box_count":0,"frame":28962,"hp":15,"key":"2C56:B541:A1","party_count":2,"slot":1}
-  phase save @28962 xy=29,4
 RX link_panel
-  phase saved @29625 xy=29,4
-SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"741cb7c934ea3db5047ff207481a9ec92926d8b33df205fee32c1207e155c334","client_saves":2,"flushed_matches":true,"frame":29655,"gate_saves":2,"save_completed_frame":29625,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs3/patch/build/saveram_gen2_whiteout_rebuild_s121_a/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs3/patch/build/e2e_gen2_whiteout_rebuild_s121_a_witness.SaveRAM"}
-RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","booted":{"frame":3335,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":5487,"key":"2C56:B541:A1","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":161},"case":"crystal_battle","client":{"artifact_kind":"overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","title":"crystal"},"fixture_sha256":"f4a9c35db272089ec77e83cfa6772fb245ff29077dedef1cd462fc632d7852f6","harness_write_scopes":[],"hello":{"ball_count":10,"frame":3305,"has_pokeballs":true,"ot_id":46401},"input_mode":"normal_buttons","key":"2C56:B541:A1","link_save":{"cartram_bytes":32768,"cartram_sha256":"43552da253e74cef8ab2c3dc31a8fe72982ac2ae7ac421d490f913e510f9c678","client_saves":1,"frame":9099,"gate_saves":1,"key":"2C56:B541:A1","save_completed_frame":9069,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs3/patch/build/e2e_gen2_whiteout_rebuild_s121_a_link_save.SaveRAM"},"player":"a","rebuilt":{"box_count":0,"frame":28962,"hp":15,"key":"2C56:B541:A1","party_count":2,"slot":1},"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","save":{"cartram_bytes":32768,"cartram_sha256":"741cb7c934ea3db5047ff207481a9ec92926d8b33df205fee32c1207e155c334","client_saves":2,"flushed_matches":true,"frame":29655,"gate_saves":2,"save_completed_frame":29625,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs3/patch/build/saveram_gen2_whiteout_rebuild_s121_a/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs3/patch/build/e2e_gen2_whiteout_rebuild_s121_a_witness.SaveRAM"},"scenario":"gen2_whiteout_rebuild","schema":"gen2-duo-whiteout-rebuild-v1","title":"crystal","whiteout":{"frame":28899,"party":[{"hp":0,"key":"F794:B541:9E"}],"site_id":"whiteout_before_heal"}}
-RESULT: PASS (whited out and rebuilt 2C56:B541:A1)
+  phase saved @26615 xy=29,4
+SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"53f96422211362e9c6fc7f71c36b0195e49b729925f5665078c4accbff6f8331","client_saves":2,"flushed_matches":true,"frame":26645,"gate_saves":2,"save_completed_frame":26615,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_whiteout_rebuild_s121_a/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_whiteout_rebuild_s121_a_witness.SaveRAM"}
+RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","booted":{"frame":3335,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":14568,"key":"6223:B541:10","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":16},"case":"crystal_battle","client":{"artifact_kind":"overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","title":"crystal"},"fixture_sha256":"f4a9c35db272089ec77e83cfa6772fb245ff29077dedef1cd462fc632d7852f6","harness_write_scopes":[],"hello":{"ball_count":10,"frame":3305,"has_pokeballs":true,"ot_id":46401},"input_mode":"normal_buttons","key":"6223:B541:10","link_save":{"cartram_bytes":32768,"cartram_sha256":"fe46a1bf5d2fcae4402fbe38d625919bf1d3b29c92f26307894f2d94db5b2810","client_saves":1,"frame":15330,"gate_saves":1,"key":"6223:B541:10","save_completed_frame":15300,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_whiteout_rebuild_s121_a_link_save.SaveRAM"},"player":"a","rebuilt":{"box_count":0,"frame":25951,"hp":15,"key":"6223:B541:10","party_count":2,"slot":1},"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","save":{"cartram_bytes":32768,"cartram_sha256":"53f96422211362e9c6fc7f71c36b0195e49b729925f5665078c4accbff6f8331","client_saves":2,"flushed_matches":true,"frame":26645,"gate_saves":2,"save_completed_frame":26615,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_whiteout_rebuild_s121_a/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_whiteout_rebuild_s121_a_witness.SaveRAM"},"scenario":"gen2_whiteout_rebuild","schema":"gen2-duo-whiteout-rebuild-v1","title":"crystal","whiteout":{"frame":25888,"party":[{"hp":0,"key":"F794:B541:9E"}],"site_id":"whiteout_before_heal"}}
+RESULT: PASS (whited out and rebuilt 6223:B541:10)

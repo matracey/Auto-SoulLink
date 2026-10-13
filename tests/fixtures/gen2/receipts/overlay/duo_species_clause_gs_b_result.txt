@@ -14,48 +14,48 @@ BOOTED {"frame":3374,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12
 SYNTH_SETUP {"address":55850,"bank":1,"bytes_after":"9ead0a2b0000c78c00155400000000000000000000a4fc231e0000460000001400000032003200230020001c001b001d","bytes_before":"9ead0a2b0000c78c00008700000000000000000000a4fc231e00004600000005000000140014000c000b000a000a000b","disclosure":"SYNTH: coherent level/EXP/HP/stats only; species, DVs, OT, moves, status and names preserved","domain":"WRAM","frame":3374,"key":"A4FC:C78C:9E","level":20,"offset":0,"purpose":"gs_starter_resilience","slot":0,"symbol":"wPartyMon1"}
 MYKEY 0 A4FC:C78C:9E
 RX hud_show
-RX_TEXT {"cmd":"hud_show","frame":13862,"text":"Partner caught RATTATA in Route 29"}
-A_PENDING {"frame":14670,"species_id":19}
-  phase walk @14670 xy=53,12
-SYNTH_SETUP {"address":53527,"bank":1,"bytes_after":"13","bytes_before":"a1","disclosure":"SYNTH: chosen wild species before native record generation; RUN/catch remain native","domain":"WRAM","frame":14735,"offset":0,"purpose":"gs_species_encounter","site":{"addr":29383,"bank":15,"flat":258759,"hex":"fa"},"species_id":19,"symbol":"wTempWildMonSpecies"}
-  phase battle @14918 xy=53,12
+RX_TEXT {"cmd":"hud_show","frame":14732,"text":"Partner caught RATTATA in Route 29"}
+A_PENDING {"frame":15629,"species_id":19}
+  phase walk @15629 xy=53,12
+SYNTH_SETUP {"address":53527,"bank":1,"bytes_after":"13","bytes_before":"10","disclosure":"SYNTH: chosen wild species before native record generation; RUN/catch remain native","domain":"WRAM","frame":16057,"offset":0,"purpose":"gs_species_encounter","site":{"addr":29383,"bank":15,"flat":258759,"hex":"fa"},"species_id":19,"symbol":"wTempWildMonSpecies"}
+  phase battle @16240 xy=52,12
 RX gui_prompt
-RX_TEXT {"cmd":"gui_prompt","frame":14942,"text":"Dupes clause: Rattata -- reroll!"}
+RX_TEXT {"cmd":"gui_prompt","frame":16262,"text":"Dupes clause: Rattata -- reroll!"}
 RX unresolve_area area_id=route_29
-  phase encounter @15427 xy=53,12
-ENCOUNTER {"dupe":true,"frame":15457,"n":1,"species_id":19}
-  phase battle @15457 xy=53,12
-TX {"area_id":"route_29","event":"no_catch","level":3,"player":"b","seq":411,"species_id":19}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"b","seq":412}
+  phase encounter @16749 xy=52,12
+ENCOUNTER {"dupe":true,"frame":16779,"n":1,"species_id":19}
+  phase battle @16779 xy=52,12
+TX {"area_id":"route_29","event":"no_catch","level":2,"player":"b","seq":455,"species_id":19}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"b","seq":456}
 RX unresolve_area area_id=route_29
-  phase escaped @15672 xy=53,12
-REROLL {"frame":15702,"n":1,"prompt":"Dupes clause: Rattata -- reroll!","species_id":19}
-  phase walk @15702 xy=53,12
-SYNTH_SETUP {"address":53527,"bank":1,"bytes_after":"10","bytes_before":"a1","disclosure":"SYNTH: chosen wild species before native record generation; RUN/catch remain native","domain":"WRAM","frame":15775,"offset":0,"purpose":"gs_species_encounter","site":{"addr":29383,"bank":15,"flat":258759,"hex":"fa"},"species_id":16,"symbol":"wTempWildMonSpecies"}
-  phase battle @15958 xy=52,12
-  phase encounter @16458 xy=52,12
-ENCOUNTER {"dupe":false,"frame":16488,"n":2,"species_id":16}
-  phase battle @16488 xy=52,12
-ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":21852,"key":"E57B:C78C:10","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":16}
-TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":15,"in_box":false,"key":"E57B:C78C:10","level":3,"maxHP":15,"nickname":"PIDGEY","player":"b","seq":621,"species_id":16,"stats":{"level":3,"maxHP"
-CAPTURE_SENT {"frame":21852,"key":"E57B:C78C:10","seq":621}
-CAUGHT E57B:C78C:10
+  phase escaped @16994 xy=52,12
+REROLL {"frame":17024,"n":1,"prompt":"Dupes clause: Rattata -- reroll!","species_id":19}
+  phase walk @17024 xy=52,12
+SYNTH_SETUP {"address":53527,"bank":1,"bytes_after":"10","bytes_before":"10","disclosure":"SYNTH: chosen wild species before native record generation; RUN/catch remain native","domain":"WRAM","frame":17117,"offset":0,"purpose":"gs_species_encounter","site":{"addr":29383,"bank":15,"flat":258759,"hex":"fa"},"species_id":16,"symbol":"wTempWildMonSpecies"}
+  phase battle @17300 xy=51,12
+  phase encounter @17799 xy=51,12
+ENCOUNTER {"dupe":false,"frame":17829,"n":2,"species_id":16}
+  phase battle @17829 xy=51,12
+ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":19997,"key":"2CC2:C78C:10","level":4,"site_id":"capture_party_finalized","slot":1,"species_id":16}
+TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":17,"in_box":false,"key":"2CC2:C78C:10","level":4,"maxHP":17,"nickname":"PIDGEY","player":"b","seq":559,"species_id":16,"stats":{"level":4,"maxHP"
+CAPTURE_SENT {"frame":19997,"key":"2CC2:C78C:10","seq":559}
+CAUGHT 2CC2:C78C:10
 RX play_sound sound=25
 RX msgbox
-RX_TEXT {"cmd":"msgbox","frame":21855,"text":"RATTATA and PIDGEY linked!"}
-RX party_mon key=E57B:C78C:10
+RX_TEXT {"cmd":"msgbox","frame":20001,"text":"RATTATA and PIDGEY linked!"}
+RX party_mon key=2CC2:C78C:10
 RX link_panel
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"b","seq":622}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"b","seq":560}
 RX link_panel
-TX {"event":"sync_retrieve_done","key":"E57B:C78C:10","player":"b","seq":625}
-  phase save @21912 xy=52,12
-  phase saved @22606 xy=52,12
+TX {"event":"sync_retrieve_done","key":"2CC2:C78C:10","player":"b","seq":563}
+  phase save @20057 xy=51,12
+  phase saved @20751 xy=51,12
 MYKEY 0 A4FC:C78C:9E
-MYKEY 1 E57B:C78C:10
-LINKED {"frame":22636,"text":"RATTATA and PIDGEY linked!"}
-  phase settle @22636 xy=52,12
-  phase save @22817 xy=52,12
-  phase saved @23342 xy=52,12
-SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"89dc012f7bc3d901da1b6ddf2a276adce0886d07311ee7ec9f86cbc7d83c24df","client_saves":2,"flushed_matches":true,"frame":23372,"gate_saves":2,"save_completed_frame":23342,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/saveram_gen2_species_clause_s31_b/gen2 silver overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_species_clause_s31_b_witness.SaveRAM"}
-RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"0f519bffa9dc90bc0709c3202f49a45790412050e341b9b38907dd8e8e75bc19","booted":{"frame":3374,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":21852,"key":"E57B:C78C:10","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":16},"case":"silver_battle","client":{"artifact_kind":"overlay","binding_sha256":"0f519bffa9dc90bc0709c3202f49a45790412050e341b9b38907dd8e8e75bc19","pack":"gen2_silver","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"209e0b46340f67221d6e5c24d7b1125ac35c9d1d","title":"silver"},"dupe_species":19,"fixture_sha256":"0c39b8e40418ba3f50ba7cb8b175793240cdc28bfd4bf1ebcb54ae4ed55c39dd","harness_write_scopes":[{"address":55850,"bank":1,"bytes_after":"9ead0a2b0000c78c00155400000000000000000000a4fc231e0000460000001400000032003200230020001c001b001d","bytes_before":"9ead0a2b0000c78c00008700000000000000000000a4fc231e00004600000005000000140014000c000b000a000a000b","disclosure":"SYNTH: coherent level/EXP/HP/stats only; species, DVs, OT, moves, status and names preserved","domain":"WRAM","frame":3374,"key":"A4FC:C78C:9E","level":20,"offset":0,"purpose":"gs_starter_resilience","slot":0,"symbol":"wPartyMon1"},{"address":53527,"bank":1,"bytes_after":"13","bytes_before":"a1","disclosure":"SYNTH: chosen wild species before native record generation; RUN/catch remain native","domain":"WRAM","frame":14735,"offset":0,"purpose":"gs_species_encounter","site":{"addr":29383,"bank":15,"flat":258759,"hex":"fa"},"species_id":19,"symbol":"wTempWildMonSpecies"},{"address":53527,"bank":1,"bytes_after":"10","bytes_before":"a1","disclosure":"SYNTH: chosen wild species before native record generation; RUN/catch remain native","domain":"WRAM","frame":15775,"offset":0,"purpose":"gs_species_encounter","site":{"addr":29383,"bank":15,"flat":258759,"hex":"fa"},"species_id":16,"symbol":"wTempWildMonSpecies"}],"hello":{"ball_count":10,"frame":3344,"has_pokeballs":true,"ot_id":51084},"input_mode":"SYNTH_setup_then_normal_buttons","key":"E57B:C78C:10","linked":{"frame":22636,"text":"RATTATA and PIDGEY linked!"},"path":"reroll_observed","player":"b","rerolls":1,"role":"reroller","rom_sha1":"209e0b46340f67221d6e5c24d7b1125ac35c9d1d","save":{"cartram_bytes":32768,"cartram_sha256":"89dc012f7bc3d901da1b6ddf2a276adce0886d07311ee7ec9f86cbc7d83c24df","client_saves":2,"flushed_matches":true,"frame":23372,"gate_saves":2,"save_completed_frame":23342,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs1/patch/build/saveram_gen2_species_clause_s31_b/gen2 silver overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs1/patch/build/e2e_gen2_species_clause_s31_b_witness.SaveRAM"},"scenario":"gen2_species_clause","schema":"gen2-duo-species-clause-v1","species_id":16,"synth_disclosure":[{"address":55850,"bank":1,"bytes_after":"9ead0a2b0000c78c00155400000000000000000000a4fc231e0000460000001400000032003200230020001c001b001d","bytes_before":"9ead0a2b0000c78c00008700000000000000000000a4fc231e00004600000005000000140014000c000b000a000a000b","disclosure":"SYNTH: coherent level/EXP/HP/stats only; species, DVs, OT, moves, status and names preserved","domain":"WRAM","frame":3374,"key":"A4FC:C78C:9E","level":20,"offset":0,"purpose":"gs_starter_resilience","slot":0,"symbol":"wPartyMon1"},{"address":53527,"bank":1,"bytes_after":"13","bytes_before":"a1","disclosure":"SYNTH: chosen wild species before native record generation; RUN/catch remain native","domain":"WRAM","frame":14735,"offset":0,"purpose":"gs_species_encounter","site":{"addr":29383,"bank":15,"flat":258759,"hex":"fa"},"species_id":19,"symbol":"wTempWildMonSpecies"},{"address":53527,"bank":1,"bytes_after":"10","bytes_before":"a1","disclosure":"SYNTH: chosen wild species before native record generation; RUN/catch remain native","domain":"WRAM","frame":15775,"offset":0,"purpose":"gs_species_encounter","site":{"addr":29383,"bank":15,"flat":258759,"hex":"fa"},"species_id":16,"symbol":"wTempWildMonSpecies"}],"title":"silver"}
-RESULT: PASS (reroll_observed: B linked E57B:C78C:10 after 1 reroll(s))
+MYKEY 1 2CC2:C78C:10
+LINKED {"frame":20781,"text":"RATTATA and PIDGEY linked!"}
+  phase settle @20781 xy=51,12
+  phase save @20962 xy=51,12
+  phase saved @21487 xy=51,12
+SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"da379643f8f6056b76f95486b7ce3089b927a89e4e2fefc9322f2c691b95dd31","client_saves":2,"flushed_matches":true,"frame":21517,"gate_saves":2,"save_completed_frame":21487,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_species_clause_s621_b/gen2 silver overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_species_clause_s621_b_witness.SaveRAM"}
+RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"0f519bffa9dc90bc0709c3202f49a45790412050e341b9b38907dd8e8e75bc19","booted":{"frame":3374,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":19997,"key":"2CC2:C78C:10","level":4,"site_id":"capture_party_finalized","slot":1,"species_id":16},"case":"silver_battle","client":{"artifact_kind":"overlay","binding_sha256":"0f519bffa9dc90bc0709c3202f49a45790412050e341b9b38907dd8e8e75bc19","pack":"gen2_silver","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"209e0b46340f67221d6e5c24d7b1125ac35c9d1d","title":"silver"},"dupe_species":19,"fixture_sha256":"0c39b8e40418ba3f50ba7cb8b175793240cdc28bfd4bf1ebcb54ae4ed55c39dd","harness_write_scopes":[{"address":55850,"bank":1,"bytes_after":"9ead0a2b0000c78c00155400000000000000000000a4fc231e0000460000001400000032003200230020001c001b001d","bytes_before":"9ead0a2b0000c78c00008700000000000000000000a4fc231e00004600000005000000140014000c000b000a000a000b","disclosure":"SYNTH: coherent level/EXP/HP/stats only; species, DVs, OT, moves, status and names preserved","domain":"WRAM","frame":3374,"key":"A4FC:C78C:9E","level":20,"offset":0,"purpose":"gs_starter_resilience","slot":0,"symbol":"wPartyMon1"},{"address":53527,"bank":1,"bytes_after":"13","bytes_before":"10","disclosure":"SYNTH: chosen wild species before native record generation; RUN/catch remain native","domain":"WRAM","frame":16057,"offset":0,"purpose":"gs_species_encounter","site":{"addr":29383,"bank":15,"flat":258759,"hex":"fa"},"species_id":19,"symbol":"wTempWildMonSpecies"},{"address":53527,"bank":1,"bytes_after":"10","bytes_before":"10","disclosure":"SYNTH: chosen wild species before native record generation; RUN/catch remain native","domain":"WRAM","frame":17117,"offset":0,"purpose":"gs_species_encounter","site":{"addr":29383,"bank":15,"flat":258759,"hex":"fa"},"species_id":16,"symbol":"wTempWildMonSpecies"}],"hello":{"ball_count":10,"frame":3344,"has_pokeballs":true,"ot_id":51084},"input_mode":"SYNTH_setup_then_normal_buttons","key":"2CC2:C78C:10","linked":{"frame":20781,"text":"RATTATA and PIDGEY linked!"},"path":"reroll_observed","player":"b","rerolls":1,"role":"reroller","rom_sha1":"209e0b46340f67221d6e5c24d7b1125ac35c9d1d","save":{"cartram_bytes":32768,"cartram_sha256":"da379643f8f6056b76f95486b7ce3089b927a89e4e2fefc9322f2c691b95dd31","client_saves":2,"flushed_matches":true,"frame":21517,"gate_saves":2,"save_completed_frame":21487,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_species_clause_s621_b/gen2 silver overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_species_clause_s621_b_witness.SaveRAM"},"scenario":"gen2_species_clause","schema":"gen2-duo-species-clause-v1","species_id":16,"synth_disclosure":[{"address":55850,"bank":1,"bytes_after":"9ead0a2b0000c78c00155400000000000000000000a4fc231e0000460000001400000032003200230020001c001b001d","bytes_before":"9ead0a2b0000c78c00008700000000000000000000a4fc231e00004600000005000000140014000c000b000a000a000b","disclosure":"SYNTH: coherent level/EXP/HP/stats only; species, DVs, OT, moves, status and names preserved","domain":"WRAM","frame":3374,"key":"A4FC:C78C:9E","level":20,"offset":0,"purpose":"gs_starter_resilience","slot":0,"symbol":"wPartyMon1"},{"address":53527,"bank":1,"bytes_after":"13","bytes_before":"10","disclosure":"SYNTH: chosen wild species before native record generation; RUN/catch remain native","domain":"WRAM","frame":16057,"offset":0,"purpose":"gs_species_encounter","site":{"addr":29383,"bank":15,"flat":258759,"hex":"fa"},"species_id":19,"symbol":"wTempWildMonSpecies"},{"address":53527,"bank":1,"bytes_after":"10","bytes_before":"10","disclosure":"SYNTH: chosen wild species before native record generation; RUN/catch remain native","domain":"WRAM","frame":17117,"offset":0,"purpose":"gs_species_encounter","site":{"addr":29383,"bank":15,"flat":258759,"hex":"fa"},"species_id":16,"symbol":"wTempWildMonSpecies"}],"title":"silver"}
+RESULT: PASS (reroll_observed: B linked 2CC2:C78C:10 after 1 reroll(s))

@@ -12,96 +12,262 @@ RX dead_keys
 RX link_panel
 BOOTED {"frame":3335,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12}
 MYKEY 0 F794:B541:9E
-  phase walk @3393 xy=53,12
-  phase battle @3714 xy=52,12
-ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":5358,"key":"4787:B541:10","level":2,"site_id":"capture_party_finalized","slot":1,"species_id":16}
-TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":13,"in_box":false,"key":"4787:B541:10","level":2,"maxHP":13,"nickname":"PIDGEY","player":"a","seq":42,"species_id":16,"stats":{"level":2,"maxHP":
-CAPTURE_SENT {"frame":5358,"key":"4787:B541:10","seq":42}
-CAUGHT 4787:B541:10
-RX box_mon key=4787:B541:10
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":43}
-TX {"event":"stats_cache","key":"4787:B541:10","player":"a","seq":45,"stats":{"level":2,"maxHP":13}}
+  phase walk @3335 xy=53,12
+  phase battle @3722 xy=52,12
+RX hud_show
+RX_TEXT {"cmd":"hud_show","frame":8282,"text":"Partner caught RATTATA in Route 29"}
+ENGINE_CAPTURE {"acquisition":"wild","area_id":"route_29","destination":"party","frame":10060,"key":"6E1D:B541:10","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":16}
+TX {"area_id":"route_29","event":"capture","gift":false,"held_item_id":0,"hp":15,"in_box":false,"key":"6E1D:B541:10","level":3,"maxHP":15,"nickname":"PIDGEY","player":"a","seq":111,"species_id":16,"stats":{"level":3,"maxHP"
+CAPTURE_SENT {"frame":10060,"key":"6E1D:B541:10","seq":111}
+CAUGHT 6E1D:B541:10
 RX play_sound sound=25
 RX msgbox
-RX_TEXT {"cmd":"msgbox","frame":8102,"text":"PIDGEY and RATTATA linked!"}
-RX party_mon key=4787:B541:10
+RX_TEXT {"cmd":"msgbox","frame":10064,"text":"PIDGEY and RATTATA linked!"}
+RX party_mon key=6E1D:B541:10
 RX link_panel
-TX {"event":"sync_retrieve_done","key":"4787:B541:10","player":"a","seq":136}
-  phase save @8103 xy=52,12
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":2,"player":"a","seq":112}
+TX {"event":"sync_retrieve_done","key":"6E1D:B541:10","player":"a","seq":115}
+  phase save @10127 xy=52,12
 RX link_panel
-  phase saved @8768 xy=52,12
+  phase saved @10792 xy=52,12
 MYKEY 0 F794:B541:9E
-MYKEY 1 4787:B541:10
-LINK_SAVE {"cartram_bytes":32768,"cartram_sha256":"01c8ed13f76f1828bf978feec80782f83872287a345bd58e3e18d0909c55e724","client_saves":1,"frame":8798,"gate_saves":1,"key":"4787:B541:10","save_completed_frame":8768,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_poison_s11_a_link_save.SaveRAM"}
-  PI battle mode=0 map=24:3 xy=52,12 phase=travel active=nil foe_sting=nil party=0:21/21:0 1:13/13:0
-  phase settle @8834 xy=52,12
-  phase travel @8962 xy=52,12
-  PI battle mode=1 map=24:3 xy=41,14 phase=travel active=0 foe_sting=false party=0:21/21:0 1:13/13:0
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"a","seq":215}
-  PI battle mode=0 map=24:3 xy=41,14 phase=travel active=nil foe_sting=nil party=0:21/21:0 1:13/13:0
-  PI battle mode=1 map=24:3 xy=35,7 phase=travel active=0 foe_sting=false party=0:21/21:0 1:13/13:0
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"a","seq":255}
-  PI battle mode=0 map=24:3 xy=35,7 phase=travel active=nil foe_sting=nil party=0:21/21:0 1:13/13:0
-  PI battle mode=1 map=24:3 xy=14,7 phase=travel active=0 foe_sting=false party=0:21/21:0 1:13/13:0
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"a","seq":297}
-  PI battle mode=0 map=24:3 xy=14,7 phase=travel active=nil foe_sting=nil party=0:21/21:0 1:13/13:0
-TX {"area_id":"cherrygrove_city","event":"area_enter","loc_name":"CHERRYGROVE CITY","player":"a","seq":311}
-TX {"area_id":"route_30","event":"area_enter","loc_name":"ROUTE 30","player":"a","seq":379}
-  phase hunt @16680 xy=8,49
-  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:13/13:0
-POISON_ENCOUNTER {"candidate":false,"encounter":1,"foe_sting":false,"frame":17468,"level":3,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
-TX {"area_id":"route_30","event":"no_catch","level":3,"player":"a","seq":405,"species_id":16}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"a","seq":406}
-  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:13/13:0
+MYKEY 1 6E1D:B541:10
+LINK_SAVE {"cartram_bytes":32768,"cartram_sha256":"26c3b2e75552cf3488fdcff213768e4290465abab738b92764359908f6293f6e","client_saves":1,"frame":10822,"gate_saves":1,"key":"6E1D:B541:10","save_completed_frame":10792,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_poison_s11_a_link_save.SaveRAM"}
+  PI battle mode=0 map=24:3 xy=52,12 phase=travel active=nil foe_sting=nil party=0:19/21:0 1:15/15:0
+  phase settle @10822 xy=52,12
+  phase travel @10985 xy=52,12
+  PI battle mode=1 map=24:3 xy=33,7 phase=travel active=0 foe_sting=false party=0:19/21:0 1:15/15:0
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":216}
+  PI battle mode=0 map=24:3 xy=33,7 phase=travel active=nil foe_sting=nil party=0:19/21:0 1:15/15:0
+  PI battle mode=1 map=24:3 xy=16,4 phase=travel active=0 foe_sting=false party=0:19/21:0 1:15/15:0
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":254}
+  PI battle mode=0 map=24:3 xy=16,4 phase=travel active=nil foe_sting=nil party=0:19/21:0 1:15/15:0
+TX {"area_id":"cherrygrove_city","event":"area_enter","loc_name":"CHERRYGROVE CITY","player":"a","seq":272}
+TX {"area_id":"route_30","event":"area_enter","loc_name":"ROUTE 30","player":"a","seq":341}
+  phase hunt @17709 xy=8,49
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":1,"foe_sting":false,"frame":18525,"level":3,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
+TX {"area_id":"route_30","event":"no_catch","level":3,"player":"a","seq":365,"species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":367}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
 RX play_sound sound=26
 RX msgbox
-RX_TEXT {"cmd":"msgbox","frame":17636,"text":"Route 30 is a dead zone!"}
+RX_TEXT {"cmd":"msgbox","frame":18693,"text":"Route 30 is a dead zone!"}
 RX link_panel
-  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:13/13:0
-POISON_ENCOUNTER {"candidate":false,"encounter":2,"foe_sting":false,"frame":19354,"level":3,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"a","seq":458}
-  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:13/13:0
-  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:13/13:0
-POISON_ENCOUNTER {"candidate":false,"encounter":3,"foe_sting":false,"frame":21301,"level":4,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"a","seq":513}
-  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:13/13:0
-  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:13/13:0
-POISON_ENCOUNTER {"candidate":false,"encounter":4,"foe_sting":false,"frame":23119,"level":3,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"a","seq":563}
-  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:13/13:0
-  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:13/13:0
-POISON_ENCOUNTER {"candidate":false,"encounter":5,"foe_sting":false,"frame":24293,"level":3,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"a","seq":590}
-  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:13/13:0
-  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:13/13:0
-POISON_ENCOUNTER {"candidate":true,"encounter":6,"foe_sting":true,"frame":25344,"level":3,"map_group":26,"map_number":1,"moves":[40,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":13}
-  PI moves mode=1 map=26:1 xy=8,49 phase=hunt active=1 foe_sting=true party=0:21/21:0 1:10/13:0 items=TACKLE
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":2,"foe_sting":false,"frame":20428,"level":4,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":417}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":3,"foe_sting":false,"frame":21573,"level":4,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":446}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":4,"foe_sting":false,"frame":23120,"level":4,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":487}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":5,"foe_sting":false,"frame":24466,"level":4,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":520}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":6,"foe_sting":false,"frame":25583,"level":3,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":546}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":7,"foe_sting":false,"frame":26696,"level":3,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":571}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":8,"foe_sting":false,"frame":27963,"level":3,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":604}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":9,"foe_sting":false,"frame":29043,"level":3,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":630}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":10,"foe_sting":false,"frame":30198,"level":3,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":657}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":11,"foe_sting":false,"frame":31394,"level":4,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":684}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":12,"foe_sting":false,"frame":32437,"level":4,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":708}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":13,"foe_sting":false,"frame":33526,"level":3,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":733}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":14,"foe_sting":false,"frame":34722,"level":3,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":761}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":15,"foe_sting":false,"frame":35789,"level":4,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":783}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":16,"foe_sting":false,"frame":36856,"level":4,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":807}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":17,"foe_sting":false,"frame":37988,"level":3,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":836}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":18,"foe_sting":false,"frame":39179,"level":3,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":864}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":19,"foe_sting":false,"frame":40241,"level":3,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":888}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":20,"foe_sting":false,"frame":41452,"level":4,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":916}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":21,"foe_sting":false,"frame":42760,"level":3,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":948}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":22,"foe_sting":false,"frame":43832,"level":4,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":974}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":23,"foe_sting":false,"frame":44894,"level":4,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":998}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":24,"foe_sting":false,"frame":45974,"level":4,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1022}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":25,"foe_sting":false,"frame":47051,"level":3,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1046}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":26,"foe_sting":false,"frame":48136,"level":3,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1070}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":27,"foe_sting":false,"frame":49230,"level":3,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1095}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":28,"foe_sting":false,"frame":50353,"level":4,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1121}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":29,"foe_sting":false,"frame":51396,"level":3,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1145}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":30,"foe_sting":false,"frame":52509,"level":3,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1173}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":31,"foe_sting":false,"frame":53833,"level":3,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1206}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":32,"foe_sting":false,"frame":54979,"level":3,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1232}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":33,"foe_sting":false,"frame":56213,"level":3,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1262}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":34,"foe_sting":false,"frame":57353,"level":3,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1289}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":35,"foe_sting":false,"frame":58806,"level":4,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1327}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":36,"foe_sting":false,"frame":59934,"level":4,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1354}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":37,"foe_sting":false,"frame":61075,"level":4,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1380}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":38,"foe_sting":false,"frame":62179,"level":4,"map_group":26,"map_number":1,"moves":[33,0,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":16}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1406}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":39,"foe_sting":false,"frame":63455,"level":3,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1438}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:15/15:0
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":true,"encounter":40,"foe_sting":true,"frame":64563,"level":3,"map_group":26,"map_number":1,"moves":[40,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":13}
+RX link_panel
+  PI moves mode=1 map=26:1 xy=8,49 phase=hunt active=1 foe_sting=true party=0:21/21:0 1:13/15:0 items=TACKLE
+  PI moves mode=1 map=26:1 xy=8,49 phase=hunt active=1 foe_sting=true party=0:21/21:0 1:13/15:0 items=TACKLE
+RX link_panel
+  PI moves mode=1 map=26:1 xy=8,49 phase=hunt active=1 foe_sting=true party=0:21/21:0 1:11/15:0 items=TACKLE
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1523}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:11/15:0
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:11/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":41,"foe_sting":false,"frame":68488,"level":3,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1548}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:11/15:0
+  PI battle mode=1 map=26:1 xy=8,49 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:11/15:0
+POISON_ENCOUNTER {"candidate":false,"encounter":42,"foe_sting":false,"frame":69567,"level":4,"map_group":26,"map_number":1,"moves":[33,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":10}
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1573}
+  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:11/15:0
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:11/15:0
+POISON_ENCOUNTER {"candidate":true,"encounter":43,"foe_sting":true,"frame":70692,"level":3,"map_group":26,"map_number":1,"moves":[40,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":13}
+  PI moves mode=1 map=26:1 xy=8,48 phase=hunt active=1 foe_sting=true party=0:21/21:0 1:9/15:0 items=TACKLE
+RX link_panel
+RX link_panel
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1630}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:6/15:0
+  phase travel @72262 xy=8,48
+TX {"area_id":"cherrygrove_city","event":"area_enter","loc_name":"CHERRYGROVE CITY","player":"a","seq":1638}
+RX link_panel
+TX {"area_id":"route_30","event":"area_enter","loc_name":"ROUTE 30","player":"a","seq":1706}
+  phase hunt @74574 xy=8,49
+  PI battle mode=1 map=26:1 xy=8,48 phase=hunt active=0 foe_sting=false party=0:21/21:0 1:15/15:0
+POISON_ENCOUNTER {"candidate":true,"encounter":44,"foe_sting":true,"frame":75534,"level":3,"map_group":26,"map_number":1,"moves":[40,81,0,0],"readable":true,"schema":"gen2-poison-hunt-encounter-v1","species_id":13}
+RX link_panel
+TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":3,"player":"a","seq":1757}
+  PI battle mode=0 map=26:1 xy=8,48 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:13/15:8
+  phase tick @76659 xy=8,48
 RX link_panel
 RX link_panel
 RX link_panel
-TX {"event":"safe","pc_boxes":[],"pc_boxes_generation":4,"player":"a","seq":652}
-  PI battle mode=0 map=26:1 xy=8,49 phase=hunt active=nil foe_sting=nil party=0:21/21:0 1:6/13:8
-  phase tick @27220 xy=8,49
 RX link_panel
 RX link_panel
 RX link_panel
 RX link_panel
 RX link_panel
-ENGINE_FAINT {"cause":"poison","frame":27917,"key":"4787:B541:10","site_id":"poison_faint","slot":1}
-TX {"area_id":"route_30","event":"faint","key":"4787:B541:10","player":"a","seq":678}
-FAINT_SENT {"frame":27917,"key":"4787:B541:10","seq":678}
-RX memorialize key=4787:B541:10
+RX link_panel
+RX link_panel
+RX link_panel
+RX link_panel
+ENGINE_FAINT {"cause":"poison","frame":78171,"key":"6E1D:B541:10","site_id":"poison_faint","slot":1}
+TX {"area_id":"route_30","event":"faint","key":"6E1D:B541:10","player":"a","seq":1810}
+FAINT_SENT {"frame":78171,"key":"6E1D:B541:10","seq":1810}
+RX memorialize key=6E1D:B541:10
 RX game_over
 RX link_panel
 RX link_panel
-MEMORIAL_PREIMAGE {"frame":28031,"key":"4787:B541:10","nickname_raw_hex":"8f88838684985050505050","ot_raw_hex":"8287918892505050505050","raw_hex":"100021000000b54100000900000000000000000000478722000000410082020200000000000d00060006000700060006","slot":1,"species_marker":16}
-TX {"box":13,"event":"memorialize_done","key":"4787:B541:10","player":"a","seq":682}
-MEMORIAL_ACK {"box":13,"event":"memorialize_done","frame":28031,"key":"4787:B541:10","ticks":663}
-  phase park @28032 xy=7,50
+MEMORIAL_PREIMAGE {"frame":78285,"key":"6E1D:B541:10","nickname_raw_hex":"8f88838684985050505050","ot_raw_hex":"8287918892505050505050","raw_hex":"100021000000b54100004400140011000f0019000a6e1d23000000420083020300000000000f00080008000800070007","slot":1,"species_marker":16}
+TX {"box":13,"event":"memorialize_done","key":"6E1D:B541:10","player":"a","seq":1814}
+MEMORIAL_ACK {"box":13,"event":"memorialize_done","frame":78285,"key":"6E1D:B541:10","ticks":1757}
+  phase park @78286 xy=7,49
 RX link_panel
-  phase poisoned @28033 xy=7,50
-  phase save @28063 xy=7,50
-  phase saved @28726 xy=7,50
-SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"e7a61de04aa0dd096950cb51d346c7a4f4bea37898b7bc5b7eb275c9b9ea1e3e","client_saves":2,"flushed_matches":true,"frame":28756,"gate_saves":2,"save_completed_frame":28726,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_poison_s11_a/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_poison_s11_a_witness.SaveRAM"}
-RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","booted":{"frame":3335,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":5358,"key":"4787:B541:10","level":2,"site_id":"capture_party_finalized","slot":1,"species_id":16},"case":"crystal_battle","client":{"artifact_kind":"overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","title":"crystal"},"faint":{"cause":"poison","frame":27917,"key":"4787:B541:10","site_id":"poison_faint","slot":1},"faint_sent":{"frame":27917,"key":"4787:B541:10","seq":678},"fixture_sha256":"f4a9c35db272089ec77e83cfa6772fb245ff29077dedef1cd462fc632d7852f6","harness_write_scopes":[],"hello":{"ball_count":10,"frame":3305,"has_pokeballs":true,"ot_id":46401},"input_mode":"normal_buttons","key":"4787:B541:10","link_save":{"cartram_bytes":32768,"cartram_sha256":"01c8ed13f76f1828bf978feec80782f83872287a345bd58e3e18d0909c55e724","client_saves":1,"frame":8798,"gate_saves":1,"key":"4787:B541:10","save_completed_frame":8768,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_poison_s11_a_link_save.SaveRAM"},"memorial":{"ack":{"box":13,"event":"memorialize_done","frame":28031,"key":"4787:B541:10","ticks":663},"preimage_frame":28031},"player":"a","rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","save":{"cartram_bytes":32768,"cartram_sha256":"e7a61de04aa0dd096950cb51d346c7a4f4bea37898b7bc5b7eb275c9b9ea1e3e","client_saves":2,"flushed_matches":true,"frame":28756,"gate_saves":2,"save_completed_frame":28726,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_poison_s11_a/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_poison_s11_a_witness.SaveRAM"},"scenario":"gen2_poison","schema":"gen2-duo-poison-v1","title":"crystal"}
-RESULT: PASS (poisoned to death: 4787:B541:10)
+  phase poisoned @78287 xy=7,49
+  phase save @78317 xy=7,49
+  phase saved @78980 xy=7,49
+SAVE_WITNESS {"cartram_bytes":32768,"cartram_sha256":"5b038c239603958bc0ac6d0e0183c9e893534ac8f28e9882a38c13f342ad2662","client_saves":2,"flushed_matches":true,"frame":79010,"gate_saves":2,"save_completed_frame":78980,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_poison_s11_a/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_poison_s11_a_witness.SaveRAM"}
+RECEIPT {"artifact_kind":"overlay","attempt":1,"binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","booted":{"frame":3335,"map_group":24,"map_number":3,"party_count":1,"x":53,"y":12},"capture":{"acquisition":"wild","area_id":"route_29","destination":"party","frame":10060,"key":"6E1D:B541:10","level":3,"site_id":"capture_party_finalized","slot":1,"species_id":16},"case":"crystal_battle","client":{"artifact_kind":"overlay","binding_sha256":"6cbff0ccacd355387c9525aa3a83e7aa4cc9690c1e30d96813b8e8d2ce3a9450","pack":"gen2_crystal","production_admitted":true,"qualification":"PHYSICAL_RECEIPTED","registered_sites":["battle_end","battle_faint","capture_box","capture_box_finalized","capture_party","capture_party_finalized","change_box_begin","change_box_loaded","evolution_species_published","gift_begin","gift_party_finalized","hatch_finalized","hatch_species","npc_trade_begin","npc_trade_finalized","pc_deposit_begin","pc_deposit_complete","pc_release_box_begin","pc_release_box_complete","pc_release_party_begin","pc_release_party_complete","pc_withdraw_begin","pc_withdraw_complete","poison_faint","save_completed","whiteout_before_heal","wild_ready"],"rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","title":"crystal"},"faint":{"cause":"poison","frame":78171,"key":"6E1D:B541:10","site_id":"poison_faint","slot":1},"faint_sent":{"frame":78171,"key":"6E1D:B541:10","seq":1810},"fixture_sha256":"f4a9c35db272089ec77e83cfa6772fb245ff29077dedef1cd462fc632d7852f6","harness_write_scopes":[],"hello":{"ball_count":10,"frame":3305,"has_pokeballs":true,"ot_id":46401},"input_mode":"normal_buttons","key":"6E1D:B541:10","link_save":{"cartram_bytes":32768,"cartram_sha256":"26c3b2e75552cf3488fdcff213768e4290465abab738b92764359908f6293f6e","client_saves":1,"frame":10822,"gate_saves":1,"key":"6E1D:B541:10","save_completed_frame":10792,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_poison_s11_a_link_save.SaveRAM"},"memorial":{"ack":{"box":13,"event":"memorialize_done","frame":78285,"key":"6E1D:B541:10","ticks":1757},"preimage_frame":78285},"player":"a","rom_sha1":"d5f342db9c8745fcb0df97932a83d0205c165a00","save":{"cartram_bytes":32768,"cartram_sha256":"5b038c239603958bc0ac6d0e0183c9e893534ac8f28e9882a38c13f342ad2662","client_saves":2,"flushed_matches":true,"frame":79010,"gate_saves":2,"save_completed_frame":78980,"saveram_bytes":32790,"saveram_path":"F:/slink-work/lanes/gen2/fs2/patch/build/saveram_gen2_poison_s11_a/gen2 crystal overlay.SaveRAM","snapshot_path":"F:/slink-work/lanes/gen2/fs2/patch/build/e2e_gen2_poison_s11_a_witness.SaveRAM"},"scenario":"gen2_poison","schema":"gen2-duo-poison-v1","title":"crystal"}
+RESULT: PASS (poisoned to death: 6E1D:B541:10)
