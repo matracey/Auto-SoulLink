@@ -36,4 +36,4 @@ jobs:
       # tests/live and tests/e2e need EmuHawk + a patched ROM, so they are not run here;
       # their markers are registered in pytest.ini and they skip without SLINK_LIVE/SLINK_E2E.
       - name: Unit + integration tests
-        run: pytest tests/unit tests/integration -q
+        run: pytest tests/unit tests/integration -q --durations=20 -o faulthandler_timeout=300
