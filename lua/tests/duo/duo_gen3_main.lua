@@ -2161,9 +2161,10 @@ function ctx.walk_to_pc(label, opts)
     SP.warp_to(cp, "Up", 30, SP.DEST.viridian_south, label .. " Route1->Viridian")
     play.follow(cp, "route1_edge_to_pokecenter_door", label)
     SP.warp_to(cp, "Up", 30, SP.DEST.center, label .. " Center door")
-    -- The existing whiteout prelude is the only default opt-in. Keep its scenario
-    -- module/call contract intact; other callers retain their original route.
-    opts = opts or { heal_before_deposit = label == "whiteout a" }
+    -- Callers that deposit next pass heal_before_deposit: native storage refuses to deposit
+    -- the last usable mon, and an incidental Route 1 battle can leave the deposit target as
+    -- that mon (freeze #3: whiteout LG/RR, boxsync RR). Other callers keep the original route.
+    opts = opts or {}
     if opts.heal_before_deposit then
         heal_party_at_nurse(label)
         play.follow(cp, "center_heal_spot_to_pc", label)

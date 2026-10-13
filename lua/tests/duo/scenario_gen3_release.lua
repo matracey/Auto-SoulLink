@@ -21,7 +21,7 @@ return function(ctx)
         end
         -- Transit must preserve the other healthy party member for native STORE.
         local walked, walk_why = ctx.flee_incidentals("release", function()
-            ctx.walk_to_pc("release")
+            ctx.walk_to_pc("release", {heal_before_deposit = true})
         end)
         if not walked then return false, "release transit: " .. tostring(walk_why) end
         if ctx.pc_deposit("first deposit") ~= key or not ctx.observe_boxed(key) then return false, "first deposit readback" end

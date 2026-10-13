@@ -26,7 +26,7 @@ local function at(ctx, dest)
 end
 
 local function a_side(ctx, linked)
-    ctx.walk_to_pc("whiteout a")
+    ctx.walk_to_pc("whiteout a", {heal_before_deposit = true})
     local gone, why = ctx.pc_deposit("whiteout a deposit")
     if gone ~= linked then return false, "the deposit moved " .. tostring(gone or why) .. ", not " .. linked end
     if not ctx.observe_boxed(linked) then return false, linked .. " was never read back boxed after the deposit" end

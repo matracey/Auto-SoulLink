@@ -8,7 +8,7 @@
 -- runner (ALLOW_WITHDRAW), A WITHDRAWs box 0 slot 0; the client reports box_to_party, the server
 -- mirrors party_mon, B's client withdraws and sends sync_retrieve_done. Both save on SAVE.
 local function a_side(ctx, linked)
-    ctx.walk_to_pc("boxsync a")
+    ctx.walk_to_pc("boxsync a", {heal_before_deposit = true})
     local gone, why = ctx.pc_deposit("boxsync a deposit")
     if gone ~= linked then return false, "the deposit moved " .. tostring(gone or why) .. ", not " .. linked end
     if not ctx.observe_boxed(linked) then return false, linked .. " was never read back boxed after the deposit" end

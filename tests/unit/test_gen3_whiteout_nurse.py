@@ -88,7 +88,7 @@ def test_whiteout_prelude_heals_before_deposit():
     "borrowed school", "boxsync a", "center_controls a",
     "linked_faint_active whiteout", "nature", "release",
 ])
-def test_other_walk_callers_keep_original_route(label):
+def test_walk_without_the_heal_option_keeps_original_route(label):
     lua = world()
     lua.globals().ctx.walk_to_pc(label)
     assert events(lua) == ["route1_grass_to_north_edge", "route1_edge_to_pokecenter_door",
@@ -97,7 +97,7 @@ def test_other_walk_callers_keep_original_route(label):
 
 def test_emerald_whiteout_keeps_original_route():
     lua = world(emerald=True)
-    lua.globals().ctx.walk_to_pc("whiteout a")
+    lua.globals().ctx.walk_to_pc("whiteout a", lua.table(heal_before_deposit=True))
     assert events(lua) == ["emerald-warp", "em_oldale_center_to_pc", "Up"]
 
 
@@ -105,12 +105,38 @@ def test_emerald_whiteout_keeps_original_route():
 def test_failed_heal_or_dialogue_cannot_reach_pc(fault):
     lua = world(fault=fault)
     with pytest.raises(lua54.LuaError, match="nurse"):
-        lua.globals().ctx.walk_to_pc("whiteout a")
+        lua.globals().ctx.walk_to_pc("whiteout a", lua.table(heal_before_deposit=True))
     assert "center_heal_spot_to_pc" not in events(lua)
 
 
 def test_already_full_party_does_not_claim_a_native_heal():
     lua = world(full=True)
-    lua.globals().ctx.walk_to_pc("whiteout a")
+    lua.globals().ctx.walk_to_pc("whiteout a", lua.table(heal_before_deposit=True))
     assert "HEAL_PARTY whiteout a via=already-full" in events(lua)
     assert "A" not in events(lua)
+
+
+DEPOSITORS = {"scenario_gen3_whiteout": "whiteout a", "scenario_gen3_boxsync": "boxsync a",
+              "scenario_gen3_release": "release",
+              "scenario_gen3_linked_faint_active": "linked_faint_active whiteout"}
+NON_DEPOSITORS = {"scenario_gen3_borrowed": "borrowed school", "scenario_gen3_center_controls": "center_controls a",
+                  "scenario_gen3_nature": "nature"}
+
+
+@pytest.mark.parametrize("module, label", sorted(DEPOSITORS.items()))
+def test_every_walk_that_deposits_next_asks_for_the_nurse(module, label):
+    text = (DRIVER.parent / f"{module}.lua").read_text(encoding="utf-8")
+    assert f'ctx.walk_to_pc("{label}", {{heal_before_deposit = true}})' in text
+
+
+@pytest.mark.parametrize("module, label", sorted(NON_DEPOSITORS.items()))
+def test_walks_that_do_not_deposit_keep_the_plain_route(module, label):
+    text = (DRIVER.parent / f"{module}.lua").read_text(encoding="utf-8")
+    assert f'ctx.walk_to_pc("{label}")' in text and "heal_before_deposit" not in text
+
+
+def test_the_label_alone_no_longer_opts_into_a_heal():
+    lua = world()
+    lua.globals().ctx.walk_to_pc("whiteout a")
+    assert "pokecenter_entrance_to_pc" in events(lua)
+    assert not any("HEAL_PARTY" in e for e in events(lua))
