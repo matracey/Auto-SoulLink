@@ -1055,14 +1055,22 @@ def jitter_for_attempt(base, attempt):
     return base + (attempt - 1) * JITTER_PER_ATTEMPT
 
 
-def jitter_problems(text, expected_requested):
+def jitter_problems(text, expected_requested, *, validated_launch_refusal=False):
     """The driver's echo of the harness's own `--idle-jitter` value, from its result file.
 
     The harness writes `idle_jitter` into each stub; the driver logs what it requested, what it
     applied and which attempt it was. A missing marker means the check could not run — a harness
     finding, not a pass — and a count the harness did not ask for means this attempt did not
     vary the timing the retry rule claims to have varied.
+
+    A scenario-declared launch refusal finishes before gameplay jitter. The caller may
+    set validated_launch_refusal only AFTER the existing oracle validates that side's
+    refusal evidence; the result must still carry PASS and REFUSED_AT_LAUNCH.
     """
+    if (validated_launch_refusal
+            and re.search(r"(?m)^RESULT: PASS(?: \([^\r\n]*\))?\r?$", text or "")
+            and re.search(r"(?m)^REFUSED_AT_LAUNCH \[SLink-gen3\] refused: ", text or "")):
+        return []
     matches = JITTER_MARKER_RE.findall(text or "")
     if not matches:
         return ["JITTER marker missing"]
@@ -10841,9 +10849,14 @@ class DuoRun:
                 # Harness finding, not a scenario verdict: the harness wrote the expected count
                 # into the stub, so the driver's echo is checkable without the game. Checked
                 # only on a double PASS so a real failure keeps its own error, not this one.
+                # The oracle above has already validated expected launch refusals, whose
+                # drivers finish before gameplay jitter. Keep checking the other side.
                 expected_jitter = self.expected_idle_jitter()
                 jitter_findings = [f"{inst}: {problem}" for inst, text in (("a", ra), ("b", rb))
-                                   for problem in jitter_problems(text, expected_jitter)]
+                                   for problem in jitter_problems(
+                                       text, expected_jitter,
+                                       validated_launch_refusal=(getattr(self, "is_gen3_battery", False)
+                                                                 and self._gen3_expect_refused(inst)))]
                 if jitter_findings:
                     raise RuntimeError("idle-jitter contract violated — "
                                        + "; ".join(jitter_findings))
