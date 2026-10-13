@@ -987,6 +987,10 @@ def scenario_attempt_limit(name, game):
         return 16
     if entry.get("rule_kind") == "gender" and scenario_family(game) == "gen3_rr":
         return 8
+    if entry.get("rule_kind") == "gender" and scenario_family(game) in ("gen3_frlg", "gen3_emerald"):
+        # Same-gender observation is roughly a coin flip: six fresh jitter offsets cut a wholly
+        # unobserved row from ~12.5% at three attempts to ~1.6% (freeze #3 FR+LG ClauseUnobserved 3/3).
+        return 6
     if entry.get("rule_kind") == "type" and scenario_family(game) == "gen3_rr":
         return 8
     if rng_retry_family(game) and entry.get("rng_attempts"):

@@ -1012,7 +1012,8 @@ def test_gen3_frlg_keys_do_not_leak_and_nothing_leaks_in():
                                             # X3: the expansion reference build's core-loop rows
                                             ("gen3_frlg", "gen3_rr", "gen3_emerald", "gen3_exp")), name
         # the ball-RNG retry (card C4-6g): only the halves that throw Poke Balls retry
-        expected = 8 if name in ("species_clause_gen3", "ball_gate_gen3") else 3 if SCENARIOS[name].get("ball_hunt") else 1
+        expected = (8 if name in ("species_clause_gen3", "ball_gate_gen3") else 6 if name == "gender_clause_gen3"
+                    else 3 if SCENARIOS[name].get("ball_hunt") else 1)
         assert scenario_attempt_limit(name, "gen3_frlg") == expected, name
         assert scenario_attempt_limit(name, "gen3_rr") == (
             8 if name in ("gender_clause_gen3", "type_clause_gen3") else expected), name

@@ -49,7 +49,7 @@ def test_species_uses_family_not_species_equality():
 
 def test_rule_retry_limits_preserve_rng_boundaries():
     assert duo.scenario_attempt_limit("species_clause_gen3", "gen3_rr") == 8
-    assert duo.scenario_attempt_limit("gender_clause_gen3", "gen3_emerald") == 3
+    assert duo.scenario_attempt_limit("gender_clause_gen3", "gen3_emerald") == 6   # observation budget (freeze #3)
     assert duo.scenario_attempt_limit("release_gen3", "gen3_frlg") == 1
 
 
