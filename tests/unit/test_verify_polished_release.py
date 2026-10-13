@@ -165,6 +165,12 @@ def test_r3_log_and_replies_must_share_their_run_witness(tmp_path):
     assert "share their own run_witness" in _reasons(row)
 
 
+def test_r3_replay_without_bindings_is_red_and_old_callers_still_work():
+    # rebind3 calls the four-argument form for its own replays; R3 must not pass without bindings.
+    errors = verifier._replay_errors({"expect_scenario": "r3/refusals"}, b"", pathlib.Path("p"), {})
+    assert errors == ["R3 replay needs the receipt's secondary evidence bindings"]
+
+
 def _receipt(root: pathlib.Path, *, rom: str = ROM, name: str = "r.json",
              evidence: pathlib.Path | None = None, grade: str = "DEV") -> tuple[pathlib.Path, dict]:
     if evidence is None:

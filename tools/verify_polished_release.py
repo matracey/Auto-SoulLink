@@ -512,13 +512,15 @@ def _producer_errors(item: dict, raw: bytes) -> list[str]:
 
 
 def _replay_errors(item: dict, primary: bytes, evidence: Path,
-                   artifacts: dict[Path, bytes], secondary: list[dict]) -> list[str]:
+                   artifacts: dict[Path, bytes], secondary: list[dict] | None = None) -> list[str]:
     """Re-judge supported observations; absent raw inputs cannot inherit an old PASS."""
     from tools.polished_live.runtime import loads_json
 
     scenario = item["expect_scenario"]
     try:
         if scenario == "r3/refusals":
+            if secondary is None:
+                return ["R3 replay needs the receipt's secondary evidence bindings"]
             bindings = {Path(r["path"]).resolve(): r["run_witness"] for r in secondary}
             scopes, witnesses = set(), set()
             for case in ("swap", "flip14e", "flipbeacon"):
