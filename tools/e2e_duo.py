@@ -11194,16 +11194,16 @@ def run_scenario_with_rng_retry(name, args):
                     pending_snapshot=getattr(run, "_gen2_clause_pending", None))):
             print(f"[duo] {name}: duplicates-only hunt; retrying fresh lane")
             continue
+        gen2_failures = [line for inst in ("a", "b") for line in (receipts.get(inst) or "").splitlines()
+                         if line.startswith("RESULT: FAIL")]
         if (not ok and name == "gen2_ball_gate" and attempt < limit
-                and any(line.startswith("RESULT: FAIL") and GEN2_OUT_OF_BALLS in line
-                        for inst in ("a", "b") for line in (receipts.get(inst) or "").splitlines())):
+                and gen2_failures and all(GEN2_OUT_OF_BALLS in line for line in gen2_failures)):
             print(f"[duo] {name}: a side ran out of the aide's natural Balls; retrying fresh lane")
             continue
         if (not ok and (name in GEN2_TRADE_SCENARIOS or name in GEN2_ROUTE_LOSS_SCENARIOS)
                 and scenario_family(args.game) == "gen2_new"
                 and attempt < limit
-                and any(line.startswith("RESULT: FAIL") and GEN2_ROUTE_BATTLE_LOST in line
-                        for inst in ("a", "b") for line in (receipts.get(inst) or "").splitlines())):
+                and gen2_failures and all(GEN2_ROUTE_BATTLE_LOST in line for line in gen2_failures)):
             print(f"[duo] {name}: the route's wild battle was lost on attempt {attempt}; retrying fresh lane "
                   f"on the next pinned clock minute")
             continue

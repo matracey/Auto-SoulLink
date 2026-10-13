@@ -31,6 +31,8 @@ def _driver(monkeypatch, tmp_path, outcomes, name="gen2_trade_refuse_item", game
 
     def fake_result(_scenario, inst):
         reason = outcomes[active["attempt"] - 1]
+        if isinstance(reason, dict):
+            return reason.get(inst, "")
         if reason is None:
             return "RESULT: PASS (ok)" if inst == "a" else "RESULT: PASS (b ok)"
         return f"RESULT: FAIL ({reason})" if inst == "a" else ""
@@ -99,3 +101,23 @@ def test_changebox_non_route_failure_does_not_retry(tmp_path, monkeypatch, reaso
     built, args = _driver(monkeypatch, tmp_path, [reason, None], name="gen2_changebox")
     assert duo.run_scenario_with_rng_retry("gen2_changebox", args) == (False, 1)
     assert built == [1]
+
+
+@pytest.mark.parametrize("name", sorted(duo.GEN2_ROUTE_LOSS_SCENARIOS) + ["gen2_trade_refuse_item", "gen2_ball_gate"])
+@pytest.mark.parametrize("rng_side", ["a", "b"])
+def test_unrelated_failure_vetoes_catch_retry(tmp_path, monkeypatch, name, rng_side):
+    reason = duo.GEN2_OUT_OF_BALLS if name == "gen2_ball_gate" else LOST
+    other = "b" if rng_side == "a" else "a"
+    receipts = {rng_side: f"RESULT: FAIL ({reason})", other: "RESULT: FAIL (binding identity refused)"}
+    built, args = _driver(monkeypatch, tmp_path, [receipts, None], name=name)
+    assert duo.run_scenario_with_rng_retry(name, args) == (False, 1)
+    assert built == [1]
+
+
+@pytest.mark.parametrize("name", ["gen2_changebox", "gen2_ball_gate"])
+def test_only_recognized_failures_on_both_sides_retry(tmp_path, monkeypatch, name):
+    reason = duo.GEN2_OUT_OF_BALLS if name == "gen2_ball_gate" else LOST
+    receipts = dict.fromkeys(("a", "b"), f"RESULT: FAIL ({reason})")
+    built, args = _driver(monkeypatch, tmp_path, [receipts, None], name=name)
+    assert duo.run_scenario_with_rng_retry(name, args) == (True, 2)
+    assert built == [1, 2]

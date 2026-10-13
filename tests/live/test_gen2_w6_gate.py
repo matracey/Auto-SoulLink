@@ -258,6 +258,8 @@ def test_mailbox_write_watch_on_the_overlay(emuhawk, title):  # noqa: F811
             source_path = REPO / ".cache/gen2-fixtures/w6" / f"{title}-{leg}-clock.SaveRAM"
             source_path.parent.mkdir(parents=True, exist_ok=True)
             source_path.write_bytes(raw)
+        # A launch that fails before Lua init must not report an earlier leg's inner failure.
+        (REPO / inner_result).unlink(missing_ok=True)
         passed, path, text = run_gate(GATE, rom_key=f"{title}_overlay", target=spec.target, timeout=timeout,
                                       saveram_dir=str(REPO / ".cache/gen2-fixtures/w6" / f"{title}-{leg}"),
                                       fixture_path=str(source_path), speed_percent=300, env_overrides=env)
