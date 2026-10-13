@@ -48,6 +48,123 @@ OTHER_ROM = "b" * 40                # an overlay that was published before
 EVIDENCE = "RESULT: PASS fake (0 checks failed) frame 1\n"
 
 
+def _r3_receipt(tmp_path):
+    root, manifest = _root(tmp_path, [_live_item(expect_scenario="r3/refusals")])
+    receipt, doc = _receipt(root)
+    doc["scenario_id"] = "r3/refusals"
+    for case in ("swap", "flip14e", "flipbeacon"):
+        scope = root / "lane" / case
+        live = scope / "producer" / "live"
+        live.mkdir(parents=True)
+        witness_path = scope / "WITNESS.json"
+        witness_body = json.loads(pathlib.Path(doc["run_witness"]["path"]).read_text())
+        witness_body["evidence_root"] = str(scope)
+        _put(witness_path, witness_body)
+        witness = dict(doc["run_witness"], path=str(witness_path), scope=str(scope),
+                       sha256=hashlib.sha256(witness_path.read_bytes()).hexdigest())
+        if case == "flipbeacon":
+            files = {"refusal.json": json.dumps({
+                "schema": "polished-live-refusal-v1", "refused_by": "client",
+                "lua_writes": 0, "frame": 1,
+                "reason": "polished cartridge refused (overlay beacon mismatch); prepare it through the Manager or /patcher",
+            })}
+        else:
+            files = {
+                "server.log": "[WARNING] [a] admission: rejected — this is not the ROM built for player a (sha1 9e216b690a8e, expected 2aa6e36e364c)\n",
+                "wire/wire_a.jsonl": "\n".join(json.dumps(record) for record in [
+                    {"dir": "c2s", "msg": {"event": "hello"}},
+                    *[{"dir": "s2c", "msg": {"commands": [
+                        {"cmd": "noop", "refused": "admission"}]}} for _ in range(7)],
+                ]),
+            }
+        for name, text in files.items():
+            path = live / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+            doc["secondary_evidence"].append({
+                "path": str(path), "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                "run_witness": witness,
+            })
+    _put(receipt, doc)
+    return root, manifest, receipt, doc
+
+
+def test_r3_bound_negative_runs_pass(tmp_path):
+    root, manifest, _, _ = _r3_receipt(tmp_path)
+    row = _row(verifier.verify(root, manifest)[0])
+    assert row.ok, _reasons(row)
+
+
+@pytest.mark.parametrize("case", ["swap", "flip14e", "flipbeacon"])
+def test_r3_each_negative_must_remain_bound(tmp_path, case):
+    root, manifest, receipt, doc = _r3_receipt(tmp_path)
+    doc["secondary_evidence"] = [r for r in doc["secondary_evidence"]
+                                 if case not in pathlib.Path(r["path"]).parts]
+    _put(receipt, doc)
+    row = _row(verifier.verify(root, manifest)[0])
+    assert not row.ok, "R3 must fail when a negative run is dropped"
+    assert case in _reasons(row)
+
+
+@pytest.mark.parametrize("case", ["swap", "flip14e"])
+def test_r3_applied_reply_is_red_even_when_rehashed(tmp_path, case):
+    root, manifest, receipt, doc = _r3_receipt(tmp_path)
+    record = next(r for r in doc["secondary_evidence"]
+                  if case in pathlib.Path(r["path"]).parts and r["path"].endswith("wire_a.jsonl"))
+    path = pathlib.Path(record["path"])
+    path.write_text(path.read_text().replace('"cmd": "noop"', '"cmd": "applied"', 1))
+    record["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+    _put(receipt, doc)
+    row = _row(verifier.verify(root, manifest)[0])
+    assert not row.ok, "R3 must reject an applied reply despite PASS checks"
+    assert case in _reasons(row)
+
+
+@pytest.mark.parametrize("case,name,replacement", [
+    ("swap", "server.log", "server started\n"),
+    ("flip14e", "server.log", "admission: rejected\nadmission: admitted\n"),
+    ("swap", "wire_a.jsonl", '{"dir":"c2s","msg":{"event":"hello"}}'),
+    ("flip14e", "wire_a.jsonl", '{"dir":"s2c","msg":{"commands":[]}}'),
+    ("flipbeacon", "refusal.json", json.dumps({
+        "schema": "polished-live-refusal-v1", "refused_by": "client",
+        "lua_writes": 0, "reason": "unrelated refusal",
+    })),
+])
+def test_r3_contradictory_or_empty_observations_are_red(tmp_path, case, name, replacement):
+    root, manifest, receipt, doc = _r3_receipt(tmp_path)
+    record = next(r for r in doc["secondary_evidence"]
+                  if case in pathlib.Path(r["path"]).parts and pathlib.Path(r["path"]).name == name)
+    path = pathlib.Path(record["path"])
+    path.write_text(replacement, encoding="utf-8")
+    record["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+    _put(receipt, doc)
+    row = _row(verifier.verify(root, manifest)[0])
+    assert not row.ok
+    assert case in _reasons(row)
+
+
+def test_r3_negative_runs_cannot_share_a_witness_scope(tmp_path):
+    root, manifest, receipt, doc = _r3_receipt(tmp_path)
+    # This broad witness is valid for every artifact, but does not bind distinct runs.
+    for record in doc["secondary_evidence"]:
+        record["run_witness"] = doc["run_witness"]
+    _put(receipt, doc)
+    row = _row(verifier.verify(root, manifest)[0])
+    assert not row.ok
+    assert "distinct run_witness and scope" in _reasons(row)
+
+
+def test_r3_log_and_replies_must_share_their_run_witness(tmp_path):
+    root, manifest, receipt, doc = _r3_receipt(tmp_path)
+    record = next(r for r in doc["secondary_evidence"]
+                  if "swap" in pathlib.Path(r["path"]).parts and r["path"].endswith("server.log"))
+    record["run_witness"] = doc["run_witness"]
+    _put(receipt, doc)
+    row = _row(verifier.verify(root, manifest)[0])
+    assert not row.ok
+    assert "share their own run_witness" in _reasons(row)
+
+
 def _receipt(root: pathlib.Path, *, rom: str = ROM, name: str = "r.json",
              evidence: pathlib.Path | None = None, grade: str = "DEV") -> tuple[pathlib.Path, dict]:
     if evidence is None:

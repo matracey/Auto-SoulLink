@@ -512,12 +512,53 @@ def _producer_errors(item: dict, raw: bytes) -> list[str]:
 
 
 def _replay_errors(item: dict, primary: bytes, evidence: Path,
-                   artifacts: dict[Path, bytes]) -> list[str]:
+                   artifacts: dict[Path, bytes], secondary: list[dict]) -> list[str]:
     """Re-judge supported observations; absent raw inputs cannot inherit an old PASS."""
     from tools.polished_live.runtime import loads_json
 
     scenario = item["expect_scenario"]
     try:
+        if scenario == "r3/refusals":
+            bindings = {Path(r["path"]).resolve(): r["run_witness"] for r in secondary}
+            scopes, witnesses = set(), set()
+            for case in ("swap", "flip14e", "flipbeacon"):
+                names = ("refusal.json",) if case == "flipbeacon" else ("server.log", "wire/wire_a.jsonl")
+                observed, run = {}, None
+                for name in names:
+                    matches = [p for p in artifacts
+                               if p.as_posix().endswith(f"/{case}/producer/live/{name}")]
+                    if len(matches) != 1:
+                        return [f"R3 {case} needs one bound {name}"]
+                    path = matches[0]
+                    witness = bindings[path]
+                    if run is not None and witness != run:
+                        return [f"R3 {case} observations must share their own run_witness"]
+                    run = witness
+                    observed[name] = artifacts[path].decode("utf-8")
+                scope = literal_evidence_path(run["scope"])
+                witness_path = literal_evidence_path(run["path"])
+                if scope in scopes or witness_path in witnesses:
+                    return [f"R3 {case} needs a distinct run_witness and scope"]
+                scopes.add(scope)
+                witnesses.add(witness_path)
+                if case == "flipbeacon":
+                    refusal = loads_json(observed["refusal.json"])
+                    if (refusal.get("schema") != "polished-live-refusal-v1"
+                            or refusal.get("refused_by") != "client"
+                            or refusal.get("lua_writes") != 0
+                            or "overlay beacon mismatch" not in refusal.get("reason", "")):
+                        return ["R3 flipbeacon missing client beacon mismatch refusal"]
+                else:
+                    admissions = re.findall(r"admission: (\w+)", observed["server.log"])
+                    if not admissions or any(state != "rejected" for state in admissions):
+                        return [f"R3 {case} server.log must show only rejected admission"]
+                    wire = [loads_json(line) for line in observed["wire/wire_a.jsonl"].splitlines()
+                            if line.strip()]
+                    replies = [r["msg"] for r in wire if r.get("dir") == "s2c"]
+                    if not replies or any(r.get("commands") != [{"cmd": "noop", "refused": "admission"}]
+                                          for r in replies):
+                        return [f"R3 {case} replies must be exclusively refused-noop"]
+            return []
         if scenario == "live/capture-party-only":
             negatives = [raw for path, raw in artifacts.items() if path.name == "capture_negative.json"]
             if len(negatives) != 1:
@@ -676,7 +717,7 @@ def check_live(item: dict, root: Path, current_rom: str | None,
         for error in _producer_errors(item, primary):
             row.fail(error)
         if row.ok:
-            for error in _replay_errors(item, primary, evidence, artifacts):
+            for error in _replay_errors(item, primary, evidence, artifacts, secondary):
                 row.fail(error)
 
     for note in doc.get("checks", []):
