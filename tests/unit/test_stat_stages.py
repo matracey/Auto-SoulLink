@@ -528,7 +528,8 @@ class TestCombatantLabelsWiring:
     def test_combatant_signature_takes_labels(self):
         import pathlib
         src = pathlib.Path("server/templates/_board.html").read_text(encoding="utf-8")
-        assert "macro combatant(mon, side, label='', labels=None)" in src, (
+        declaration = next(line for line in src.splitlines() if "macro combatant(" in line)
+        assert "labels=None" in declaration, (
             "combatant() must accept a labels kwarg to pass the player's "
             "capabilities.stat_stage_labels through to stat_stages_row"
         )

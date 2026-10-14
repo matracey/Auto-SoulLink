@@ -9,9 +9,9 @@ from server.adapters import get_adapter
 from server.board import board_context
 from server.server import SLinkServer
 from server.status_payload import empty_status_payload
+from tests.unit.test_dashboard_contract import parse
 
 ROOT = Path(__file__).resolve().parents[2]
-
 KEY = "1DBA9C3D:1B4ABAE3"
 OTHER = "17645363:1BB09F66"
 
@@ -49,14 +49,17 @@ def sample_status():
     }]
     return status
 
+
 def card(status, pid="a", live=True):
     ctx = board_context(status, live=live)
     row = next(row for _, rows in ctx["board"]["sections"] for row in rows)
     return ctx["detail_card"](row[pid], pid, "pair-route_3", row)
 
+
 def render(status, **kwargs):
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(ROOT / "server/templates"), autoescape=True)
-    return env.get_template("_mon_details.html").module.template(card(status, **kwargs))
+    return env.get_template("_board.html").render(**board_context(status, **kwargs))
+
 
 def test_detail_card_keeps_zeroes_and_does_not_mutate_payload():
     status = sample_status()
@@ -73,6 +76,7 @@ def test_detail_card_keeps_zeroes_and_does_not_mutate_payload():
     markup = render(status)
     assert "0/5" in markup and ">0%</td>" not in markup
     assert "Illusion" in markup and "Hidden Ability" in markup and "Randomized" in markup
+
 
 @pytest.mark.parametrize("mode", ["offline", "stale", "stopped", "box", "limbo", "withheld"])
 def test_snapshot_provenance_and_missing_location(mode):
@@ -97,6 +101,7 @@ def test_snapshot_provenance_and_missing_location(mode):
     if mode == "stopped":
         assert "stopped" in detail["freshness"]
 
+
 def test_detail_card_uses_gen1_dvs_stat_exp_and_single_special():
     status = sample_status()
     player = status["players"]["a"]
@@ -108,6 +113,25 @@ def test_detail_card_uses_gen1_dvs_stat_exp_and_single_special():
     assert detail["iv_label"] == "DV" and detail["ev_label"] == "Stat exp."
     special, = [stat for stat in detail["stats"] if stat["name"] == "Special"]
     assert special == {"name": "Special", "value": 40, "iv": 3, "ev": 65535}
+
+
+def test_triggers_are_accessible_without_sprites_and_escape_names():
+    status = sample_status()
+    status["links"][0]["b_nickname"] = '<img src=x onerror="bad()">'
+    markup = render(status)
+    dom = parse(markup)
+    templates = list(dom.find_all("template"))
+    assert len({t.get("id") for t in templates}) == len(templates)
+    targets = [t for t in dom.find_all("button") if t.get("data-mon-detail")]
+    assert any(t.get("data-mon-detail").endswith(OTHER) for t in targets)
+    for target in targets:
+        assert target.get("aria-haspopup") == "dialog"
+        assert target.get("aria-expanded") == "false"
+        assert dom.find("template", id=target.get("data-mon-detail"))
+        assert not target.find("form")
+    assert '&lt;img src=x onerror=&#34;bad()&#34;&gt;' in markup
+    assert not dom.find("img", src="x")
+
 
 @pytest.mark.parametrize("game", ["gen3_frlge", "gen1_rby", "gen1_purergb", "gen2_gsc", "gen4_hgsspt", "gen5_bw"])
 def test_status_enrichment_uses_owning_adapter_and_marks_unreported_pp(tmp_path, game):
@@ -130,6 +154,7 @@ def test_status_enrichment_uses_owning_adapter_and_marks_unreported_pp(tmp_path,
     assert party["move_details"][0]["current_pp_known"] is True
     assert payload["pc_boxes"][0]["move_details"][0]["current_pp_known"] is False
     assert payload["battle_state"]["enemy_party"][0]["move_details"][0]["current_pp_known"] is False
+
 
 def test_actual_abilities_survive_ingestion_on_every_surface(tmp_path, caplog):
     srv = SLinkServer(data_dir=str(tmp_path))
@@ -156,6 +181,7 @@ def test_actual_abilities_survive_ingestion_on_every_surface(tmp_path, caplog):
     assert srv._build_status_dict()["players"]["a"]["party_details"][KEY]["ability_slots"] == []
     assert "invalid reported ability slots" in caplog.text
 
+
 def test_missing_abilities_are_not_replaced_by_species_defaults():
     status = sample_status()
     mon = status["players"]["a"]["party_details"][KEY]
@@ -163,3 +189,10 @@ def test_missing_abilities_are_not_replaced_by_species_defaults():
         mon.pop(field)
     assert card(status)["ability"] == "Not reported"
     assert "Ability slots" not in render(status)
+
+
+@pytest.mark.parametrize("shell", ["dashboard.html", "manager.html"])
+def test_both_board_shells_load_the_shared_card(shell):
+    source = (ROOT / "server/templates" / shell).read_text()
+    assert 'src="/static/mon-details.js" defer' in source
+    assert 'href="/static/mon-details.css"' in source

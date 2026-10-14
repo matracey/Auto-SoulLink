@@ -17,6 +17,7 @@
   reader's to know.
 #}
 {% from "_macros.html" import status_pill, stat_stages_row %}
+{% import "_mon_details.html" as mon_details %}
 {# ── macros ────────────────────────────────────────────────────────────── #}
 
 {# No max HP (a client that sends none, or the Gen 1 client on a transition frame): the number alone, no bar to fake. #}
@@ -30,11 +31,12 @@
 
 {# A mon as it stands in a battle (or the party lead when there is none): sprite, name,
    status, HP, stat stages, and its moves with PP. Used only on the NOW card. #}
-{% macro combatant(mon, side, label='', labels=None) -%}
+{% macro combatant(mon, side, pid, scope, label='', labels=None) -%}
+  {% set card = detail_card(mon, pid, scope) if detail_card is defined else {'id': '', 'nickname': mon.nickname or mon.species_name} %}
   <div class="mk-cbt {{ side }}{% if mon.active is sameas false %} bench{% endif %}">
-    <span class="mk-spr">{{ mon.sprite_html | safe }}</span>
+    <button {{ mon_details.trigger(card, 'mk-spr') }}>{{ mon.sprite_html | safe }}</button>
     <span class="mk-cbt-txt">
-      <span class="mk-cbt-name">{% if label %}<span class="mk-cbt-label">{{ label }}</span> {% endif %}<b>{{ mon.nickname or mon.species_name }}</b>{% if mon.nickname and mon.nickname != mon.species_name %} <span class="mk-sub">{{ mon.species_name }}</span>{% endif %} <span class="mk-sub">Lv <span class="num">{{ mon.level }}</span></span>{% if mon.status_cond %} {{ status_pill(mon.status_cond) }}{% endif %}</span>
+      <span class="mk-cbt-name">{% if label %}<span class="mk-cbt-label">{{ label }}</span> {% endif %}<button {{ mon_details.trigger(card) }}><b>{{ mon.nickname or mon.species_name }}</b></button>{% if mon.nickname and mon.nickname != mon.species_name %} <span class="mk-sub">{{ mon.species_name }}</span>{% endif %} <span class="mk-sub">Lv <span class="num">{{ mon.level }}</span></span>{% if mon.status_cond %} {{ status_pill(mon.status_cond) }}{% endif %}</span>
       {% if mon.hp is not none %}{{ hp(mon) }}{% endif %}
       {% if mon.stat_stages %}{{ stat_stages_row(mon.stat_stages, labels) }}{% endif %}
       {% if mon.move_details and mon.active is not sameas false %}
@@ -42,16 +44,18 @@
       {% endif %}
     </span>
   </div>
+  {{ mon_details.template(card) }}
 {%- endmacro %}
 
 {% macro half(row, pid, p, other) -%}
   {% set h = row[pid] %}
   <div class="mk-half {{ pid }}{% if not h %} empty{% endif %}{% if h and h.active %} fighting{% endif %}">
     {% if h %}
+      {% set card = detail_card(h, pid, 'pair-' ~ row.area, row) if detail_card is defined else {'id': '', 'nickname': h.nickname or h.species_name} %}
       <div class="mk-half-in">
-        {% if h.sprite %}<span class="mk-spr big">{{ h.sprite | safe }}</span>{% else %}<span class="mk-slot"></span>{% endif %}
+        <button {{ mon_details.trigger(card, 'mk-spr big') }}>{% if h.sprite %}{{ h.sprite | safe }}{% else %}<span class="mk-slot"></span>{% endif %}</button>
         <div class="mk-half-txt">
-          <span class="mk-half-nick">{% if h.active %}<span class="mk-active" title="out in battle"><span aria-hidden="true">⚔</span><span class="sr-only">Out in battle</span></span>{% endif %}{% if h.seeking %}Seeking {{ h.species_name }}{% else %}{{ h.nickname or h.species_name }}{% endif %}{% if h.shiny %} <span class="shiny-star"><span aria-hidden="true">✦</span><span class="sr-only">Shiny</span></span>{% endif %}</span>
+          <button {{ mon_details.trigger(card, 'mk-half-nick') }}>{% if h.active %}<span class="mk-active" title="out in battle"><span aria-hidden="true">⚔</span><span class="sr-only">Out in battle</span></span>{% endif %}{% if h.seeking %}Seeking {{ h.species_name }}{% else %}{{ h.nickname or h.species_name }}{% endif %}{% if h.shiny %} <span class="shiny-star"><span aria-hidden="true">✦</span><span class="sr-only">Shiny</span></span>{% endif %}</button>
           <span class="mk-sub">{% if h.seeking %}First encounter{% else %}{{ h.species_name }}{% endif %}{% if h.level %} · Lv {{ h.level }}{% endif %}</span>
           {% if h.hp is not none and row.section != 'fallen' %}{{ hp(h) }}{% endif %}
           {# Fallen rows keep the held item (what to take back out of the memorial box), not the ability. #}
@@ -100,6 +104,7 @@
             {% endif %}
           {% endif %}
         </div>
+        {{ mon_details.template(card) }}
       </div>
     {% else %}
       <div class="mk-half-in slot">
@@ -259,13 +264,13 @@
                         <span class="mk-tag fight">in battle</span>
                         <span class="mk-sub">{% if bs.is_trainer_battle %}vs {% if bs.opponent_class %}{{ bs.opponent_class }} {% endif %}{{ bs.opponent_name or 'Trainer' }}{% else %}wild encounter{% endif %}{% if bs.is_doubles %} · doubles{% endif %}</span>
                       </div>
-                      {% if mine %}{{ combatant(mine, 'mine', labels=p.capabilities.stat_stage_labels) }}{% endif %}
-                      {% for foe in bs.enemy_party or [] %}{{ combatant(foe, 'foe', 'vs', labels=p.capabilities.stat_stage_labels) }}{% endfor %}
+                      {% if mine %}{{ combatant(mine, 'mine', pid, 'now', labels=p.capabilities.stat_stage_labels) }}{% endif %}
+                      {% for foe in bs.enemy_party or [] %}{{ combatant(foe, 'foe', pid, 'foe-' ~ loop.index0, 'vs', labels=p.capabilities.stat_stage_labels) }}{% endfor %}
                     </div>
                   {% elif p.party_keys and p.party_details[p.party_keys[0]] %}
                     <div class="mk-lead">
                       <span class="mk-cap">Lead</span>
-                      {{ combatant(p.party_details[p.party_keys[0]], 'mine', labels=p.capabilities.stat_stage_labels) }}
+                      {{ combatant(p.party_details[p.party_keys[0]], 'mine', pid, 'now', labels=p.capabilities.stat_stage_labels) }}
                     </div>
                   {% endif %}
                   {% if p.encounter_table %}
