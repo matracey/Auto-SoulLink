@@ -306,15 +306,30 @@ function Client.new(p)
         local s = b and b.is_link == false and call("read_stat_stages", battler)
         return true, type(s) == "table" and arr(s) or nil
     end
+    local last_ability_error
+    local function with_abilities(entry, mon)
+        if not reads.read_abilities then return entry end
+        local abilities, why = reads.read_abilities(mon)
+        if abilities then
+            for field, value in pairs(abilities) do
+                entry[field] = field == "ability_slots" and arr(value) or value
+            end
+        else
+            entry.ability_error = why
+            if why ~= last_ability_error then log("ability read refused: " .. tostring(why)) end
+            last_ability_error = why
+        end
+        return entry
+    end
     local function party_entry(m, active, b)
         local base = reads.party_base and reads.party_base()
         local raw = base and io.read_bytes(base + m.slot * R.PARTY_MON_SIZE, R.PARTY_MON_SIZE)
         local held, stages = stages_of(b, active[m.slot], m)
-        return { key = key(m), slot = m.slot, species_id = m.species, nickname = m.nickname,
+        return with_abilities({ key = key(m), slot = m.slot, species_id = m.species, nickname = m.nickname,
                  level = m.level, hp = m.hp, maxHP = m.max_hp, status_cond = m.status,
                  moves = arr(m.moves), pp = arr(m.pp), pp_bonuses = m.pp_bonuses,
                  held_item_id = m.held_item, active = held,
-                 stat_stages = stages, blob_hex = raw and hex_of(raw) or nil }
+                 stat_stages = stages, blob_hex = raw and hex_of(raw) or nil }, m)
     end
     local function party_wire(party)
         local active, b = {}, nil
@@ -335,11 +350,11 @@ function Client.new(p)
         for _, m in ipairs(b.enemy_party or {}) do
             if m.species and m.species ~= 0 then
                 local held, stages = stages_of(b, active[m.slot], m)
-                out[#out + 1] = { species_id = m.species, level = m.level, hp = m.hp, maxHP = m.max_hp,
+                out[#out + 1] = with_abilities({ key = key(m), species_id = m.species, level = m.level, hp = m.hp, maxHP = m.max_hp,
                                   active = held, held_item_id = m.held_item,
                                   stat_stages = stages,
                                   status_cond = m.status, moves = arr(m.moves), pp = arr(m.pp),
-                                  pp_bonuses = m.pp_bonuses }
+                                  pp_bonuses = m.pp_bonuses }, m)
             end
         end
         return out
@@ -353,7 +368,7 @@ function Client.new(p)
                 if m.has_species == 1 then
                     cache[#cache + 1] = { box = box, slot = m.slot, key = key(m), species_id = m.species,
                                           nickname = m.nickname, held_item_id = m.held_item,
-                                          moves = m.moves, is_egg = m.is_egg }
+                                          moves = m.moves, is_egg = m.is_egg, ability_record = m }
                 end
             end
         end
@@ -369,8 +384,9 @@ function Client.new(p)
         if not st.boxes_ok then return nil end
         local out = arr({})
         for _, e in ipairs(st.box_cache) do
-            out[#out + 1] = { box = e.box, slot = e.slot, key = e.key, species_id = e.species_id,
-                              nickname = e.nickname, held_item_id = e.held_item_id, moves = arr(e.moves) }
+            out[#out + 1] = with_abilities({ box = e.box, slot = e.slot, key = e.key, species_id = e.species_id,
+                              nickname = e.nickname, held_item_id = e.held_item_id, moves = arr(e.moves) },
+                              e.ability_record)
         end
         return out
     end
@@ -534,10 +550,10 @@ function Client.new(p)
             if m.is_egg == 1 then st.eggs[k] = true end
             -- O-15: eggs are acquired at native hatch, never at GiveEgg.
             if not st.known[k] and not st.eggs[k] and m.is_egg == 0 and m.is_bad_egg == 0 then
-                local sent = send("capture", { key = k, area_id = area_id, species_id = m.species, level = m.level,
+                local sent = send("capture", with_abilities({ key = k, area_id = area_id, species_id = m.species, level = m.level,
                                   hp = m.hp, maxHP = m.max_hp, nickname = m.nickname,
                                   held_item_id = m.held_item, is_egg = m.is_egg == 1,
-                                  stats = stats_of(m), gift = gift or nil })
+                                  stats = stats_of(m), gift = gift or nil }, m))
                 if sent then st.known[k],found=true,true; resolve_area() end
                 log(string.format("ACQ capture via=settle:party key=%s species=%s gift=%s sent=%s", k, tostring(m.species),
                                   tostring(gift), tostring(sent)))
@@ -608,11 +624,11 @@ function Client.new(p)
                 if m.personality==tonumber(e.key:sub(1,8),16) then src=m; break end
             end
             local stats = src and stats_of(src) or nil
-            local sent = send("capture", { key = e.key, area_id = area_id, in_box = true, species_id = e.species_id,
+            local sent = send("capture", with_abilities({ key = e.key, area_id = area_id, in_box = true, species_id = e.species_id,
                               nickname = e.nickname, held_item_id = e.held_item_id,
                               level = stats and stats.level or nil, maxHP = stats and stats.maxHP or nil,
                               stats = stats, is_egg = e.is_egg == 1, gift = gift or nil,
-                              _acquisition_id=io.report_outbox and evidence.id or nil })
+                              _acquisition_id=io.report_outbox and evidence.id or nil }, e.ability_record))
             if sent then
                 st.known[e.key]=true; resolve_area()
                 for i,h in ipairs(st.pending_box_acq) do
@@ -643,10 +659,10 @@ function Client.new(p)
             st.eggs[k] = nil
             if not st.known[k] then
                 st.known[k] = true
-                local sent = send("capture", { key = k, area_id = "gift_daycare", species_id = m.species,
+                local sent = send("capture", with_abilities({ key = k, area_id = "gift_daycare", species_id = m.species,
                                   level = m.level, hp = m.hp, maxHP = m.max_hp,
                                   nickname = m.nickname, held_item_id = m.held_item,
-                                  is_egg = false, stats = stats_of(m), gift = true })
+                                  is_egg = false, stats = stats_of(m), gift = true }, m))
                 log(string.format("ACQ capture via=settle:hatch key=%s species=%s sent=%s", k, tostring(m.species), tostring(sent)))
             end
         end
