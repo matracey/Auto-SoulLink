@@ -95,6 +95,7 @@ def _half(status: dict, link: dict, pid: str) -> dict | None:
     live = locate(player, key)
     in_party = bool(live and live["where"] == "party")
     return {
+        **(link.get(f"{pid}_traits") or {}),
         "key": key,
         "nickname": link.get(f"{pid}_nickname") or "",
         "species_name": link.get(f"{pid}_species_name") or "",
@@ -349,11 +350,83 @@ def board_context(status: dict, *, run_name: str = "", poll_url: str = "/", live
     rom_types = [str((players.get(pid) or {}).get("rom_type") or "") for pid in PIDS]
     rom_type = next((rt for rt in rom_types if rt and rt != "?"), "")
     rules = status.get("rules") or {}
+    board = build_board(status)
+    cards = {}
+    for _, rows in board["sections"]:
+        for row in rows:
+            for pid in PIDS:
+                half = row.get(pid)
+                if half:
+                    key = half.get("key")
+                    cards[pid, key] = (row, half)
+
+    def detail_card(mon, pid, scope, row=None):
+        key = mon.get("key")
+        paired = cards.get((pid, key)) if key else None
+        row = row or (paired[0] if paired else {})
+        half = row.get(pid) or {}
+        player = players.get(pid) or {}
+        found = locate(player, key) if key else None
+        enemy = scope.startswith("foe")
+        data = {**half, **mon, **(found or {})} if not enemy else dict(mon)
+        missing = bool(half.get("limbo"))
+        where = None if missing else "battle" if enemy else (found or {}).get("where")
+        if where != "party" and not enemy:
+            data["hp"] = data["maxHP"] = None
+        if missing:
+            freshness = "Missing from census; sync paused"
+        elif (player.get("trade_recovery") or {}).get("hidden"):
+            freshness = "Last trusted snapshot; party withheld"
+        elif connection_state(player, live)["slug"] != "ready":
+            freshness = "Last known; run stopped" if not live else "Last known; player offline or unavailable"
+        elif where == "box":
+            freshness = "Last PC snapshot"
+        elif where:
+            freshness = "Latest reported details"
+        else:
+            freshness = "Saved encounter; no current snapshot"
+        cs = data.get("calc_stats") or {}
+        labels = (player.get("capabilities") or {}).get("stat_stage_labels") or []
+        stats = []
+        for stat, label in (("hp", "HP"), ("atk", "Attack"), ("def", "Defense"),
+                            ("spa", "Sp. Atk"), ("spd", "Sp. Def"), ("spe", "Speed")):
+            if len(labels) > 4 and not labels[4]:
+                if stat == "spd":
+                    continue
+                if stat == "spa":
+                    label = "Special"
+            old_stat = "spc" if stat in ("spa", "spd") else stat
+            value = (cs.get("stats") or {}).get(stat)
+            if stat == "hp" and value is None:
+                value = data.get("maxHP")
+            stats.append({
+                "name": label, "value": value,
+                "iv": (cs.get("dvs") or {}).get(old_stat) if "dvs" in cs else (cs.get("ivs") or {}).get(stat),
+                "ev": (cs.get("stat_exp") or {}).get(old_stat) if "stat_exp" in cs else (cs.get("evs") or {}).get(stat),
+            })
+        partner = row.get("b" if pid == "a" else "a") if not enemy else None
+        return {
+            **data, "id": f"mon-detail-{scope}-{pid}-{key or data.get('species_name', '')}",
+            "sprite_html": data.get("sprite_html") or data.get("sprite") or "",
+            "nickname": data.get("nickname") or data.get("species_name") or "Unknown Pokemon",
+            "where": where, "freshness": freshness, "stats": stats,
+            "iv_label": "DV" if "dvs" in cs else "IV",
+            "ev_label": "Stat exp." if "stat_exp" in cs else "EV",
+            "ability": data.get("ability_name") or ("Not applicable" if
+                (player.get("capabilities") or {}).get("abilities") is False else "Not reported"),
+            "item": data.get("item_name") or ("None" if data.get("held_item_id") == 0 else "Not reported"),
+            "area": row.get("area_name") or row.get("area") or "Not recorded",
+            "partner": partner, "player": player.get("trainer_name") or f"Player {pid.upper()}",
+            "last_seen": player.get("last_seen_label"),
+            "link_status": row.get("status") if not enemy else None,
+        }
+
     slug, label = phase(status) if live else ("stopped", "Run stopped")
     title = " — ".join(x for x in (variant_label(rom_type) if rom_type else "", run_name) if x)
     return {
         "status": status,
-        "board": build_board(status),
+        "board": board,
+        "detail_card": detail_card,
         "rules": [(icon, text) for key, icon, text in RULE_BADGES if rules.get(key)],
         "phase_slug": slug,
         "phase_label": label,
