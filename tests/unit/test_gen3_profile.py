@@ -243,6 +243,7 @@ def test_rr_party_capacity_comes_from_its_existing_detector() -> None:
     shedinja_cite = title["_src"].get("derived.SHEDINJA_SPECIES_ID")
     assert shedinja_cite and "rr_species.json" in shedinja_cite
     base_src["derived.SHEDINJA_SPECIES_ID"] = shedinja_cite
+    base_src["abilities"] = "RR 4.1 ROM routines pinned by RR_ABILITY_WITNESSES"
     for section, key in RR_BINARY_VALUES:
         cite = title["_src"].get(f"{section}.{key}")
         # the witnessed build is named by its canonical sha1 (version field zeroed), which a release stamp does not move

@@ -220,6 +220,7 @@
         }
       },
       "_src": {
+        "abilities": "RR 4.1 ROM routines pinned by RR_ABILITY_WITNESSES",
         "derived.BASESTATS_GROWTH_RATE_OFFSET": "rom:patch/build/slink_RR.gba canonical-sha1=6fb65ecb1d1d592891ede494ebc6547c26194eb7 box_level:LDRB@0x3E85C",
         "derived.BATTLE_MON_OT_ID_OFF": "rom:patch/build/slink_RR.gba canonical-sha1=6fb65ecb1d1d592891ede494ebc6547c26194eb7 battlemon_otid_store:0x08030F0E..0x08030F18 CopyPlayerMonData REQUEST_ALL_BATTLE (byte-identical to FireRed 0x08030C04), BL GetMonData 0x0803FBE8, movs r1,#1 (MON_DATA_OT_ID), str r0,[sp,#imm] @0x08030F16",
         "derived.BATTLE_MON_PERSONALITY_OFF": "rom:patch/build/slink_RR.gba canonical-sha1=6fb65ecb1d1d592891ede494ebc6547c26194eb7 battlemon_personality_store:0x08030E68..0x08030E72 CopyPlayerMonData REQUEST_ALL_BATTLE (byte-identical to FireRed 0x08030C04), BL GetMonData 0x0803FBE8, movs r1,#0 (MON_DATA_PERSONALITY), str r0,[sp,#imm] @0x08030E70",
@@ -257,6 +258,125 @@
         "rom.EXPERIENCE_TABLES_ADDR": "rom:patch/build/slink_RR.gba canonical-sha1=6fb65ecb1d1d592891ede494ebc6547c26194eb7 box_level:LDR@0x3E850 pool@0x3E894",
         "rom.HANDLE_TURN_ACTION_SELECTION_ADDR": "rom:patch/build/slink_RR.gba canonical-sha1=6fb65ecb1d1d592891ede494ebc6547c26194eb7 action_callback_store:0x1070626..0x107062A; pool@0x10706DC; entry@0x14040 (Thumb)",
         "rom.PP_UP_GET_MASK_ADDR": "rom:patch/build/slink_RR.gba canonical-sha1=6fb65ecb1d1d592891ede494ebc6547c26194eb7 calculate_pp:LDR@0x41032 pool@0x41060; bytes@0x25DEA1"
+      },
+      "abilities": {
+        "anchors": [
+          {
+            "expected_hex": "0049084709980709",
+            "rom_offset": 265528
+          },
+          {
+            "expected_hex": "0004360c000c874203d8c01b02300004000c7040390088f73ff9",
+            "rom_offset": 17269156
+          },
+          {
+            "expected_hex": "0c4b0200c3180c481904090c814203d8d8100a4bc0187047",
+            "rom_offset": 17534896
+          }
+        ],
+        "base_stats_pointer": 134218172,
+        "difficulty_exceptions": {
+          "134": {
+            "1104": 22
+          },
+          "176": {
+            "981": 176
+          },
+          "182": {
+            "1104": 22
+          },
+          "191": {
+            "308": 191
+          },
+          "3": {
+            "1320": 3,
+            "1321": 3,
+            "891": 240
+          },
+          "45": {
+            "248": 22,
+            "579": 100,
+            "889": 22
+          }
+        },
+        "difficulty_remap": {
+          "109": 86,
+          "111": 171,
+          "118": 192,
+          "134": 235,
+          "142": 29,
+          "143": 29,
+          "153": 195,
+          "154": 229,
+          "157": 192,
+          "172": 192,
+          "173": 39,
+          "176": 30,
+          "181": 226,
+          "182": 235,
+          "183": 226,
+          "184": 221,
+          "191": 51,
+          "197": 7,
+          "2": 88,
+          "202": 158,
+          "207": 192,
+          "212": 88,
+          "213": 92,
+          "247": 95,
+          "252": 18,
+          "3": 102,
+          "36": 28,
+          "45": 95,
+          "70": 92,
+          "90": 115
+        },
+        "fixed_trainer_classes": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          20,
+          47,
+          56,
+          83,
+          84,
+          86,
+          87,
+          89,
+          90
+        ],
+        "flags": {
+          "facility": 2352,
+          "hardcore": 4148,
+          "link": 4171,
+          "randomizer": 2370,
+          "restricted": 4156,
+          "scripted_battle": 4174,
+          "temporary_team": 4162
+        },
+        "flags_base": 33796468,
+        "flags_start": 2304,
+        "hardcore_trainer_count": 153,
+        "hardcore_trainer_offset": 8,
+        "hardcore_trainer_stride": 60,
+        "hardcore_trainers": 152226228,
+        "mode": "rr_4_1",
+        "normal_pool": 152448726,
+        "restricted_pool": 152448518,
+        "rom_end": 167772160,
+        "rom_start": 134217728,
+        "slot_offsets": [
+          22,
+          23,
+          26
+        ],
+        "species_limit": 1376,
+        "stride": 28,
+        "trainer_class_offset": 1,
+        "trainer_stride": 40,
+        "trainer_table_pointer": 134282240
       },
       "admitted": true,
       "derived": {

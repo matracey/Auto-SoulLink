@@ -743,6 +743,133 @@ function R.new(profile, io, pointers)
         return out
     end
 
+    if type(profile.abilities) == "table" then
+        local spec, anchors_ok = profile.abilities, nil
+        local function rom_range(address, size)
+            return type(address) == "number" and address >= spec.rom_start
+                and address + size <= spec.rom_end
+        end
+
+        function r.read_abilities(mon)
+            if spec.mode ~= "rr_4_1" then return nil, "unsupported ability reader" end
+            if type(mon) ~= "table" then return nil, "ability record unavailable" end
+            if anchors_ok == nil then
+                anchors_ok = true
+                for _, anchor in ipairs(spec.anchors) do
+                    local expected = anchor.expected_hex
+                    local bytes = io.rom_read(anchor.rom_offset, #expected // 2)
+                    if type(bytes) ~= "table" then anchors_ok = false; break end
+                    for i = 1, #expected // 2 do
+                        if bytes[i] ~= tonumber(expected:sub(i * 2 - 1, i * 2), 16) then
+                            anchors_ok = false
+                        end
+                    end
+                end
+            end
+            if not anchors_ok then return nil, "ability reader ROM anchor mismatch" end
+            if not mon.species or mon.species < 1 or mon.species >= spec.species_limit then
+                return nil, "ability species outside profile"
+            end
+            if type(mon.ot_id) ~= "number" or type(mon.personality) ~= "number" then
+                return nil, "ability identity unavailable"
+            end
+            local base = io.read_u32(spec.base_stats_pointer)
+            if not rom_range(base, spec.species_limit * spec.stride) then
+                return nil, "ability base-stat pointer outside ROM"
+            end
+            local original = {}
+            for i, off in ipairs(spec.slot_offsets) do
+                original[i] = io.read_u8(base + mon.species * spec.stride + off)
+                if type(original[i]) ~= "number" then return nil, "unreadable ability slot" end
+            end
+            local flags = {}
+            for name, id in pairs(spec.flags) do
+                local byte = io.read_u8(spec.flags_base + (id - spec.flags_start) // 8)
+                if type(byte) ~= "number" then return nil, "unreadable ability flags" end
+                flags[name] = (byte & (1 << (id % 8))) ~= 0
+            end
+            local sb2, why = r.read_sb2()
+            if not sb2 then return nil, why end
+            local trainer_id = io.read_u32(sb2 + d.SB2_OT_ID_OFFSET)
+            if type(trainer_id) ~= "number" then return nil, "unreadable ability seed" end
+
+            local randomize = flags.randomizer and not flags.facility
+                and not flags.temporary_team and not flags.link
+            if randomize then
+                -- RR exempts opponents in certain scripted fights, but still randomizes
+                -- mons sharing an OT with any of the six player-party records.
+                local own_ot = false
+                local party, bad = party_base()
+                if not party then return nil, bad end
+                for slot = 0, party_capacity - 1 do
+                    local ot = io.read_u32(party + slot * R.PARTY_MON_SIZE + 4)
+                    if type(ot) ~= "number" then return nil, "unreadable ability party identity" end
+                    if ot == mon.ot_id then own_ot = true end
+                end
+                if not own_ot then
+                    local battle_flags = io.read_u32(a.BATTLE_TYPE_ADDR)
+                    if type(battle_flags) ~= "number" then return nil, "unreadable ability battle flags" end
+                    if (battle_flags & d.BATTLE_TYPE_TRAINER_MASK) ~= 0 then
+                        local tid = io.read_u16(a.TRAINER_OPPONENT_ADDR)
+                        local trainers = io.read_u32(spec.trainer_table_pointer)
+                        if type(tid) ~= "number" or not rom_range(trainers, spec.trainer_stride) then
+                            return nil, "ability trainer pointer outside ROM"
+                        end
+                        local at = trainers + tid * spec.trainer_stride + spec.trainer_class_offset
+                        if not rom_range(at, 1) then return nil, "ability trainer pointer outside ROM" end
+                        local class = io.read_u8(at)
+                        if type(class) ~= "number" then return nil, "unreadable ability trainer class" end
+                        for _, fixed in ipairs(spec.fixed_trainer_classes) do
+                            if class == fixed then randomize = false end
+                        end
+                        if flags.hardcore then
+                            for i = 0, spec.hardcore_trainer_count - 1 do
+                                local fixed = io.read_u32(spec.hardcore_trainers + i * spec.hardcore_trainer_stride
+                                    + spec.hardcore_trainer_offset)
+                                if type(fixed) ~= "number" then return nil, "unreadable fixed ability trainer" end
+                                if fixed == tid then randomize = false; break end
+                            end
+                        end
+                        if flags.scripted_battle then randomize = false end
+                    end
+                end
+            end
+            local restricted = flags.hardcore or flags.restricted
+            local pool, count
+            if randomize then
+                pool = restricted and spec.restricted_pool or spec.normal_pool
+                count = io.read_u8(pool)
+                if type(count) ~= "number" or count < 1 or count > 255 then
+                    return nil, "invalid ability randomizer pool"
+                end
+            end
+            local slots = {}
+            for i, original_id in ipairs(original) do
+                local aid = original_id
+                if aid ~= 0 and randomize then
+                    local seed = math.max(trainer_id, 1)
+                    local value = ((seed & 0xFFFF) % count + mon.species + aid) & 0xFFFF
+                    if value >= count then value = (value - count + 2) & 0xFFFF end
+                    local index = (value ~ ((seed >> 16) % 255)) % count
+                    aid = io.read_u8(pool + 1 + index)
+                    if type(aid) ~= "number" or aid < 1 then return nil, "unreadable randomized ability" end
+                end
+                if aid ~= 0 and restricted and mon.ot_id == trainer_id then
+                    local exceptions = spec.difficulty_exceptions[tostring(aid)]
+                    aid = (exceptions and exceptions[tostring(mon.species)])
+                        or spec.difficulty_remap[tostring(aid)] or aid
+                end
+                slots[i] = aid
+            end
+            -- CFRU bit 31 selects hidden; ordinary slots use personality parity.
+            local selected = 1
+            if mon.ability_num == 1 and original[3] ~= 0 then selected = 3
+            elseif (mon.personality & 1) ~= 0 and original[2] ~= 0 then selected = 2 end
+            return { ability_id = slots[selected], ability_slot = selected,
+                     ability_slots = slots, ability_randomized = randomize }
+        end
+    end
+
     return r
 end
 

@@ -439,6 +439,62 @@ def rr_rom_facts(rom: bytes | None = None) -> dict:
 
 SCHEMA = "gen3-profile-v1"
 
+# RR 4.1 GetMonAbility (09079808), resolver (090796BC), randomizer (09078148),
+# difficulty remap (09079584), trainer filter (0907797C), extended flags (090B8FB0).
+RR_ABILITY_READER = {
+    "mode": "rr_4_1",
+    "rom_start": 0x08000000, "rom_end": 0x0A000000,
+    "base_stats_pointer": 0x080001BC, "stride": 28,
+    "slot_offsets": [22, 23, 26], "species_limit": 1376,
+    "flags_base": 0x0203B174, "flags_start": 0x900,
+    "flags": {"randomizer": 0x942, "facility": 0x930, "hardcore": 0x1034,
+              "restricted": 0x103C, "temporary_team": 0x1042, "link": 0x104B,
+              "scripted_battle": 0x104E},
+    "normal_pool": 0x09162ED6, "restricted_pool": 0x09162E06,
+    "trainer_table_pointer": 0x0800FC00, "trainer_stride": 40, "trainer_class_offset": 1,
+    "fixed_trainer_classes": [1, 2, 3, 4, 5, 20, 47, 56, 83, 84, 86, 87, 89, 90],
+    "hardcore_trainers": 0x0912C9B4, "hardcore_trainer_count": 153,
+    "hardcore_trainer_stride": 60, "hardcore_trainer_offset": 8,
+    "difficulty_remap": {
+        "2": 88, "3": 102, "36": 28, "45": 95, "70": 92, "90": 115,
+        "109": 86, "111": 171, "118": 192, "134": 235, "142": 29, "143": 29,
+        "153": 195, "154": 229, "157": 192, "172": 192, "173": 39, "176": 30,
+        "181": 226, "182": 235, "183": 226, "184": 221, "191": 51, "197": 7,
+        "202": 158, "207": 192, "212": 88, "213": 92, "247": 95, "252": 18,
+    },
+    "difficulty_exceptions": {
+        "3": {"891": 240, "1320": 3, "1321": 3},
+        "45": {"248": 22, "889": 22, "579": 100},
+        "134": {"1104": 22}, "182": {"1104": 22},
+        "176": {"981": 176}, "191": {"308": 191},
+    },
+    "anchors": [
+        {"rom_offset": 0x40D38, "expected_hex": "0049084709980709"},
+        {"rom_offset": 0x10781A4, "expected_hex": "0004360c000c874203d8c01b02300004000c7040390088f73ff9"},
+        {"rom_offset": 0x10B8FB0, "expected_hex": "0c4b0200c3180c481904090c814203d8d8100a4bc0187047"},
+    ],
+}
+RR_ABILITY_WITNESSES = (
+    (0x1079808, 0x60, "320f82eee23a37f7383fcfce4e6cd4c57dfe71ede74a67ce4b5c91ef3bdd38ad"),
+    (0x10796BC, 0xE0, "66cc2ed253110b1d7140309ea74691c432cb3deb17977c1cb5d43f031b24fefe"),
+    (0x1078148, 0xD0, "1a30c16feee90b1d9cc04eca1821832c63bb38ee7785e029ed0689c082162fdb"),
+    (0x1079584, 0x138, "0e03dac9460565ea14361749b3792c805da53cee7361a7c0e07a4d90dc114403"),
+    (0x107797C, 0x9C, "efb0f019035c4583448c23405df2dfce1af461a75df402ad1c1c6518e4f9ffcd"),
+    (0x10B8FB0, 0x50, "c48b525b7e735bd36b4590bc40436097cdebdc29bc9ee09663803caab371fca6"),
+)
+
+
+def verify_rr_ability_witness(rom: bytes) -> None:
+    for offset, size, digest in RR_ABILITY_WITNESSES:
+        if hashlib.sha256(rom[offset:offset + size]).hexdigest() != digest:
+            raise ValueError(f"RR ability routine changed at 0x{offset:X}")
+    for anchor in RR_ABILITY_READER["anchors"]:
+        raw = bytes.fromhex(anchor["expected_hex"])
+        offset = anchor["rom_offset"]
+        if rom[offset:offset + len(raw)] != raw:
+            raise ValueError(f"RR ability anchor changed at 0x{offset:X}")
+
+
 # ── pins (P0 card C0-2/C0-4, docs/gen3/research/pins_inventory.md) ───────────────
 ROM_HASHES = {
     "firered": {"rom_sha1": "41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc"},
@@ -1199,6 +1255,8 @@ def build(pack: str, profiles: dict, source: dict) -> dict:
             name: {"rom_offset": off, "expected_hex": raw.upper()}
             for name, (off, raw) in RR_ROM_ANCHORS.items()
         }
+        entry["abilities"] = RR_ABILITY_READER
+        entry["_src"]["abilities"] = "RR 4.1 ROM routines pinned by RR_ABILITY_WITNESSES"
         out["native"] = native_block()
     elif pack == "gen3_frlg":
         out["native"] = native_block("firered")
@@ -1662,6 +1720,7 @@ def _generate_profiles(args: argparse.Namespace) -> int:
     rr_witness = REPO / "patch/build/slink_RR.gba"
     if rr_witness.exists():
         rr_rom_facts(rr_witness.read_bytes())
+        verify_rr_ability_witness(rr_witness.read_bytes())
 
     text = (REPO / SRC).read_text(encoding="utf-8", errors="replace")
     profiles = parse_profiles(text)
