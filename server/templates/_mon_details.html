@@ -1,0 +1,69 @@
+{% macro trigger(card, classes='') -%}
+class="mon-detail-trigger {{ classes }}" type="button" data-mon-detail="{{ card.id }}" aria-haspopup="dialog" aria-expanded="false" aria-controls="mon-detail-panel" aria-label="Details for {{ card.nickname }}"
+{%- endmacro %}
+
+{% macro template(card) -%}
+<template id="{{ card.id }}">
+  <header class="mon-detail-head">
+    <span class="mk-spr big">{% if card.sprite_html %}{{ card.sprite_html | safe }}{% else %}<span class="mk-slot" aria-label="Sprite unavailable"></span>{% endif %}</span>
+    <div class="mon-detail-identity">
+      <h2>{{ card.nickname }}{% if card.gender in ('male', 'female') %} <span class="mon-detail-gender" aria-label="{{ card.gender }}">{{ '♀' if card.gender == 'female' else '♂' }}</span>{% endif %}{% if card.shiny %} <span class="shiny-star" aria-label="Shiny">✦</span>{% endif %}</h2>
+      <div class="mk-sub">{{ card.species_name or 'Species not reported' }}{% if card.level %} · Lv {{ card.level }}{% endif %}</div>
+      <div class="mon-detail-types">{% for type in card.type_names or [] %}<span class="mk-move mt-{{ type }}">{{ type }}</span>{% else %}<span class="mk-sub">Types not reported</span>{% endfor %}</div>
+    </div>
+  </header>
+  <div class="mon-detail-section mon-detail-health">
+    <div class="mon-detail-line">
+      <span>{{ card.player }} · {% if card.where == 'party' %}In party{% elif card.where == 'box' %}In PC{% if card.box is defined %} · Box {{ card.box + 1 }}{% endif %}{% elif card.where == 'battle' %}Opponent{% else %}Location unconfirmed{% endif %}</span>
+      <span>{{ card.status_token or ('Fainted' if card.hp == 0 else '') }}</span>
+    </div>
+    {% if card.hp is defined and card.hp is not none %}
+      <div class="mon-detail-line"><span>HP</span><span class="num">{{ card.hp }} / {{ card.maxHP if card.maxHP else '?' }}</span></div>
+      {% if card.maxHP %}<progress class="mon-detail-hp" max="{{ card.maxHP }}" value="{{ card.hp }}" aria-label="HP"></progress>{% endif %}
+    {% else %}<span class="mk-sub">Current HP not reported</span>{% endif %}
+  </div>
+  <dl class="mon-detail-facts">
+    <div><dt>Ability</dt><dd>{{ card.ability }}</dd></div>
+    <div><dt>Nature</dt><dd>{{ card.nature or 'Not reported' }}</dd></div>
+    <div><dt>Held item</dt><dd>{{ card.item }}</dd></div>
+  </dl>
+  {% if card.ability_slots %}
+  <section class="mon-detail-section">
+    <h3>Ability slots{% if card.ability_randomized %} <small>Randomized</small>{% endif %}</h3>
+    <dl class="mon-detail-abilities">{% for slot in card.ability_slots %}
+      <div><dt>{{ slot.label }}{% if slot.active %} · Selected{% endif %}</dt><dd>{{ slot.name }}</dd></div>
+    {% endfor %}</dl>
+  </section>
+  {% endif %}
+  {% if card.ability_error %}<p class="mon-detail-section mk-sub">Ability unavailable: {{ card.ability_error }}</p>{% endif %}
+  <section class="mon-detail-section">
+    <h3>Stats <small>As reported, before battle stages</small></h3>
+    <table class="mon-detail-stats">
+      <caption class="sr-only">Stats for {{ card.nickname }}. A dash means not reported.</caption>
+      <thead><tr><th scope="col">Stat</th><th scope="col">Value</th><th scope="col">{{ card.iv_label }}</th><th scope="col">{{ card.ev_label }}</th></tr></thead>
+      <tbody>{% for stat in card.stats %}<tr><th scope="row">{{ stat.name }}</th><td>{{ stat.value if stat.value is not none else '—' }}</td><td>{{ stat.iv if stat.iv is not none else '—' }}</td><td>{{ stat.ev if stat.ev is not none else '—' }}</td></tr>{% endfor %}</tbody>
+    </table>
+  </section>
+  <section class="mon-detail-section">
+    <h3>Moves</h3>
+    {% if card.move_details %}
+    <table class="mon-detail-moves">
+      <caption class="sr-only">Moves for {{ card.nickname }}. A dash means not reported or not applicable.</caption>
+      <thead><tr><th scope="col">Move</th><th scope="col"><abbr title="Power">Pow</abbr></th><th scope="col"><abbr title="Accuracy">Acc</abbr></th><th scope="col">PP</th></tr></thead>
+      <tbody>{% for move in card.move_details[:4] %}
+        <tr><th scope="row">{{ move.name }}<span class="mon-detail-move-meta"><span class="mk-move mt-{{ move.type_name or 'unknown' }}">{{ move.type_name or '?' }}</span> {{ {0: 'Physical', 1: 'Special', 2: 'Status'}.get(move.split, '') }}</span></th>
+          <td>{{ move.power or '—' }}</td><td>{{ (move.accuracy | string ~ '%') if move.accuracy else '—' }}</td>
+          <td>{% if move.current_pp_known is sameas true %}{{ move.current_pp }}/{{ move.pp }}{% else %}<span title="Current PP not reported">—</span>{% endif %}</td></tr>
+      {% endfor %}</tbody>
+    </table>
+    {% else %}<span class="mk-sub">Moves not reported</span>{% endif %}
+  </section>
+  <footer class="mon-detail-footer">
+    {% if card.link_status %}<div>{{ card.area }} · {{ card.link_status | capitalize }}</div>
+      <div class="mk-sub">{% if card.partner %}Linked partner: {{ card.partner.nickname or card.partner.species_name }}{% if card.partner.level %} · Lv {{ card.partner.level }}{% endif %}{% else %}No linked partner{% endif %}</div>
+    {% endif %}
+    <div class="mon-detail-freshness">{{ card.freshness }}</div>
+    {% if card.last_seen and card.last_seen != '—' %}<div class="mk-sub">Player last heard {{ card.last_seen }}</div>{% endif %}
+  </footer>
+</template>
+{%- endmacro %}

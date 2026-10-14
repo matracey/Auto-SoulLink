@@ -1,12 +1,16 @@
 """Detail cards share the real status payload and never invent missing live values."""
 import copy
+from pathlib import Path
 
+import jinja2
 import pytest
 
 from server.adapters import get_adapter
 from server.board import board_context
 from server.server import SLinkServer
 from server.status_payload import empty_status_payload
+
+ROOT = Path(__file__).resolve().parents[2]
 
 KEY = "1DBA9C3D:1B4ABAE3"
 OTHER = "17645363:1BB09F66"
@@ -50,6 +54,10 @@ def card(status, pid="a", live=True):
     row = next(row for _, rows in ctx["board"]["sections"] for row in rows)
     return ctx["detail_card"](row[pid], pid, "pair-route_3", row)
 
+def render(status, **kwargs):
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader(ROOT / "server/templates"), autoescape=True)
+    return env.get_template("_mon_details.html").module.template(card(status, **kwargs))
+
 def test_detail_card_keeps_zeroes_and_does_not_mutate_payload():
     status = sample_status()
     before = copy.deepcopy(status)
@@ -62,6 +70,9 @@ def test_detail_card_keeps_zeroes_and_does_not_mutate_payload():
     assert detail["stats"][1]["iv"] == 0
     assert detail["stats"][2]["iv"] is None
     assert detail["ability"] == "Magic Guard"
+    markup = render(status)
+    assert "0/5" in markup and ">0%</td>" not in markup
+    assert "Illusion" in markup and "Hidden Ability" in markup and "Randomized" in markup
 
 @pytest.mark.parametrize("mode", ["offline", "stale", "stopped", "box", "limbo", "withheld"])
 def test_snapshot_provenance_and_missing_location(mode):
@@ -144,3 +155,11 @@ def test_actual_abilities_survive_ingestion_on_every_surface(tmp_path, caplog):
     srv.party_details["a"] = srv._party_snapshot("a", [record])
     assert srv._build_status_dict()["players"]["a"]["party_details"][KEY]["ability_slots"] == []
     assert "invalid reported ability slots" in caplog.text
+
+def test_missing_abilities_are_not_replaced_by_species_defaults():
+    status = sample_status()
+    mon = status["players"]["a"]["party_details"][KEY]
+    for field in ("ability_id", "ability_name", "ability_slots", "ability_randomized"):
+        mon.pop(field)
+    assert card(status)["ability"] == "Not reported"
+    assert "Ability slots" not in render(status)
