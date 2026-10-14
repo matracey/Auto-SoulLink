@@ -2205,8 +2205,11 @@ class SLinkServer:
         dispatch boundaries. This helper only constructs the display snapshot.
         """
         adapter = self.adapter_for(player_id)
-        return {
-            mon["key"]: {
+        result = {}
+        for index, mon in enumerate(party):
+            if not mon.get("key"):
+                continue
+            detail = {
                 "level": mon.get("level", 0),
                 "hp": mon.get("hp", 1),
                 "maxHP": mon.get("maxHP", 1),
@@ -2226,8 +2229,11 @@ class SLinkServer:
                 # adapter can't decode it (box/linked mons, missing/bad blob_hex).
                 "calc_stats": adapter.calc_stats(mon),
             }
-            for index, mon in enumerate(party) if mon.get("key")
-        }
+            for field in ("ability_slots", "ability_slot", "ability_randomized", "ability_error"):
+                if field in mon:
+                    detail[field] = mon[field]
+            result[mon["key"]] = detail
+        return result
 
     def _with_run_identity(self, commands: list) -> list:
         """Bind recovery clients to the existing run; an unmanaged run has no fabricated ID."""
@@ -2536,6 +2542,9 @@ class SLinkServer:
                     "ability_id":   msg.get("ability_id", msg.get("ability", 0)),
                     "gender":       self.adapter.gender_from_key(key, sid),
                 }
+                for field in ("ability_slots", "ability_slot", "ability_randomized", "ability_error"):
+                    if field in msg:
+                        detail[field] = msg[field]
                 self.party_details[player_id][key] = detail
                 self._cache_mon_info(key, detail, player_id)
         elif event == "faint":
@@ -2986,6 +2995,7 @@ class SLinkServer:
                 if not md:
                     continue
                 md = dict(md)
+                md["current_pp_known"] = not boxed and idx < len(raw_pp)
                 if boxed:
                     md["current_pp"] = md.get("pp", 0)
                 else:
@@ -2997,6 +3007,29 @@ class SLinkServer:
                     md["current_pp"] = raw_pp[idx] if idx < len(raw_pp) else md["pp"]
                 out.append(md)
             return out
+
+        def _traits(pid, species, key, gender="", mon=None):
+            adapter = self.adapter_for(pid)
+            types = adapter.species_types(species) if species else None
+            slots = []
+            raw_slots = (mon or {}).get("ability_slots")
+            if raw_slots is not None:
+                if (isinstance(raw_slots, list) and len(raw_slots) == 3
+                        and all(type(aid) is int and 0 <= aid <= 65535 for aid in raw_slots)):
+                    selected = mon.get("ability_slot")
+                    for index, (label, aid) in enumerate(zip(
+                            ("Ability 1", "Ability 2", "Hidden Ability"), raw_slots, strict=True), 1):
+                        slots.append({"label": label, "id": aid,
+                                      "name": adapter.ability_name(aid, species) if aid else "None",
+                                      "active": type(selected) is int and selected == index})
+                else:
+                    log.warning("[%s] invalid reported ability slots for %s", pid, key)
+            return {
+                "type_names": list(dict.fromkeys(adapter.type_name(t) for t in types)) if types else [],
+                "nature": adapter.calc_nature(key),
+                "gender": gender or (adapter.gender_from_key(key, species) if key and species else ""),
+                "ability_slots": slots,
+            }
 
         def _enrich_party(pid):
             """Add key, species_name, ability_name, item_name, sprite_html and move_details
@@ -3010,6 +3043,8 @@ class SLinkServer:
                 d["key"] = key
                 sid = d.get("species_id", 0)
                 form = d.get("form", 0)
+                d.update(_traits(pid, sid, key, d.get("gender"), d))
+                d["status_token"] = adapter.status_token(d.get("status_cond", 0))
                 d["species_name"] = adapter.species_name(sid) if sid else ""
                 d["sprite_html"] = self._get_sprite_html(sid, form, pid) if sid else ""
                 aid = d.get("ability_id", 0)
@@ -3026,6 +3061,10 @@ class SLinkServer:
             enriched = []
             for bentry in self.pc_boxes.get(pid, []):
                 b = dict(bentry)
+                sid = b.get("species_id", 0)
+                b.update(_traits(pid, sid, b.get("key", ""), b.get("gender"), b))
+                aid = b.get("ability_id", 0)
+                b["ability_name"] = adapter.ability_name(aid, sid) if aid else ""
                 iid = b.get("held_item_id", 0)
                 b["item_name"] = adapter.item_name(iid) if iid else ""
                 b["move_details"] = _move_details(b, boxed=True, adapter=adapter)
@@ -3041,6 +3080,12 @@ class SLinkServer:
                 em2 = dict(em)
                 sid = em2.get("species_id", 0)
                 form = em2.get("form", 0)
+                em2.update(_traits(pid, sid, em2.get("key", ""), em2.get("gender"), em2))
+                em2["status_token"] = adapter.status_token(em2.get("status_cond", 0))
+                aid = em2.get("ability_id", 0)
+                em2["ability_name"] = adapter.ability_name(aid, sid) if aid else ""
+                iid = em2.get("held_item_id", 0)
+                em2["item_name"] = adapter.item_name(iid) if iid else ""
                 # Rendered |safe, so it is always ours: a client-sent sprite_html is dropped.
                 em2.pop("sprite_html", None)
                 if sid:
@@ -3130,6 +3175,7 @@ class SLinkServer:
                     "a_sprite_html": self._get_sprite_html(e.a.species, 0, "a") if e.a and e.a.species else "",
                     "a_level":    self._resolve_level("a", e.a),
                     "a_shiny":    e.a.is_shiny if e.a else False,
+                    "a_traits":   _traits("a", e.a.species, e.a.key) if e.a else {},
                     "b_key":      e.b.key if e.b else None,
                     "b_nickname": e.b.nickname if e.b else "",
                     "b_species":  e.b.species if e.b else 0,
@@ -3137,6 +3183,7 @@ class SLinkServer:
                     "b_sprite_html": self._get_sprite_html(e.b.species, 0, "b") if e.b and e.b.species else "",
                     "b_level":    self._resolve_level("b", e.b),
                     "b_shiny":    e.b.is_shiny if e.b else False,
+                    "b_traits":   _traits("b", e.b.species, e.b.key) if e.b else {},
                     "a_enc_species": e.encounter_a.species if e.encounter_a else 0,
                     "a_enc_level":   e.encounter_a.level   if e.encounter_a else 0,
                     "b_enc_species": e.encounter_b.species if e.encounter_b else 0,
@@ -3156,6 +3203,7 @@ class SLinkServer:
                         "species": mon.species, "level": mon.level,
                         "species_name": self.adapter_for(pid).species_name(mon.species) if mon.species else "",
                         "sprite_html": self._get_sprite_html(mon.species, 0, pid) if mon.species else "",
+                        **_traits(pid, mon.species, mon.key),
                     }
                     for pid, mon in players.items()
                 }
@@ -3168,6 +3216,7 @@ class SLinkServer:
                         "species": mon.species, "level": mon.level,
                         "species_name": self.adapter_for(pid).species_name(mon.species) if mon.species else "",
                         "sprite_html": self._get_sprite_html(mon.species, 0, pid) if mon.species else "",
+                        **_traits(pid, mon.species, mon.key),
                     }
                     for pid, mon in players.items()
                 }
